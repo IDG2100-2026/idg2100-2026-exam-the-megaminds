@@ -1,0 +1,93 @@
+### ============================================================
+###  GAMES – Spanish Poker Dice API
+###  Base: http://localhost:8476/api
+###
+###  SETUP: Run "GET /api/games" first, then copy a real gameId
+###         (string like "game-001") into @gid below.
+###         Fill in real userId values for player1/player2.
+### ============================================================
+
+@baseUrl = http://localhost:8476/api
+
+# Replace with a real gameId string from GET /games (e.g. "game-001")
+@gid = game-011
+
+# Replace with real userId values from GET /users
+@player1 = 4904147198225416
+@player2 = 6713352303982086
+
+
+### 1. Get all games
+GET {{baseUrl}}/games
+
+
+### 2. Get a single game
+GET {{baseUrl}}/games/{{gid}}
+
+
+### 3. Get comments for a game
+GET {{baseUrl}}/games/{{gid}}/comments
+
+
+### 4. Create a new game (status defaults to "pending")
+# Requires: registered or admin
+POST {{baseUrl}}/games
+Content-Type: application/json
+x-user-role: registered
+
+{
+    "gameId": "game-test-01",
+    "rules": {
+        "bestof": 3,
+        "straightallowed": true,
+        "roundTime": 10
+    },
+    "players": [
+        { "userId": {{player1}} },
+        { "userId": {{player2}} }
+    ],
+    "status": "pending"
+}
+
+
+### 5. Update game status (pending → in-progress → finished)
+# Requires: registered or admin
+PATCH {{baseUrl}}/games/{{gid}}/status
+Content-Type: application/json
+x-user-role: registered
+
+{
+    "status": "in-progress"
+}
+
+
+### 6. Record the result of a finished game (updates ELO)
+# Requires: registered or admin
+PATCH {{baseUrl}}/games/{{gid}}/result
+Content-Type: application/json
+x-user-role: registered
+
+{
+    "winnerId": {{player1}},
+    "loserId": {{player2}},
+    "winnerScore": 2,
+    "loserScore": 1
+}
+
+
+### 7. Post a comment on a game
+# Requires: registered or admin
+POST {{baseUrl}}/games/{{gid}}/comments
+Content-Type: application/json
+x-user-role: registered
+
+{
+    "userId": {{player1}},
+    "text": "That was an amazing game!"
+}
+
+
+### 8. Delete a game
+# Requires: admin
+DELETE {{baseUrl}}/games/{{gid}}
+x-user-role: admin

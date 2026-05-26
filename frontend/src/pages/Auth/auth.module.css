@@ -1,0 +1,152 @@
+.page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    background-color: var(--theme-bg);
+}
+
+.card {
+    width: 100%;
+    max-width: 440px;
+    background: var(--theme-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: 12px;
+    padding: 2.5rem 2rem;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--theme-text);
+    margin: 0 0 0.5rem;
+}
+
+.subtitle {
+    font-size: 0.95rem;
+    color: var(--theme-text-muted);
+    margin: 0;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.labelRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--theme-text);
+}
+
+.inputWrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input {
+    width: 100%;
+    padding: 0.6rem 0.875rem;
+    background: var(--theme-bg);
+    border: 1px solid var(--theme-border);
+    border-radius: 8px;
+    color: var(--theme-text);
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.15s;
+    box-sizing: border-box;
+}
+
+.input:focus {
+    border-color: var(--theme-accent);
+}
+
+.revealBtn {
+    position: absolute;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    color: var(--theme-text-muted);
+    font-size: 0.8rem;
+    cursor: pointer;
+    padding: 0;
+}
+
+.errorMsg {
+    font-size: 0.8rem;
+    color: var(--theme-error, #e53e3e);
+    margin: 0;
+}
+
+.submitBtn {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--theme-accent);
+    color: var(--theme-accent-text, #fff);
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    margin-top: 0.25rem;
+}
+
+.submitBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.switchText {
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--theme-text-muted);
+    margin: 1.5rem 0 0;
+}
+
+.switchLink {
+    color: var(--theme-accent);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.switchLink:hover {
+    text-decoration: underline;
+}
+
+/* Confirmation screen (used by ForgotPwd and VerifyUser) */
+.confirmation {
+    text-align: center;
+    padding: 1rem 0;
+}
+
+.confirmIcon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: var(--theme-accent);
+}
+
+.emailHighlight {
+    font-weight: 600;
+    color: var(--theme-text);
+}

@@ -1,0 +1,75 @@
+import { useCallback } from 'react';
+import { useAppContext } from '@/context/AppContext';
+import { getTheme, BOARD_COLORS } from '@/config/themes';
+import { userService } from '@/services/api';
+
+export function useTheme() {
+    const { theme, setTheme, user } = useAppContext();
+
+    const currentTheme = getTheme(theme.mode);
+
+    // Toggles between dark and light mode, persists to backend if logged in
+    const toggleTheme = useCallback(async () => {
+        const newMode = theme.mode === 'dark' ? 'light' : 'dark';
+        setTheme(prev => ({ ...prev, mode: newMode }));
+        applyThemeToDocument(getTheme(newMode));
+
+        if (user?.userId) {
+            try {
+                await userService.updateUser(user.userId, { theme: { ...theme, mode: newMode } });
+            } catch (err) {
+                console.error('Failed to save theme preference:', err);
+            }
+        }
+    }, [theme, setTheme, user]);
+
+    const changeBoardColor = useCallback(async (colorKey) => {
+        if (!BOARD_COLORS[colorKey]) return;
+
+        setTheme(prev => ({ ...prev, boardColor: colorKey }));
+
+        if (user?.userId) {
+            try {
+                await userService.updateUser(user.userId, { theme: { ...theme, boardColor: colorKey } });
+            } catch (err) {
+                console.error('Failed to save board color preference:', err);
+            }
+        }
+    }, [theme, setTheme, user]);
+
+    const toggleSound = useCallback(async () => {
+        const newSound = !theme.soundEnabled;
+        setTheme(prev => ({ ...prev, soundEnabled: newSound }));
+
+        if (user?.userId) {
+            try {
+                await userService.updateUser(user.userId, { theme: { ...theme, soundEnabled: newSound } });
+            } catch (err) {
+                console.error('Failed to save sound preference:', err);
+            }
+        }
+    }, [theme, setTheme, user]);
+
+    return {
+        colors: currentTheme.colors,
+        isDarkMode: theme.mode === 'dark',
+        currentMode: theme.mode,
+        toggleTheme,
+        boardColor: theme.boardColor,
+        changeBoardColor,
+        soundEnabled: theme.soundEnabled,
+        toggleSound,
+    };
+}
+
+// Applies theme colors as CSS custom properties on the document root
+export function applyThemeToDocument(theme) {
+    const root = document.documentElement;
+
+    Object.keys(theme.colors).forEach((colorKey) => {
+        const cssVarName = `--theme-${colorKey.replace(/([A-Z])/g, '-$1').toLowerCase()}`;
+        root.style.setProperty(cssVarName, theme.colors[colorKey]);
+    });
+
+    root.setAttribute('data-theme', theme.id);
+}

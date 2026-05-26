@@ -1,0 +1,45 @@
+### ============================================================
+###  COMMENTS – Spanish Poker Dice API
+###  Base: http://localhost:8476/api
+###
+###  SETUP: Comments are created via the game/tournament routes.
+###         Run "GET /api/games/:gid/comments" or
+###         "GET /api/tournaments/:tid/comments" to get a
+###         commentId (numeric), then set @cid below.
+### ============================================================
+
+@baseUrl = http://localhost:8476/api
+
+# Replace with a real commentId (number) from a game/tournament comments response
+@cid = 2041196559461842
+
+
+### 1. Get all comments (admin only — for moderation)
+GET {{baseUrl}}/comments
+x-user-role: admin
+
+
+### 2. Search comments by text (admin only)
+GET {{baseUrl}}/comments?search=amazing
+x-user-role: admin
+
+
+### 3. Get a single comment by commentId
+GET {{baseUrl}}/comments/{{cid}}
+
+
+### 4. Update a comment's text
+# Requires: registered or admin
+PATCH {{baseUrl}}/comments/{{cid}}
+Content-Type: application/json
+x-user-role: registered
+
+{
+    "text": "Updated comment text here."
+}
+
+
+### 5. Delete a comment
+# Requires: admin
+DELETE {{baseUrl}}/comments/{{cid}}
+x-user-role: admin

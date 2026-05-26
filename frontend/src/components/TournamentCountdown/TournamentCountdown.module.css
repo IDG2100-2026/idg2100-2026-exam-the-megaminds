@@ -1,0 +1,36 @@
+.countdown {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.countdown__label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--theme-text-secondary);
+}
+
+.countdown__units {
+    display: flex;
+    gap: 10px;
+}
+
+.countdown__unit {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 2px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: var(--theme-primary-light);
+    border: 1px solid var(--theme-accent-dark);
+    font-size: 0.8rem;
+    color: var(--theme-text-secondary);
+    font-variant-numeric: tabular-nums;
+}
+
+.countdown__unit strong {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--theme-accent-light);
+}

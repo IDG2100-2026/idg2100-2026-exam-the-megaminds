@@ -1,0 +1,188 @@
+.gameCard {
+    background: var(--theme-background-alt);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 16px var(--theme-shadow-light);
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.gameCard:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px var(--theme-shadow-strong);
+    border-color: var(--theme-accent);
+}
+
+.gameHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--theme-primary);
+}
+
+.eloDisplay {
+    color: var(--theme-text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.eloBadge {
+    background: var(--theme-accent);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    margin-left: 4px;
+}
+
+.playersCount {
+    color: var(--theme-accent-light);
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--theme-primary);
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.rulesDisplay {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.ruleBadge {
+    background: var(--theme-primary);
+    color: var(--theme-text);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid var(--theme-accent-dark);
+}
+
+.playersDisplay {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.playerTag {
+    background: var(--theme-primary);
+    color: var(--theme-text);
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    border-left: 3px solid var(--theme-accent);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.playerAvatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.playerInfo {
+    flex: 1;
+    text-align: left;
+}
+
+.playerTagEmpty {
+    background: var(--theme-primary);
+    color: var(--theme-text-secondary);
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-style: italic;
+    border-left: 3px solid var(--theme-accent-dark);
+}
+
+.actionButtons {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.viewBtn,
+.joinBtn {
+    flex: 1;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.viewBtn {
+    background: var(--theme-primary);
+    color: var(--theme-text);
+    border: 1px solid var(--theme-accent-dark);
+}
+
+.viewBtn:hover {
+    background: var(--theme-primary-light);
+    border-color: var(--theme-accent);
+}
+
+.joinBtn {
+    background: linear-gradient(135deg, var(--theme-accent) 0%, var(--theme-accent-light) 100%);
+    color: white;
+}
+
+.joinBtn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.joinBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.joinBtn.joining {
+    opacity: 0.8;
+}
+
+.inGameBadge {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+@media (prefers-color-scheme: light) {
+    .playersCount {
+        color: white;
+        background: #1b6b1a;
+    }
+
+    .ruleBadge {
+        color: #1b6b1a;
+        border-color: #1b6b1a;
+        font-weight: 600;
+    }
+
+    .viewBtn:hover {
+        border-color: #1b6b1a;
+        color: #1b6b1a;
+    }
+}
+
+@media (max-width: 768px) {
+    .gameCard {
+        padding: 16px;
+    }
+}

@@ -1,0 +1,37 @@
+{
+  "name": "spanish.poker.dice.api",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A REST-API for a Spanish Poker Dice",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "node --watch --env-file=.env server.js",
+    "seed": "node --env-file=.env seed/seed.js"
+  },
+  "keywords": [
+    "Express",
+    "MVCS",
+    "API",
+    "Poker",
+    "Game"
+  ],
+  "author": "Iselin Chantelle Holt",
+  "license": "ISC",
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "express-validator": "^7.3.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.3.2",
+    "nodemailer": "^8.0.8",
+    "ws": "^8.21.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.1.0",
+    "globals": "^17.4.0",
+    "nodemon": "^3.1.14"
+  }
+}

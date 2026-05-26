@@ -1,0 +1,22 @@
+.inputError {
+    border-color: var(--theme-error, #e53e3e);
+}
+
+.checkboxField {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+}
+
+.checkbox {
+    margin-top: 3px;
+    accent-color: var(--theme-accent);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.checkboxLabel {
+    font-size: 0.875rem;
+    color: var(--theme-text-muted);
+    line-height: 1.4;
+}

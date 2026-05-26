@@ -1,0 +1,138 @@
+// Handles request/response for user routes — calls the service layer and sends back JSON
+import userService from "../services/users.service.js";
+import { generateWsToken } from "../middleware/jwt.js";
+import checkPwd from "../utils/hash.js";
+import { signToken, setTokenCookie } from "../middleware/jwt.js";
+import User from "../models/users.js";
+
+// Verifies credentials, signs a JWT and sets it as an httpOnly cookie
+export async function login(req, res) {
+    const { username, pwd } = req.body;
+
+    const user = await User.findOne({ username });
+    if (!user || !checkPwd(pwd, user.pwd)) {
+        return res.status(401).json({ success: false, message: "Invalid username or password" });
+    }
+    if (user.banned) {
+        return res.status(403).json({ success: false, message: "This account has been banned" });
+    }
+    if (!user.emailVerified) {
+        return res.status(403).json({ success: false, message: "Please verify your email before logging in" });
+    }
+
+    const role = user.isAdmin ? "admin" : "registered";
+    const token = signToken(user.userId, role);
+    setTokenCookie(res, token);
+
+    res.json({ success: true, user: { userId: user.userId, username: user.username, elo: user.elo, role } });
+}
+
+// Clears the JWT cookie
+export async function logout(req, res) {
+    res.clearCookie("token");
+    res.json({ success: true, message: "Logged out" });
+}
+
+export async function getWsToken(req, res) {
+    if (!req.userId) return res.status(401).json({ message: "Not logged in" });
+    const wsToken = generateWsToken(req.userId);
+    res.json({ wsToken });
+}
+
+// Returns the currently logged-in user based on the JWT cookie
+export async function getMe(req, res) {
+    if (!req.userId) {
+        return res.status(401).json({ success: false, message: "Not logged in" });
+    }
+
+    const user = await User.findOne({ userId: req.userId });
+    if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.json({ success: true, user: { userId: user.userId, username: user.username, elo: user.elo, role: user.isAdmin ? "admin" : "registered" } });
+}
+
+export async function getAllUsers(req, res) {
+    const users = await userService.getAllUsers(req.query);
+    res.status(200).json({ success: true, data: users });
+}
+
+export async function getUserById(req, res) {
+    const user = await userService.getUserById(req.params.userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.status(200).json({ success: true, data: user });
+}
+
+// Password is hashed automatically in the user model pre-validate hook
+export async function createUser(req, res) {
+    const newUser = await userService.createUser(req.validData);
+    res.status(201).json({ success: true, data: newUser });
+}
+
+export async function updateUser(req, res) {
+    const updUser = await userService.updateUser(req.params.userId, req.validData);
+    if (!updUser) return res.status(404).json({ message: "User not found" });
+    res.status(200).json({ success: true, data: updUser });
+}
+
+// Admin only — hard delete
+export async function deleteUser(req, res) {
+    const delUser = await userService.deleteUser(req.params.userId);
+    if (!delUser) return res.status(404).json({ message: "User not found" });
+    res.status(200).json({ success: true, message: "User deleted successfully" });
+}
+
+export async function getUserGames(req, res) {
+    const games = await userService.getUserGames(req.params.userId, req.query);
+    res.status(200).json({ success: true, data: games });
+}
+
+export async function verifyEmail(req, res) {
+    const { code } = req.query;
+    if (!code) return res.status(400).json({ success: false, message: 'Verification code is required' });
+
+    const user = await userService.verifyEmail(code);
+    if (!user) {
+        return res.status(400).json({ success: false, message: 'Invalid or expired verification code' });
+    }
+    res.json({ success: true, message: 'Email verified successfully' });
+}
+
+export async function resendVerification(req, res) {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ success: false, message: 'email is required' });
+
+    const result = await userService.resendVerification(email);
+    if (result === false) {
+        return res.status(503).json({ success: false, message: 'Failed to send email. Please try again shortly.' });
+    }
+    // null (no account) and true (sent) both return the same message to avoid leaking whether the email exists
+    res.json({ success: true, message: 'If an unverified account exists for that email, a new link has been sent' });
+
+}
+
+export async function forgotPassword(req, res) {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ success: false, message: 'Email is required' });
+
+    await userService.requestPasswordReset(email);
+    // Always same response — don't reveal whether the account exists
+    res.json({ success: true, message: 'If a verified account exists for that email, a reset link has been sent' });
+}
+
+export default {
+    login,
+    logout,
+    getMe,
+    getAllUsers,
+    getUserById,
+    getUserGames,
+    createUser,
+    updateUser,
+    deleteUser,
+    getWsToken,
+    verifyEmail,
+    resendVerification,
+    forgotPassword,
+};

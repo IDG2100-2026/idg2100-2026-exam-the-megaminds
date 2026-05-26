@@ -1,0 +1,76 @@
+/* 
+  Spanish Dice Poker - Component Styling
+  
+  This file is for styling your Web Components and custom design.
+  
+  IMPORTANT:
+  - layout.css contains only the main page layout (header, main, footer, intro section)
+  - Use THIS file (style.css) to style your game components and create your theme:
+    * dice-poker-board
+    * dice-poker-die
+    * dice-poker-monitor
+    * Buttons, game board, dice, player sections, etc.
+  
+  REQUIREMENTS:
+  - Use CSS custom properties (CSS variables) for theming
+  - Ensure all components are responsive (mobile, tablet, desktop)
+  Start adding your styles below:
+*/
+:root {
+  --board-bg-color: #0b5f0b;           /* Card game felt green */
+  --die-bg-color: #f5f5f5;
+  --die-face-color-red: #7d0404;       /* Red for A, K, 8 */
+  --die-face-color-black: #000000;     /* Black for Q, J, 7 */
+  --die-held-color: #fbbf24; 
+  --wood-border: 8px solid rgb(107, 36, 36);          /* Highlight when held */
+  --small-shadow: 1px 1px rgba(0, 0, 0, 0.7);
+  --click-animation: click-pop 0.7s ease-out;
+}
+dice-poker-monitor::part(monitor) {
+  padding: 20px 8px 0px 8px;
+  min-height: 50vh;
+  max-height: 55vh;
+  overflow-y: auto;
+  background-image:
+    url('drhouse.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: rgb(31, 30, 30);
+  background-blend-mode: multiply;
+  color: rgb(59, 170, 15);
+  font-family: monospace;
+  border: 15px solid rgb(160, 155, 155);
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+  margin-bottom: 5%;
+}
+dice-poker-board{
+  color: white;
+  background-color: var(--board-bg-color);
+  padding: 12px;
+  border: var(--wood-border);
+  border-radius: 20px;
+  background-image:
+    url('drhouse-circle.png');
+  background-position: center;
+  background-size: 10%;
+  background-repeat: no-repeat;
+  background-blend-mode: soft-light;
+}
+dice-poker-player{
+  box-shadow: 3px 3px rgba(0, 0, 0, 0.549);
+}
+
+dice-poker-player::part(player){
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 400px;
+}
+dice-poker-player[active]{
+  animation: pulse 5s infinite;
+}
+dice-poker-player[active]:hover{
+  animation-play-state: paused;
+}

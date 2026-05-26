@@ -1,0 +1,67 @@
+.award {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-basis: 100%;
+    margin-top: 8px;
+    padding-top: 10px;
+    border-top: 1px solid var(--theme-accent-dark);
+}
+
+.award__label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--theme-text-secondary);
+}
+
+.award__row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.award__row select {
+    padding: 7px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--theme-accent-dark);
+    background: var(--theme-background-card);
+    color: var(--theme-text);
+    font-size: 0.85rem;
+}
+
+.award__row button {
+    padding: 7px 16px;
+    border-radius: 8px;
+    border: none;
+    background: var(--theme-accent);
+    color: var(--theme-text-inverse);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.award__row button:hover:not(:disabled) {
+    background: var(--theme-accent-light);
+}
+
+.award__row button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.award__hint {
+    margin: 0;
+    color: var(--theme-text-secondary);
+    font-size: 0.8rem;
+    font-style: italic;
+}
+
+.award__error {
+    margin: 0;
+    color: var(--theme-error);
+    font-size: 0.85rem;
+}

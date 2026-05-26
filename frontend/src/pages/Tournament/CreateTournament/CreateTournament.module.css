@@ -1,0 +1,29 @@
+.page {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 32px 20px 64px;
+}
+
+.title {
+    margin: 0 0 24px;
+    font-size: 2rem;
+    text-align: center;
+    color: var(--theme-accent-light);
+}
+
+.status {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 32px 20px;
+    color: var(--theme-text-secondary);
+}
+
+@media (max-width: 768px) {
+    .page {
+        padding: 20px 14px 48px;
+    }
+
+    .title {
+        font-size: 1.5rem;
+    }
+}

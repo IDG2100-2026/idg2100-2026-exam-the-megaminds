@@ -1,0 +1,312 @@
+.header__logo_link{
+    text-decoration: none;
+    color: inherit;
+}
+
+.header__logo_link:visited{
+    color: inherit;
+}
+
+.header__logo{
+    width: 50px;
+}
+.header__logo_container{
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    gap: 5px;
+}
+.header__logo_text{
+    color: var(--theme-accent-light);
+    text-decoration: none;
+    text-shadow: none;
+    box-shadow: none;
+    letter-spacing: inherit;
+    font-weight: 700;
+}
+
+.header__container{
+    display: flex;
+    width: 100%;
+    background-color: var(--theme-primary);
+    justify-content: flex-start;
+    align-items: center;
+    position: relative;
+    box-shadow: 0 4px 16px var(--theme-shadow-medium);
+    transition: background-color 0.3s ease;
+    flex-wrap: wrap;
+}
+.header__nav{
+    color: var(--theme-text);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+}
+.navLink{
+    text-decoration: none;
+    color: var(--theme-text);
+    transition: 0.3s ease-in-out;
+}
+.navLink:visited {
+    color: inherit;
+}
+.navLink.active{
+    color: var(--theme-accent);
+    transform: scale(1.02);
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 6px;
+}
+.header__profile{
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding-right: 20px;
+    margin-left: auto;
+}
+.loginBtn{
+    background: linear-gradient(135deg, var(--theme-accent) 0%, var(--theme-accent-light) 100%);
+    color: var(--theme-text-inverse);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    text-decoration: none;
+    display: inline-block;
+    box-shadow: 0 2px 8px var(--theme-shadow-light);
+}
+.loginBtn:hover{
+    background: linear-gradient(135deg, var(--theme-accent-light) 0%, var(--theme-accent) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--theme-shadow-medium);
+}
+
+.logoutBtn {
+    background: linear-gradient(135deg, var(--theme-accent) 0%, var(--theme-accent-light) 100%);
+    color: var(--theme-text-inverse);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    display: inline-block;
+    box-shadow: 0 2px 8px var(--theme-shadow-light);
+}
+
+.logoutBtn:hover {
+    background: linear-gradient(135deg, var(--theme-accent-light) 0%, var(--theme-accent) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--theme-shadow-medium);
+}
+
+.registerBtn {
+    background: var(--theme-background);
+    color: var(--theme-accent);
+    border: 2px solid var(--theme-accent);
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    text-decoration: none;
+    display: inline-block;
+    box-shadow: 0 2px 8px var(--theme-shadow-light);
+}
+
+.registerBtn:hover {
+    background: var(--theme-accent);
+    color: var(--theme-text-inverse);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--theme-shadow-medium);
+}
+
+.userGreeting {
+    color: var(--theme-text-secondary);
+    font-weight: 500;
+    font-size: 14px;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+}
+
+.welcomeText {
+    color: var(--theme-text-secondary);
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.usernameLink {
+    color: var(--theme-text-secondary);
+    font-weight: 500;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    padding: 6px 12px;
+    border-radius: 6px;
+}
+
+.usernameLink:hover {
+    color: var(--theme-accent-light);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.profilePicLink {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.profilePicLink:hover {
+    transform: scale(1.1);
+}
+
+.profilePic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    transition: all 0.3s ease-in-out;
+    object-fit: cover;
+    box-shadow: 0 2px 8px var(--theme-shadow-light);
+}
+
+[data-theme="light"] .profilePic {
+    box-shadow: none;
+}
+
+[data-theme="light"] .profilePic:hover {
+    box-shadow: none;
+}
+
+[data-theme="light"] .welcomeText {
+    text-shadow: none;
+}
+
+/* Hamburger Menu */
+.hamburger {
+    display: none;
+    flex-direction: column;
+    background: none;
+    border: none;
+    cursor: pointer;
+    gap: 5px;
+    padding: 10px;
+    margin-right: 10px;
+}
+
+.hamburger span {
+    width: 25px;
+    height: 3px;
+    background-color: var(--theme-text);
+    border-radius: 3px;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transform-origin: center center;
+}
+
+.hamburger.active span:nth-child(1) {
+    transform: rotate(45deg) translateY(11px);
+}
+
+.hamburger.active span:nth-child(2) {
+    opacity: 0;
+    transform: scale(0);
+}
+
+.hamburger.active span:nth-child(3) {
+    transform: rotate(-45deg) translateY(-11px);
+}
+
+/* Mobile Menu */
+.mobile__menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background-color: var(--theme-primary);
+    border-bottom: 1px solid var(--theme-accent);
+    flex-direction: column;
+    gap: 10px;
+    padding: 15px 20px;
+    box-shadow: 0 4px 8px var(--theme-shadow-medium);
+    z-index: 1000;
+}
+
+.mobile__menu .navLink {
+    padding: 10px;
+    border-radius: 6px;
+    display: block;
+}
+
+.mobile__menu .navLink:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.mobile__menu .navLink.active {
+    transform: none;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Media Queries for Responsiveness */
+@media (max-width: 768px) {
+    .hamburger {
+        display: flex;
+    }
+
+    .mobile__menu {
+        display: flex;
+    }
+
+    .header__nav {
+        display: none;
+    }
+
+    .header__logo_text {
+        display: none;
+    }
+
+    .header__profile {
+        gap: 10px;
+        padding-right: 10px;
+    }
+
+    .usernameLink {
+        display: none;
+    }
+
+    .logoutBtn,
+    .loginBtn {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header__logo {
+        width: 40px;
+    }
+
+    .header__logo_container {
+        padding-left: 10px;
+        gap: 5px;
+    }
+
+    .profilePic {
+        width: 32px;
+        height: 32px;
+    }
+
+    .header__profile {
+        gap: 8px;
+        padding-right: 8px;
+    }
+}

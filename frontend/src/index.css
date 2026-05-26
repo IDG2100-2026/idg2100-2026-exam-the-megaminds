@@ -1,0 +1,70 @@
+:root {
+  /* Theme-variable fallbacks — the theme system (applyThemeToDocument) overrides
+     these at runtime from config/themes.js. Defined here so vars resolve before
+     JS runs and as a safety net. Values mirror the dark theme. */
+  --theme-primary: #0D150E;
+  --theme-primary-light: #1a2618;
+
+  --theme-text: #E8E8E8;
+  --theme-text-secondary: #B0B0B0;
+  --theme-text-inverse: #0D150E;
+
+  --theme-background: #0D150E;
+  --theme-background-alt: #1a2618;
+  --theme-background-card: rgba(13, 21, 14, 0.6);
+
+  --theme-accent: #5CB856;
+  --theme-accent-light: #6FD86F;
+  --theme-accent-dark: #3D8A3A;
+
+  --theme-shadow-light: rgba(0, 0, 0, 0.08);
+  --theme-shadow-medium: rgba(0, 0, 0, 0.15);
+  --theme-shadow-strong: rgba(0, 0, 0, 0.25);
+  --theme-shadow-focus: rgba(0, 0, 0, 0.35);
+
+  --theme-success: #5CB856;
+  --theme-warning: #FFB84D;
+  --theme-error: #FF6B6B;
+  --theme-info: #667eea;
+
+  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
+
+  font: 16px/1.5 var(--sans);
+  color: var(--theme-text);
+  background: var(--theme-background);
+  color-scheme: light dark;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+#root {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--heading);
+  color: var(--theme-text);
+  margin: 0 0 0.5em;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--theme-accent);
+}

@@ -1,0 +1,102 @@
+.controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: var(--theme-primary-light);
+    border: 1px dashed var(--theme-accent-dark);
+}
+
+.controls__label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--theme-text-secondary);
+    margin-right: 4px;
+}
+
+.controls button {
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.controls__edit {
+    background: var(--theme-accent);
+    color: var(--theme-text-inverse);
+}
+
+.controls__edit:hover {
+    background: var(--theme-accent-light);
+}
+
+.controls__reopen {
+    background: transparent;
+    color: var(--theme-success);
+    border-color: var(--theme-success) !important;
+}
+
+.controls__reopen:hover {
+    background: var(--theme-success);
+    color: var(--theme-text-inverse);
+}
+
+.controls__cancel {
+    background: transparent;
+    color: var(--theme-warning);
+    border-color: var(--theme-warning) !important;
+}
+
+.controls__cancel:hover {
+    background: var(--theme-warning);
+    color: var(--theme-text-inverse);
+}
+
+.controls__start {
+    background: var(--theme-success);
+    color: var(--theme-text-inverse);
+}
+
+.controls__start:hover {
+    filter: brightness(1.1);
+}
+
+.controls__advance {
+    background: var(--theme-info);
+    color: var(--theme-text-inverse);
+}
+
+.controls__advance:hover {
+    filter: brightness(1.1);
+}
+
+.controls__delete {
+    background: transparent;
+    color: var(--theme-error);
+    border-color: var(--theme-error) !important;
+}
+
+.controls__error {
+    flex-basis: 100%;
+    margin: 4px 0 0;
+    color: var(--theme-error);
+    font-size: 0.85rem;
+}
+
+.controls__delete:hover {
+    background: var(--theme-error);
+    color: var(--theme-text-inverse);
+}
+
+@media (max-width: 768px) {
+    .controls {
+        gap: 8px;
+    }
+}

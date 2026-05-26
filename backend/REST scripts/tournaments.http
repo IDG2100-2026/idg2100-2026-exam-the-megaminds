@@ -1,0 +1,142 @@
+### ============================================================
+###  TOURNAMENTS – Spanish Poker Dice API
+###  Base: http://localhost:8476/api
+###
+###  SETUP: Run "GET /api/tournaments" first, then copy the
+###         tournamentId of a tournament into @tid.
+###         Fill in a real userId for @uid (from GET /users).
+### ============================================================
+
+@baseUrl = http://localhost:8476/api
+
+# Replace with a real tournamentId from GET /tournaments
+@tid = tournament-test-01
+
+# Replace with a real userId from GET /users
+@uid = 4543286646722379
+@creatorId = 8404373473686763
+
+# After running /start, GET /tournaments/{{tid}} and copy a gameId from rounds[0].games
+@tournamentGameId = t-tournament-test-01-r1-0
+# Copy the loser's userId from the same game's players array
+@loserUid = 8404373473686763
+
+
+### 1. Get all tournaments
+GET {{baseUrl}}/tournaments
+
+
+### 2. Get a single tournament
+GET {{baseUrl}}/tournaments/{{tid}}
+
+
+### 3. Get comments for a tournament
+GET {{baseUrl}}/tournaments/{{tid}}/comments
+
+
+### 4. Create a new tournament
+# Requires: admin
+POST {{baseUrl}}/tournaments
+Content-Type: application/json
+x-user-role: admin
+
+{
+    "tournamentId": "tournament-test-01",
+    "title": "Summer Test Cup",
+    "description": "A test tournament created via HTTP script.",
+    "format": {
+        "bestof": 5,
+        "straightallowed": true,
+        "roundTime": 10
+    },
+    "minPlayers": 2,
+    "maxPlayers": 8,
+    "startDate": "2026-06-01T00:00:00.000Z",
+    "status": "pending",
+    "createdBy": {{creatorId}},
+    "trophy": {
+        "title": "Summer Test Trophy"
+    }
+}
+
+
+### 5. Join a tournament
+# Requires: registered or admin
+# Changed from: POST /tournaments/{{tid}}/join
+POST {{baseUrl}}/tournaments/{{tid}}/participants
+Content-Type: application/json
+x-user-role: registered
+
+{
+    "userId": {{uid}}
+}
+
+
+### 6. Post a comment on a tournament
+# Requires: registered or admin
+POST {{baseUrl}}/tournaments/{{tid}}/comments
+Content-Type: application/json
+x-user-role: registered
+
+{
+    "userId": {{uid}},
+    "text": "Looking forward to this tournament!"
+}
+
+
+### 7. Update a tournament (description, status, player limits)
+# Requires: admin
+PATCH {{baseUrl}}/tournaments/{{tid}}
+Content-Type: application/json
+x-user-role: admin
+
+{
+    "description": "Updated description for this tournament.",
+    "status": "in-progress"
+}
+
+
+### 8. Delete a tournament
+# Requires: admin
+DELETE {{baseUrl}}/tournaments/{{tid}}
+x-user-role: admin
+
+
+### 9. Start a tournament (randomly pairs participants into round 1 games)
+# Requires: admin — tournament must be "pending" and have enough players
+# Changed from: POST /tournaments/{{tid}}/start
+POST {{baseUrl}}/tournaments/{{tid}}/rounds
+x-user-role: admin
+
+
+### 9b. Record the result of a tournament game
+# Do this for every game in the current round before advancing.
+# Get the gameIds from GET /tournaments/{{tid}} → rounds[currentRound-1].
+PATCH {{baseUrl}}/games/{{tournamentGameId}}/result
+Content-Type: application/json
+x-user-role: registered
+
+{
+    "winnerId": {{uid}},
+    "loserId": {{loserUid}},
+    "winnerScore": 3,
+    "loserScore": 1
+}
+
+
+### 10. Advance to the next round (pairs winners of the current round)
+# Requires: admin — all games in the current round must be "finished" first
+# Changed from: POST /tournaments/{{tid}}/advance
+POST {{baseUrl}}/tournaments/{{tid}}/rounds/next
+x-user-role: admin
+
+
+### 11. Award the tournament winner (records winner + grants trophy to their profile)
+# Requires: admin — use this when only one player remains after advancing
+PATCH {{baseUrl}}/tournaments/{{tid}}/winner
+Content-Type: application/json
+x-user-role: admin
+
+{
+    "winnerId": {{uid}}
+}

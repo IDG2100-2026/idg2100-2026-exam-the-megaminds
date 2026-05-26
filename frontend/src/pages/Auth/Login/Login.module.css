@@ -1,0 +1,9 @@
+.forgotLink {
+    font-size: 0.8rem;
+    color: var(--theme-accent);
+    text-decoration: none;
+}
+
+.forgotLink:hover {
+    text-decoration: underline;
+}
