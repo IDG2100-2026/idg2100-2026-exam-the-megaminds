@@ -1,5 +1,7 @@
 import { useParams } from "react-router";
 import { useTournament } from "@/hooks/useTournament";
+import { useAppContext } from "@/context/AppContext";
+import OngoingGames from "@/components/OngoingGames/OngoingGames";
 import StatusBadge from "@/components/TournamentStatusBadge/TournamentStatusBadge";
 import TournamentRules from "@/components/TournamentRules/TournamentRules";
 import TournamentPlayerList from "@/components/TournamentPlayersList/TournamentPlayersList";
@@ -16,6 +18,7 @@ export default function TournamentDetail() {
     const { tournamentid } = useParams();
     const { tournament, loading, error, refresh } = useTournament(tournamentid)
     const authorName = useUserName(tournament?.createdBy);
+    const { user } = useAppContext();
     if (loading) return <p className={styles.detail__status}>Loading Tournament...</p>;
     if (error) return <p className={styles.detail__status}>Error: {error}</p>;
     if (!tournament) return <p className={styles.detail__status}>Tournament not found.</p>;
@@ -46,6 +49,12 @@ export default function TournamentDetail() {
                 <section className={styles.detail__section}>
                     <h2 className={styles.detail__heading}>Standings</h2>
                     <TournamentStandings tournamentId={tournament.tournamentId} />
+                </section>
+            )}
+            {status === "in-progress" && !participants?.includes(user?.userId) && (
+                <section className={styles.detail__section}>
+                    <h2 className={styles.detail__heading}>Ongoing games</h2>
+                    <OngoingGames tournament={tournament} />
                 </section>
             )}
 

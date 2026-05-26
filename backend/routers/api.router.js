@@ -61,6 +61,7 @@ apiRouter.get("/tournaments", tournamentController.getAllTournaments);
 apiRouter.get("/tournaments/:tournamentId", tournamentValidate.validateTournamentId(), validate, tournamentController.getTournamentById);
 apiRouter.get("/tournaments/:tournamentId/comments", tournamentValidate.validateTournamentId(), validate, tournamentController.getTournamentComments);
 apiRouter.get("/tournaments/:tournamentId/standings", tournamentValidate.validateTournamentId(), validate, tournamentController.getStandings);
+apiRouter.get("/tournaments/:tournamentId/games", tournamentValidate.validateTournamentId(), validate, tournamentController.getTournamentGames);
 
 
 apiRouter.post("/tournaments", requireAdmin, tournamentValidate.validateTournamentCreate(), validate, tournamentController.createTournament);

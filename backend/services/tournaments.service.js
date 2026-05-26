@@ -88,6 +88,11 @@ export async function getTournamentComments(tournamentId, { sort = "createdAt", 
         .skip(Number(skip));
 }
 
+export async function getTournamentGames(tournamentId) {
+    return Game.find({ tournamentId });
+}
+
+
 export async function getStandings(tournamentId){
     const tournament = await Tournament.findOne({ tournamentId });
     if (!tournament) { const e = new Error("Tournament not found"); e.status = 404; throw e; }
@@ -228,5 +233,6 @@ export default {
     advanceTournament,
     awardWinner,
     leaveTournament,
-    getStandings
+    getStandings,
+    getTournamentGames
 };
