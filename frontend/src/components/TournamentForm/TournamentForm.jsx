@@ -8,11 +8,24 @@ const EMPTY = {
     minPlayers: 2,
     maxPlayers: 8,
     startDate: "",
+    buyIn: 0,
+    eloRange: { min: "", max: "" },   // "" = open on that side
     trophy: { title: "", imageUrl: "" },
 };
 
+
 export default function TournamentForm({ initialValues, onSubmit, submitLabel = "Create tournament" }) {
-    const [values, setValues] = useState({ ...EMPTY, ...initialValues });
+    const [values, setValues] = useState(() => {
+        const merged = { ...EMPTY, ...initialValues };
+        return {
+            ...merged,
+            buyIn: merged.buyIn ?? 0,
+            eloRange: {
+                min: merged.eloRange?.min ?? "",
+                max: merged.eloRange?.max ?? "",
+            },
+        };
+    });
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState(null);
 
@@ -33,6 +46,11 @@ export default function TournamentForm({ initialValues, onSubmit, submitLabel = 
                 ...values,
                 minPlayers: Number(values.minPlayers),
                 maxPlayers: Number(values.maxPlayers),
+                buyIn: Number(values.buyIn) || 0,
+                eloRange: {
+                    min: values.eloRange.min === "" ? null : Number(values.eloRange.min),
+                    max: values.eloRange.max === "" ? null : Number(values.eloRange.max),
+                },
                 startDate: new Date(values.startDate).toISOString(),
             });
         } catch (err) {
@@ -91,6 +109,20 @@ export default function TournamentForm({ initialValues, onSubmit, submitLabel = 
                 <label className={styles.field}>
                     <span>Max players</span>
                     <input type="number" min={2} value={values.maxPlayers} onChange={set("maxPlayers")} required />
+                </label>
+            </div>
+            <div className={styles.row}>
+                <label className={styles.field}>
+                    <span>Buy-in (points to enter)</span>
+                    <input type="number" min={0} value={values.buyIn} onChange={set("buyIn")} />
+                </label>
+                <label className={styles.field}>
+                    <span>Min Elo (blank = open)</span>
+                    <input type="number" min={0} value={values.eloRange.min} onChange={setNested("eloRange", "min")} />
+                </label>
+                <label className={styles.field}>
+                    <span>Max Elo (blank = open)</span>
+                    <input type="number" min={0} value={values.eloRange.max} onChange={setNested("eloRange", "max")} />
                 </label>
             </div>
 

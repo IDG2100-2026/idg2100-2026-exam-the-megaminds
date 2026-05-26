@@ -26,7 +26,7 @@ export async function requireEmailVerified(req, res, next) {
     }
     const user = await User.findOne({ userId: req.userId }).select('emailVerified');
     if (!user || !user.emailVerified) {
-        return req.status(403).json({ success: false, message: 'Please verify your email before playing' });
+        return res.status(403).json({ success: false, message: 'Please verify your email before playing' });
     }
     next();
 }

@@ -18,7 +18,7 @@ export default function TournamentDetail() {
     if(!tournament) return <p className={styles.detail__status}>Tournament not found.</p>;
 
     const {title, description, status, startDate, format,
-        minPlayers, maxPlayers, participants, trophy} = tournament
+        minPlayers, maxPlayers, participants, trophy, buyIn, eloRange} = tournament
 
     return(
         <main className={styles.detail}>
@@ -42,7 +42,7 @@ export default function TournamentDetail() {
 
             <section className={styles.detail__section}>
                 <h2 className={styles.detail__heading}>Rules</h2>
-                <TournamentRules format={format} minPlayers={minPlayers} maxPlayers={maxPlayers}/>
+                <TournamentRules format={format} minPlayers={minPlayers} maxPlayers={maxPlayers} buyIn={buyIn} eloRange={eloRange}/>
             </section>
 
             <section className={styles.detail__section}>

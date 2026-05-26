@@ -27,27 +27,28 @@ export async function updateGame(gameId, status) {
     );
 }
 
-export async function recordGameResult(gameId, { winnerId, loserId, winnerScore, loserScore }) {
-    const result = await Game.findOneAndUpdate(
-        { gameId: gameId },
-        { 
-            winnerId,
-            status: "finished",
-            // Dot notation to update a field inside each player subdocument in the players array
-            "players.$[winner].score": winnerScore,
-            "players.$[loser].score": loserScore
-        },
-        { 
-            returnDocument: "after",
-            // arrayFilters tells Mongoose which array element each positional placeholder refers to
-            arrayFilters: [
-                { "winner.userId": winnerId },
-                { "loser.userId": loserId }
-            ]
-        }
+export async function recordGameResult(gameId, { players, roundTime }) {
+    // Determine winner from highest score
+    const maxScore = Math.max(...players.map(p => p.score));
+    const winner = players.find(p => p.score === maxScore);
+
+    // Build arrayFilters and score updates for each player
+    const scoreUpdates = Object.fromEntries(
+        players.map((p, i) => [`players.$[p${i}].score`, p.score])
     );
-    // Recalculate ELO ratings for both players after the result is saved
-    await updateElo(winnerId, loserId);
+    const arrayFilters = players.map((p, i) => ({ [`p${i}.userId`]: p.userId }));
+
+    const result = await Game.findOneAndUpdate(
+        { gameId },
+        {
+            winnerId: winner.userId,
+            status: "finished",
+            ...scoreUpdates
+        },
+        { returnDocument: "after", arrayFilters }
+    );
+
+    await updateElo(players, roundTime);
     return result;
 }
 

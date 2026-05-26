@@ -68,17 +68,18 @@
     width: 100%;
     padding: 0.6rem 0.875rem;
     background: var(--theme-bg);
-    border: 1px solid var(--theme-border);
+    border: 1px solid var(--theme-accent-dark);
     border-radius: 8px;
     color: var(--theme-text);
     font-size: 0.95rem;
     outline: none;
-    transition: border-color 0.15s;
+    transition: border-color 0.15s, box-shadow 0.15s;
     box-sizing: border-box;
 }
 
 .input:focus {
     border-color: var(--theme-accent);
+    box-shadow: 0 0 0 3px var(--theme-shadow-light);
 }
 
 .revealBtn {
@@ -110,6 +111,10 @@
     cursor: pointer;
     transition: opacity 0.15s;
     margin-top: 0.25rem;
+}
+
+.submitBtn:hover:not(:disabled) {
+    background: var(--theme-accent-light);
 }
 
 .submitBtn:disabled {

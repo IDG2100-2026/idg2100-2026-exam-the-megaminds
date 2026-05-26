@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { useAppContext } from "@/context/AppContext";
 import { gameService } from "@/services/api";
+import { enrichGames } from "@/utils/enrichPlayers";
 import placeholderPic from "@/assets/profile-pic-placeholder.svg";
 import LobbyGameCard from "@/components/LobbyGameCard/LobbyGameCard";
 import styles from "./LobbyPage.module.css";
@@ -34,19 +35,23 @@ export default function LobbyPage() {
                 setLoading(true);
                 const data = await gameService.getAllGames(1, 100);
 
+                const allGames = data.data || [];
+
                 // Show only joinable games: pending games waiting for an opponent
-                const pendingGames = (data.data || []).filter(game =>
+                const pending = allGames.filter(game =>
                     game.status === 'pending' && game.players.length < 2
                 );
-                setGames(pendingGames);
+                const enriched = await enrichGames(pending);
+                setGames(enriched);
 
                 // Get user's current active games
                 if (user) {
-                    const userCurrentGames = (data.data || []).filter(game =>
+                    const active = allGames.filter(game =>
                         game.players.some(p => p.userId === user.userId) &&
-                        game.status !== 'finished'
+                        game.status !== 'complete'
                     );
-                    setUserGames(userCurrentGames);
+                    const enrichedActive = await enrichGames(active);
+                    setUserGames(enrichedActive);
                 }
             } catch (err) {
                 setError('Failed to load games');
@@ -64,7 +69,8 @@ export default function LobbyPage() {
 
         // Filter by Elo
         result = result.filter(game => {
-            const avgElo = game.players.reduce((sum, p) => sum + p.elo, 0) / game.players.length;
+            if (!game.players.length) return true;
+            const avgElo = game.players.reduce((sum, p) => sum + (p.elo ?? 1000), 0) / game.players.length;
             return avgElo >= filters.minElo && avgElo <= filters.maxElo;
         });
 
@@ -91,15 +97,15 @@ export default function LobbyPage() {
                 break;
             case "highest-elo":
                 result.sort((a, b) => {
-                    const avgA = a.players.reduce((sum, p) => sum + p.elo, 0) / a.players.length;
-                    const avgB = b.players.reduce((sum, p) => sum + p.elo, 0) / b.players.length;
+                    const avgA = a.players.reduce((sum, p) => sum + (p.elo ?? 1000), 0) / (a.players.length || 1);
+                    const avgB = b.players.reduce((sum, p) => sum + (p.elo ?? 1000), 0) / (b.players.length || 1);
                     return avgB - avgA;
                 });
                 break;
             case "lowest-elo":
                 result.sort((a, b) => {
-                    const avgA = a.players.reduce((sum, p) => sum + p.elo, 0) / a.players.length;
-                    const avgB = b.players.reduce((sum, p) => sum + p.elo, 0) / b.players.length;
+                    const avgA = a.players.reduce((sum, p) => sum + (p.elo ?? 1000), 0) / (a.players.length || 1);
+                    const avgB = b.players.reduce((sum, p) => sum + (p.elo ?? 1000), 0) / (b.players.length || 1);
                     return avgA - avgB;
                 });
                 break;
@@ -161,19 +167,20 @@ export default function LobbyPage() {
                     <h2>Your Current Games</h2>
                     <div className={styles.yourGamesList}>
                         {userGames.map(game => {
-                            const avgElo = (game.players.reduce((sum, p) => sum + p.elo, 0) / game.players.length).toFixed(0);
+                            const eloSum = game.players.reduce((sum, p) => sum + (p.elo ?? 0), 0);
+                            const avgElo = game.players.length > 0 ? (eloSum / game.players.length).toFixed(0) : '—';
                             const statusLabel = game.status === 'pending' ? 'Waiting for Opponent' : 'In Progress';
                             const statusBadgeClass = game.status === 'pending' ? styles.pendingBadge : styles.inProgressBadge;
 
                             return (
-                                <div key={game._id} className={styles.yourGameCard}>
+                                <div key={game.gameId} className={styles.yourGameCard}>
                                     <div className={styles.gameInfo}>
                                         <div className={styles.gameStatus}>
                                             <span className={statusBadgeClass}>{statusLabel}</span>
                                             <span className={styles.eloInfo}>Avg Elo: {avgElo}</span>
                                         </div>
                                         <div className={styles.gameRules}>
-                                            Best of {game.rules.bestOf} | {game.rules.allowedStraights ? 'Straights' : 'No Straights'} | {game.rules.roundTime}s
+                                            Best of {game.rules.bestof} | {game.rules.straightallowed ? 'Straights' : 'No Straights'} | {game.rules.roundTime}s
                                         </div>
                                         <div className={styles.playersInfo}>
                                             {game.players.map((player, idx) => (
@@ -188,7 +195,7 @@ export default function LobbyPage() {
                                             ))}
                                         </div>
                                     </div>
-                                    <button className={styles.viewGameBtn} onClick={() => handleViewGame(game._id)}>
+                                    <button className={styles.viewGameBtn} onClick={() => handleViewGame(game.gameId)}>
                                         View
                                     </button>
                                 </div>

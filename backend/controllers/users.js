@@ -50,7 +50,7 @@ export async function getMe(req, res) {
         return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    res.json({ success: true, user: { userId: user.userId, username: user.username, elo: user.elo, role: user.isAdmin ? "admin" : "registered" } });
+    res.json({ success: true, user: { userId: user.userId, username: user.username, elo: user.elo, role: user.isAdmin ? "admin" : "registered", profilePicture: user.profilePicture || null } });
 }
 
 export async function getAllUsers(req, res) {
@@ -121,6 +121,27 @@ export async function forgotPassword(req, res) {
     res.json({ success: true, message: 'If a verified account exists for that email, a reset link has been sent' });
 }
 
+export async function resetPassword(req, res) {
+    const { code, pwd } = req.body;
+    if (!code || !pwd) return res.status(400).json({ success: false, message: 'Code and new password are required' });
+
+    const result = await userService.resetPassword(code, pwd);
+    if (!result) {
+        return res.status(400).json({ success: false, message: 'Invalid or expired reset link' });
+    }
+    res.json({ success: true, message: 'Password reset successfully' });
+}
+
+export async function uploadUserAvatar(req, res) {
+    if (!req.file) return res.status(400).json({ success: false, message: 'No image file received'});
+
+    const profilePicture = `/uploads/avatars/${req.file.filename}`;
+    const updated = await userService.updateUser(req.params.userId, { profilePicture });
+    if (!updated) return res.status(400).json({ success: false, message: 'User not found' });
+
+    res.json({ success: true, profilePicture });
+}
+
 export default {
     login,
     logout,
@@ -135,4 +156,6 @@ export default {
     verifyEmail,
     resendVerification,
     forgotPassword,
+    resetPassword,
+    uploadUserAvatar
 };

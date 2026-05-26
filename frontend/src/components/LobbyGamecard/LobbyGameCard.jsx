@@ -2,7 +2,9 @@ import placeholderPic from "@/assets/profile-pic-placeholder.svg";
 import styles from "./LobbyGameCard.module.css";
 
 export default function LobbyGameCard({ game, user, joiningId, onViewGame, onJoinGame }) {
-    const avgElo = (game.players.reduce((sum, p) => sum + p.elo, 0) / game.players.length).toFixed(0);
+    const avgElo = game.players.length > 0
+        ? (game.players.reduce((sum, p) => sum + (p.elo ?? 1000), 0) / game.players.length).toFixed(0)
+        : '—';
     const isUserInGame = user && game.players.some(p => p.userId === user.userId);
     const canJoin = game.players.length < 2 && !isUserInGame;
 
@@ -14,8 +16,8 @@ export default function LobbyGameCard({ game, user, joiningId, onViewGame, onJoi
             </div>
 
             <div className={styles.rulesDisplay}>
-                <span className={styles.ruleBadge}>Best of {game.rules.bestOf}</span>
-                <span className={styles.ruleBadge}>{game.rules.allowedStraights ? "Straights" : "No Straights"}</span>
+                <span className={styles.ruleBadge}>Best of {game.rules.bestof}</span>
+                <span className={styles.ruleBadge}>{game.rules.straightallowed ? "Straights" : "No Straights"}</span>
                 <span className={styles.ruleBadge}>{game.rules.roundTime}s</span>
             </div>
 
@@ -38,16 +40,16 @@ export default function LobbyGameCard({ game, user, joiningId, onViewGame, onJoi
             </div>
 
             <div className={styles.actionButtons}>
-                <button className={styles.viewBtn} onClick={() => onViewGame(game._id)}>
+                <button className={styles.viewBtn} onClick={() => onViewGame(game.gameId)}>
                     View Game
                 </button>
                 {canJoin && (
                     <button
                         className={`${styles.joinBtn} ${joiningId === game._id ? styles.joining : ""}`}
                         onClick={() => onJoinGame(game._id)}
-                        disabled={joiningId === game._id}
+                        disabled={joiningId === game.gameId}
                     >
-                        {joiningId === game._id ? "Joining..." : "Join"}
+                        {joiningId === game.gameId ? "Joining..." : "Join"}
                     </button>
                 )}
                 {isUserInGame && <span className={styles.inGameBadge}>✓ Joined</span>}

@@ -74,39 +74,23 @@ export function validateGameCreate(){
 
 export function validateGameResult(){
     return [
-        body("winnerId")
-            .isInt({ min: 0, max: Number.MAX_SAFE_INTEGER })
-            .withMessage("Winner ID must be a valid integer")
+        body("players")
+            .isArray({ min: 2 })
+            .withMessage("players must be an array with at least 2 entries")
             .bail()
-            // DB check — confirm the winner user exists
-            .custom(async (winnerId) => {
-                const user = await User.findOne({ userId: winnerId });
-                if (!user) {
-                    throw new Error("Winner user does not exist");
-                }
-            }),
-        
-        body("loserId")
-            .isInt({ min: 0, max: Number.MAX_SAFE_INTEGER })
-            .withMessage("Loser ID must be a valid integer")
-            .bail()
-            // DB check — confirm the loser user exists
-            .custom(async (loserId) => {
-                const user = await User.findOne({ userId: loserId });
-                if (!user) {
-                    throw new Error("Loser user does not exist");
+            .custom(async (players) => {
+                for (const p of players) {
+                    if (typeof p.userId !== "number") throw new Error("Each player must have a numeric userId");
+                    if (typeof p.score !== "number" || p.score < 0) throw new Error("Each player must have a non-negative score");
+                    const user = await User.findOne({ userId: p.userId });
+                    if (!user) throw new Error(`User with ID ${p.userId} does not exist`);
                 }
             }),
 
-        body("loserScore")
-            .optional()
-            .isInt({ min: 0 })
-            .withMessage("Loser score must be a positive integer"),
-        
-        body("winnerScore")
-            .optional()
-            .isInt({ min: 0 })
-            .withMessage("Winner score must be a positive integer")
+        body("roundTime")
+            .isInt()
+            .isIn(GAME_ROUND_TIME_OPTIONS)
+            .withMessage(`roundTime must be one of: ${GAME_ROUND_TIME_OPTIONS.join(", ")}`)
     ];
 }
 

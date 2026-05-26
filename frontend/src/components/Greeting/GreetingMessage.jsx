@@ -8,9 +8,7 @@ export default function GreetingComponent() {
     const navigate = useNavigate();
 
     // Get profile picture URL
-    const profilePicUrl = user?.profilePicture 
-    ? `http://localhost:8476${user.profilePicture}`
-    : ProfilePicPlaceholder;
+    const profilePicUrl = user?.profilePicture || ProfilePicPlaceholder;
 
     // Registered User View
     if (user && !isAnonymous) {

@@ -7,6 +7,8 @@ import nonApiRouter from "./routers/non.api.router.js";
 import apiRouter from "./routers/api.router.js";
 import { connectDB, disconnectDB } from "./configs/db.js";
 import { errorHandler } from "./middleware/error.js";
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 // getting mongoose to connect to mongoDB
 await connectDB();
@@ -20,6 +22,9 @@ diceApp.use(cors({
     credentials: true // credentials: true lets cookies be sent cross-origin
 }));
 diceApp.use(cookieParser()); // handles non-API routes
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+diceApp.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // mounting routers
 diceApp.use("/", nonApiRouter);
