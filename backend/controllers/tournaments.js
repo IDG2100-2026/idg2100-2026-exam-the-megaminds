@@ -42,6 +42,11 @@ export async function leaveTournament(req, res) {
     res.status(200).json({ success: true, data: tournament });
 }
 
+export async function getStandings(req, res) {
+    const standings = await tournamentService.getStandings(req.params.tournamentId);
+    res.status(200).json({ success: true, data: standings });
+}
+
 export async function getTournamentComments(req, res) {
     const comments = await tournamentService.getTournamentComments(req.params.tournamentId, req.query);
     res.status(200).json({ success: true, data: comments });
@@ -72,5 +77,5 @@ export default {
     getAllTournaments, getTournamentById, getTournamentComments,
     createTournament, createTournamentComment, joinTournament,
     updateTournament, deleteTournament, awardWinner, startTournament, advanceTournament,
-    leaveTournament
+    leaveTournament, getStandings 
 };

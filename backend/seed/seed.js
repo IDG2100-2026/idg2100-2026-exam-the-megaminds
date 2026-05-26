@@ -126,6 +126,21 @@ async function seed() {
             rules: { bestof: 7, straightallowed: false, roundTime: 5 },
             players: [{ userId: u2.userId }, { userId: u11.userId }],
             status: "pending"
+        },
+        // Nordic Masters Cup (tournament-002) — round 1: one finished, one still playing
+        {
+            gameId: "t-tournament-002-r1-0",
+            rules: { bestof: 7, straightallowed: true, roundTime: 15 },
+            players: [{ userId: u1.userId, score: 2 }, { userId: u3.userId, score: 3 }],
+            winnerId: u3.userId, status: "finished",
+            tournamentId: "tournament-002"
+        },
+        {
+            gameId: "t-tournament-002-r1-1",
+            rules: { bestof: 7, straightallowed: true, roundTime: 15 },
+            players: [{ userId: u4.userId, score: 1 }, { userId: u6.userId, score: 2 }],
+            status: "in-progress",
+            tournamentId: "tournament-002"
         }
     ]);
     console.log("Created games.");
@@ -172,6 +187,13 @@ async function seed() {
             startDate: new Date("2026-04-02"),
             status: "in-progress",
             participants: [u1.userId, u3.userId, u4.userId, u6.userId],
+            buyIn: 50,
+            eloRange: { min: 1500, max: null },
+            games: ["t-tournament-002-r1-0", "t-tournament-002-r1-1"],
+            currentRound: 1,
+            rounds: [
+                { roundNumber: 1, games: ["t-tournament-002-r1-0", "t-tournament-002-r1-1"], byeUserId: null }
+            ],
             trophy: { title: "Nordic Masters Trophy" },
             createdBy: u1.userId
         }

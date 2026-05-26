@@ -136,6 +136,8 @@ export const tournamentService = {
 
     awardWinner: (tournamentId, winnerId) =>
         apiCall('PATCH', `/api/tournaments/${tournamentId}/winner`, { winnerId }),
+    getStandings: (tournamentId) =>
+        apiCall('GET', `/api/tournaments/${tournamentId}/standings`),
 };
 
 // Comments are scoped to either a game or a tournament

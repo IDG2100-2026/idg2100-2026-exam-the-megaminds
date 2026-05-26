@@ -8,6 +8,7 @@ import TournamentComments from "@/components/TournamentComments/TournamentCommen
 import AdminTournamentControls from "@/components/AdminTournamentControls/AdminTournamentControls";
 import TournamentCountdown from "@/components/TournamentCountdown/TournamentCountdown";
 import { useUserName } from "@/hooks/useUsername";
+import TournamentStandings from "@/components/TournamentStandings/TournamentStandings";
 import styles from "./TournamentDetail.module.css";
 
 
@@ -41,6 +42,12 @@ export default function TournamentDetail() {
                 </dl>
                 {status === "pending" && <TournamentCountdown targetDate={startDate} label="Starts in" />}
             </section>
+                        {(status === "in-progress" || status === "finished") && (
+                <section className={styles.detail__section}>
+                    <h2 className={styles.detail__heading}>Standings</h2>
+                    <TournamentStandings tournamentId={tournament.tournamentId} />
+                </section>
+            )}
 
             <section className={styles.detail__section}>
                 <h2 className={styles.detail__heading}>Rules</h2>
