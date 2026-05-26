@@ -65,6 +65,11 @@ const tournamentSchema = new mongoose.Schema({
             message: "maxPlayers must be greater than or equal to minPlayers"
         }
     },
+    buyIn: {
+        type: Number,
+        default: 0,
+        min: 0
+    },
     // Schedule
     startDate: {
         type: Date,

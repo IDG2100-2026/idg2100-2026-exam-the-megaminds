@@ -1,5 +1,6 @@
 // Handles request/response for tournament routes — calls the service layer and sends back JSON
 import tournamentService from "../services/tournaments.service.js";
+import { broadcastToTournament } from "../websocket/gameSocket.js";
 
 export async function getAllTournaments(req, res) {
     const tournaments = await tournamentService.getAllTournaments(req.query);
@@ -48,6 +49,7 @@ export async function getTournamentComments(req, res) {
 
 export async function createTournamentComment(req, res) {
     const newComment = await tournamentService.createTournamentComment(req.params.tournamentId, { userId: req.userId, text: req.validData.text });
+    broadcastToTournament(req.params.tournamentId, {type: "new-comment", comment: newComment});
     res.status(201).json({ success: true, data: newComment });
 }
 

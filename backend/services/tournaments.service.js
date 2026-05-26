@@ -43,13 +43,35 @@ export async function deleteTournament(tournamentId) {
 }
 
 export async function joinTournament(tournamentId, { userId }) {
+    const tournament = await Tournament.findOne({tournamentId});
+    if (!tournament) return null;
+
+    if (tournament.status !== "pending"){
+        const e = new Error("This tournament is no longer open for sign-ups"); e.status = 403; throw e;
+    }
+    const user = await User.findOne({ userId });
+    if (!user) { const e = new Error("User does not exist"); e.status = 404; throw e; }
+        const { min, max } = tournament.eloRange ?? {};
+
+    if (min != null && user.elo < min) {
+        const e = new Error(`Your Elo (${user.elo}) is below this tournament's minimum of ${min}`); e.status = 403; throw e;
+    }
+    if (max != null && user.elo > max) {
+        const e = new Error(`Your Elo (${user.elo}) is above this tournament's maximum of ${max}`); e.status = 403; throw e;
+    }
+
+    if (tournament.buyIn > 0 && typeof user.points === "number" && user.points < tournament.buyIn){
+        const e = new Error(`You need ${tournament.buyIn} points to enter; you have ${user.points}`); e.status = 403; throw e;
+    }
+
     return Tournament.findOneAndUpdate(
-        {tournamentId: tournamentId},
+        { tournamentId },
         // $addToSet adds the userId to the participants array, but only if it isn't already there
         { $addToSet: { participants: userId } },
         { returnDocument: "after" }
     );
 }
+
 export async function leaveTournament(tournamentId, userId) {
     return Tournament.findOneAndUpdate(
         {tournamentId},
@@ -57,6 +79,7 @@ export async function leaveTournament(tournamentId, userId) {
         {returnDocument: "after"}
     );
 }
+
 export async function getTournamentComments(tournamentId, { sort = "createdAt", limit = 10, page = 1 }) {
     const skip = (page - 1) * limit;
     return Comment.find({ tournamentId: tournamentId })
