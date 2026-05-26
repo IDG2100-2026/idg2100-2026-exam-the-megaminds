@@ -58,11 +58,17 @@ export const userService = {
     getUser: (userId) =>
         apiCall('GET', `/api/users/${userId}`).then(res => res.data),
 
-    getAllUsers: (page = 1, limit = 20) =>
-        apiCall('GET', `/api/users?page=${page}&limit=${limit}`).then(res => res.data),
+    getAllUsers: (page = 1, limit = 20, search = '') => {
+        const params = new URLSearchParams({ page, limit });
+        if (search) params.set('search', search);
+        return apiCall('GET', `/api/users?${params}`).then(res => res.data);
+    },
 
     updateUser: (userId, updates) =>
         apiCall('PATCH', `/api/users/${userId}`, updates).then(res => res.data),
+
+    deleteUser: (userId) =>
+        apiCall('DELETE', `/api/users/${userId}`),
 };
 
 // Game CRUD and state transitions
@@ -166,4 +172,22 @@ export const leaderboardService = {
 export const platformService = {
     getActivity: () =>
         apiCall('GET', '/api/platform/activity'),
+};
+
+// Admin-only actions
+export const adminService = {
+    banUser: (userId) =>
+        apiCall('PATCH', `/api/users/${userId}/ban`),
+
+    unbanUser: (userId) =>
+        apiCall('PATCH', `/api/users/${userId}/unban`),
+
+    setUserRole: (userId, isAdmin) =>
+        apiCall('PATCH', `/api/users/${userId}/role`, { isAdmin }),
+
+    getErrorLogs: (page = 1, limit = 50) =>
+        apiCall('GET', `/api/errors?page=${page}&limit=${limit}`),
+
+    logError: (errorData) =>
+        apiCall('POST', '/api/errors', errorData).catch(() => {}),
 };
