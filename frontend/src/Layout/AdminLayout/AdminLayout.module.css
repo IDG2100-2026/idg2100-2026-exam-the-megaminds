@@ -1,0 +1,53 @@
+.adminBanner {
+    background: var(--theme-background-alt);
+    border-bottom: 2px solid var(--theme-accent);
+    padding: 10px 40px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.adminBadge {
+    background: linear-gradient(135deg, var(--theme-accent) 0%, var(--theme-accent-light) 100%);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+
+.adminNav {
+    display: flex;
+    gap: 8px;
+}
+
+.adminLink {
+    color: var(--theme-text-secondary);
+    text-decoration: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.adminLink:hover {
+    color: var(--theme-text);
+    background: var(--theme-primary);
+}
+
+.adminLink.active {
+    color: var(--theme-accent-light);
+    background: rgba(92, 184, 86, 0.12);
+}
+
+@media (max-width: 600px) {
+    .adminBanner {
+        padding: 10px 16px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+}
