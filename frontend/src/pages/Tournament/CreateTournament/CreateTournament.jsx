@@ -24,7 +24,7 @@ export default function CreateTournamentPage() {
     if (isEdit && loading) return <p className={styles.status}>Loading…</p>;
     if (isEdit && error) return <p className={styles.status}>Error: {error}</p>;
 
-    const initialValues = isEdit && tournament ? {
+        const initialValues = isEdit && tournament ? {
         tournamentId: tournament.tournamentId,
         title: tournament.title,
         description: tournament.description,
@@ -32,8 +32,11 @@ export default function CreateTournamentPage() {
         minPlayers: tournament.minPlayers,
         maxPlayers: tournament.maxPlayers,
         startDate: toLocaleInput(tournament.startDate),
+        buyIn: tournament.buyIn ?? 0,
+        eloRange: tournament.eloRange ?? { min: null, max: null },
         trophy: tournament.trophy ?? { title: "", imageUrl: "" },
     } : undefined;
+
 
     async function handleSubmit(data) {
         if (isEdit) {
