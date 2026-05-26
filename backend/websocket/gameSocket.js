@@ -4,8 +4,16 @@ import { consumeWsToken } from "../middleware/jwt.js";
 // gameId -> Set of sockets in that game
 const rooms = new Map();
 
+const tournamentRooms = new Map();
+
 export function broadcastToGame(gameId, message) {
     rooms.get(gameId)?.forEach(socket => {
+        socket.send(JSON.stringify(message));
+    });
+}
+
+export function broadcastToTournament(tournamentId, message){
+    tournamentRooms.get(tournamentId)?.forEach(socket => {
         socket.send(JSON.stringify(message));
     });
 }
@@ -44,6 +52,14 @@ export function initGameSocket(server) {
                 socket.gameId = gameId;
                 socket.send(JSON.stringify({ type: "joined-game", gameId }));
             }
+            
+            if (msg.type === "join-tournament") {
+                const { tournamentId } = msg;
+                if (!tournamentRooms.has(tournamentId)) tournamentRooms.set(tournamentId, new Set());
+                tournamentRooms.get(tournamentId).add(socket);
+                socket.tournamentId = tournamentId;
+                socket.send(JSON.stringify({ type: "joined-tournament", tournamentId }));
+            }
         });
 
         socket.on("close", () => {
@@ -52,6 +68,12 @@ export function initGameSocket(server) {
                 rooms.get(socket.gameId)?.delete(socket);
                 if (rooms.get(socket.gameId)?.size === 0){
                     rooms.delete(socket.gameId);
+                }
+            }
+            if (socket.tournamentId){
+                tournamentRooms.get(socket.tournamentId)?.delete(socket);
+                if (tournamentRooms.get(socket.tournamentId)?.size === 0){
+                    tournamentRooms.delete(socket.tournamentId);
                 }
             }
         });

@@ -1,6 +1,7 @@
-import {useEffect, useState} from "react";
+import {useEffect, useState, useCallback} from "react";
 import {useAppContext} from "@/context/AppContext";
 import {commentService, userService} from "@/services/api";
+import {useTournamentSocket} from "@/hooks/useTournamentSocket";
 import styles from "./TournamentComments.module.css";
 
 export default function TournamentComments({tournamentId}) {
@@ -11,6 +12,14 @@ export default function TournamentComments({tournamentId}) {
     const [error, setError] = useState(null);
     const [posting, setPosting] = useState(false);
 
+    const {lastMessage, connected} = useTournamentSocket(tournamentId);
+
+    const addComment = useCallback((comment) => {
+        setComments(prev =>
+            prev.some(c => c.commentId === comment.commentId) ? prev : [comment, ...prev]
+        );
+    }, []);
+
     useEffect(()=>{
         let cancelled = false;
         commentService.getTournamentComments(tournamentId)
@@ -18,6 +27,11 @@ export default function TournamentComments({tournamentId}) {
             .catch(err => {if (!cancelled) setError(err.message); })
                 return () => {cancelled = true; };
     }, [tournamentId]);
+
+    useEffect(() => {
+        if (lastMessage?.type === "new-comment") commentService.addTournamentComment(lastMessage.comment);
+    }, [lastMessage, addComment]);
+
     // Resolve any userIds that havent been looked up
     useEffect(()=> {
       const missing = [...new Set(comments.map(c => c.userId))].filter(id => !(id in names));
@@ -37,10 +51,9 @@ export default function TournamentComments({tournamentId}) {
         setPosting(true);
         setError(null)
         try {
-            await commentService.addTournamentComment(tournamentId, text.trim());
+            const res = await commentService.addTournamentComment(tournamentId, text.trim());
+            if (res.data) addComment(res.data);
             setText("");
-            const res = await commentService.getTournamentComments(tournamentId);
-            setComments(res.data ?? []);
         } catch(err) {
             setError(err.message);
         } finally {
@@ -49,7 +62,9 @@ export default function TournamentComments({tournamentId}) {
     }
     return (
         <section className={styles.comments}>
-            <h2 className={styles.comments__heading}>Comments</h2>
+            <h2 className={styles.comments__heading}>Comments
+                {connected && <span className={styles.comments__live}>● Live</span>}
+            </h2>
 
             {comments.length === 0 ? (
                 <p className={styles.comments__empty}>No comments yet.</p>
