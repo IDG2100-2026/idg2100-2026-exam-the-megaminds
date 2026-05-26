@@ -1,14 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { platformService } from "@/services/api";
 import styles from "./AdminDashBoard.module.css";
 
-const MOCK_STATS = {
-    ongoingGames: 4,
-    activeUsersWeek: 17,
-    recentGames: [
-        { gameId: "game-abc123", rules: { bestof: 3 }, winnerId: 1001, updatedAt: new Date().toISOString() },
-        { gameId: "game-def456", rules: { bestof: 5 }, winnerId: 1042, updatedAt: new Date().toISOString() },
-    ]
-};
 
 const MOCK_USERS = [
     { userId: 1001, username: "drhouse",   email: "house@dice.com",  elo: 1400, banned: false, isAdmin: true,  emailVerified: true },
@@ -55,42 +48,50 @@ export default function AdminDashBoard() {
 
 // Overview
 
-function OverviewTab () {
-    const { ongoingGames, activeUsersWeek, recentGames } = MOCK_STATS;
+function OverviewTab() {
+    const [activity, setActivity] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
+    useEffect(() => {
+        platformService.getActivity()
+            .then(res => setActivity(res))
+            .catch(() => setError("Failed to load platform data"))
+            .finally(() => setLoading(false));
+    }, []);
+
+    if (loading) return <div className={styles.loading}>Loading stats...</div>;
+    if (error) return <div className={styles.errorBox}>{error}</div>;
 
     return (
         <div className={styles.tabContent}>
             <div className={styles.statsRow}>
-                <StatCard label="Ongoing Games"         value={ongoingGames} />
-                <StatCard label="Active Users (7 days)" value={activeUsersWeek} />
-                <StatCard label="Recent Games"          value={recentGames.length} sub="last 10 finished" />
+                <StatCard label="Ongoing Games"         value={activity.ongoingGames} />
+                <StatCard label="Active Users (7 days)" value={activity.activeUsersWeek} />
+                <StatCard lable="Recent Games"          value={activity.recentGames?.length ?? 0} sub="last 10 finished" />
             </div>
 
             <div className={styles.section}>
                 <h2>Recent Finished Games</h2>
-                <table className={styles.table}>
-                    <thead>
-                        <tr>
-                            <th>Game ID</th>
-                            <th>Best Of</th>
-                            <th>Winner ID</th>
-                            <th>Finished</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {recentGames.map(game => (
-                            <tr key={game.gameId}>
-                                <td className={styles.mono}>{game.gameId}</td>
-                                <td>{game.rules?.bestof}</td>
-                                <td>{game.winnerId ?? "-"}</td>
-                                <td className ={styles.dim}>{new Date(game.updatedAt).toLocaleString()}</td>
-                            </tr>
-                        ))}
+                {activity.recentGames?.length === 0 ? (
+                    <p className={styles.dim}>No finished games yet</p>
+                ) : (
+                    <table className={styles.table}>
+                        <tbody>
+                            {activity.recentGames?.map(game => (
+                                <tr key={game.gameId}>
+                                    <td className={styles.mono}>{game.gameId}</td>
+                                    <td>{game.rules?.bestof}</td>
+                                    <td>{game.winnerId ?? "—"}</td>
+                                    <td className={styles.dim}>{new Date(game.updatedAt).toLocaleString()}</td>
+                                </tr>
+                            ))}
                     </tbody>
                 </table>
-            </div>
+                )}
         </div>
-    )
+    </div>
+    );
 }
 
 // Users

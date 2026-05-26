@@ -219,6 +219,20 @@
 .btnDanger    { background: rgba(244,67,54,0.12);   color: #f44336; border: 1px solid rgba(244,67,54,0.3);   padding: 5px 10px; border-radius: 5px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
 .btnDanger:hover    { background: rgba(244,67,54,0.25); }
 
+.loading {
+    text-align: center;
+    color: var(--theme-text-secondary);
+    padding: 40px;
+}
+
+.errorBox {
+    background: rgba(244, 67, 54, 0.15);
+    color: #f44336;
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(244, 67, 54, 0.3);
+}
+
 /* Pagination */
 .pagination {
     display: flex;
