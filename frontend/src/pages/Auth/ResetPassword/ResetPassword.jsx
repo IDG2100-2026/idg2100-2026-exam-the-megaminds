@@ -37,8 +37,8 @@ export default function ResetPassword() {
         return (
             <div className={styles.page}>
                 <div className={styles.card}>
-                    <div className={styles.confimation}>
-                        <div className={styles.confirmIcon} asia-hidden='true'>✓</div>
+                    <div className={styles.confirmation}>
+                        <div className={styles.confirmIcon} aria-hidden='true'>✓</div>
                         <h1 className={styles.title}>Password updated!</h1>
                         <p className={styles.subtitle}>
                             Your password has been changed. You can now log in with your new password.
@@ -103,14 +103,14 @@ export default function ResetPassword() {
                         </div>
                     </div>
 
-                    <div className={styles.filed}>
-                        <label className={styles.label} htmlFor='confrim-pwd'>
+                    <div className={styles.field}>
+                        <label className={styles.label} htmlFor='confirm-pwd'>
                             Confirm password
                         </label>
                         <input
                             id='confirm-pwd'
                             className={styles.input}
-                            type={showPwd ? 'test' : 'password'}
+                            type={showPwd ? 'text' : 'password'}
                             value={confirmPwd}
                             onChange={(e) => setConfirmPwd(e.target.value)}
                             autoComplete='new-password'

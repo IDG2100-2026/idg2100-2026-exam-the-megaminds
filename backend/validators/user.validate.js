@@ -82,7 +82,7 @@ export function validateUserUpdate(){
             .withMessage("Please provide a valid email address")
             .bail()
             .custom(async (email, { req }) => {
-                const existingEmail = await User.findOne({ email, userId: { $ne: parseInt(req.params.uid, 10) } });
+                const existingEmail = await User.findOne({ email, userId: { $ne: parseInt(req.params.userId, 10) } });
                 if (existingEmail) {
                     throw new Error("This email is already in use");
                 }

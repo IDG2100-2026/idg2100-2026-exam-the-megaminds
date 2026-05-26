@@ -78,6 +78,9 @@ export const userService = {
         if (!response.ok) throw new Error(data.message || 'Upload failed');
         return data;
     },
+
+    getUserGames: (userId, page = 1, limit = 5) =>
+        apiCall('GET', `/api/users/${userId}/games?page=${page}&limit=${limit}`).then(res => res.data),
 };
 
 // Game CRUD and state transitions

@@ -49,11 +49,38 @@ const userSchema = new mongoose.Schema({
         default: 1000,
         min: 0
     },
+    eloRapid: {
+        type: Number,
+        default: 1000,
+        min: 0
+    },
+    eloBlitz: {
+        type: Number,
+        default: 1000,
+        min: 0
+    },
+    eloBullet: {
+        type: Number,
+        default: 1000,
+        min: 0
+    },
     eloChangeLastWeek:{
         type: Number,
         default: 0
     },
     eloWeekStart: {
+        type: Date,
+        default: Date.now
+    },
+    winsLastMonth: {
+        type: Number,
+        default: 0
+    },
+    lossesLastMonth: {
+        type: Number,
+        default: 0
+    },
+    lastMonthReset: {
         type: Date,
         default: Date.now
     },

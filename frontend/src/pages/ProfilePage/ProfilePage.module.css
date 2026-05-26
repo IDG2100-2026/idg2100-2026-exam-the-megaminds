@@ -18,7 +18,7 @@
     gap: 1.5rem;
     padding: 2rem;
     background: var(--theme-surface);
-    border: 1px solid var(--theme-border);
+    border: 1px solid var(--theme-accent-dark);
     border-radius: 12px;
     margin-bottom: 1.5rem;
 }
@@ -71,6 +71,13 @@
     margin: 0.4rem 0 0.75rem;
 }
 
+.rankBadge {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--theme-accent);
+    margin: 0.1rem 0 0.4rem;
+}
+
 .editBtn {
     display: inline-block;
     margin-top: 0.5rem;
@@ -94,7 +101,7 @@
 
 .section {
     background: var(--theme-surface);
-    border: 1px solid var(--theme-border);
+    border: 1px solid var(--theme-accent-dark);
     border-radius: 12px;
     padding: 1.5rem 2rem;
     margin-bottom: 1.5rem;
@@ -142,36 +149,38 @@
     width: 100%;
     padding: 0.6rem 0.875rem;
     background: var(--theme-bg);
-    border: 1px solid var(--theme-border);
+    border: 1px solid var(--theme-accent-dark);
     border-radius: 8px;
     color: var(--theme-text);
     font-size: 0.95rem;
     outline: none;
-    transition: border-color 0.15s;
+    transition: border-color 0.15s, box-shadow 0.15s;
     box-sizing: border-box;
 }
 
 .input:focus {
     border-color: var(--theme-accent);
+    box-shadow: 0 0 0 3px var(--theme-shadow-light);
 }
 
 .textarea {
     width: 100%;
     padding: 0.6rem 0.875rem;
     background: var(--theme-bg);
-    border: 1px solid var(--theme-border);
+    border: 1px solid var(--theme-accent-dark);
     border-radius: 8px;
     color: var(--theme-text);
     font-size: 0.95rem;
     font-family: inherit;
     outline: none;
     resize: vertical;
-    transition: border-color 0.15s;
+    transition: border-color 0.15s, box-shadow 0.15s;
     box-sizing: border-box;
 }
 
 .textarea:focus {
     border-color: var(--theme-accent);
+    box-shadow: 0 0 0 3px var(--theme-shadow-light);
 }
 
 .inputWrapper {
@@ -209,6 +218,10 @@
     transition: opacity 0.15s;
 }
 
+.saveBtn:hover:not(:disabled) {
+    background: var(--theme-accent-light);
+}
+
 .saveBtn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -216,17 +229,18 @@
 
 .cancelBtn {
     padding: 0.65rem 1.25rem;
-    background: transparent;
+    background: var(--theme-surface);
     color: var(--theme-text-muted);
-    border: 1px solid var(--theme-border);
+    border: 1px solid var(--theme-accent-dark);
     border-radius: 8px;
     font-size: 0.95rem;
     cursor: pointer;
-    transition: border-color 0.15s;
+    transition: border-color 0.15s, background 0.15s;
 }
 
 .cancelBtn:hover {
-    border-color: var(--theme-text-muted);
+    border-color: var(--theme-accent);
+    background: var(--theme-bg);
 }
 
 .error {
@@ -245,13 +259,13 @@
 
 .statsGrid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
 }
 
 .statCard {
     background: var(--theme-bg);
-    border: 1px solid var(--theme-border);
+    border: 1px solid var(--theme-accent-dark);
     border-radius: 10px;
     padding: 1.1rem 0.75rem;
     display: flex;
@@ -295,9 +309,15 @@
     gap: 1rem;
     padding: 0.75rem 1rem;
     background: var(--theme-bg);
-    border: 1px solid var(--theme-border);
+    border: 1px solid var(--theme-accent-dark);
     border-radius: 8px;
     font-size: 0.9rem;
+    cursor: pointer;
+    transition: border-color 0.15s;
+}
+
+.gameRow:hover {
+    border-color: var(--theme-accent);
 }
 
 .resultBadge {
@@ -385,8 +405,8 @@
     padding: 0.45rem 1rem;
     font-size: 0.875rem;
     font-weight: 500;
-    background: transparent;
-    border: 1px solid var(--theme-border);
+    background: var(--theme-surface);
+    border: 1px solid var(--theme-accent-dark);
     border-radius: 6px;
     color: var(--theme-text);
     cursor: pointer;
@@ -409,6 +429,43 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+/* === Trophies === */
+
+.trophiesGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 1rem;
+}
+
+.trophy {
+    background: var(--theme-bg);
+    border: 1px solid var(--theme-accent-dark);
+    border-radius: 10px;
+    padding: 1rem 0.75rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    text-align: center;
+}
+
+.trophyIcon {
+    font-size: 1.75rem;
+}
+
+.trophyTitle {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--theme-text);
+    margin: 0;
+}
+
+.trophyDate {
+    font-size: 0.75rem;
+    color: var(--theme-text-muted);
+    margin: 0;
 }
 
 /* === Responsive === */
