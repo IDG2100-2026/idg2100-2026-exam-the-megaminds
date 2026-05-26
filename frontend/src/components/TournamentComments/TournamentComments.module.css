@@ -2,6 +2,24 @@
     margin: 0 0 14px;
     font-size: 1.25rem;
     color: var(--theme-accent-light);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Small "Live" badge shown when the tournament WebSocket is connected */
+.comments__live {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--theme-success, #2ecc71);
+    animation: comments__pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes comments__pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
 }
 
 .comments__empty {
