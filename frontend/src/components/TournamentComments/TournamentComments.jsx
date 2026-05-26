@@ -29,7 +29,7 @@ export default function TournamentComments({tournamentId}) {
     }, [tournamentId]);
 
     useEffect(() => {
-        if (lastMessage?.type === "new-comment") commentService.addTournamentComment(lastMessage.comment);
+        if (lastMessage?.type === "new-comment") addComment(lastMessage.comment);
     }, [lastMessage, addComment]);
 
     // Resolve any userIds that havent been looked up
