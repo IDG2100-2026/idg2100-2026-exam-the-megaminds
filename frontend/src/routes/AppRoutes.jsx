@@ -19,6 +19,8 @@ import Register from "@/pages/Auth/Register/Register";
 import ForgotPwd from "@/pages/Auth/ForgotPwd/ForgotPwd";
 import TournamentDetail from "@/pages/Tournament/TournamentDetail/TournamentDetail";
 import VerifyUser from "@/pages/Auth/VerifyUser/VerifyUser";
+import ResetPassword from "@/pages/Auth/ResetPassword/ResetPassword";
+
 export default function AppRoutes() {
     return (
         <Routes>
@@ -37,6 +39,7 @@ export default function AppRoutes() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/forgot-password" element={<ForgotPwd />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/verify-email" element={<VerifyUser />} />
             </Route>
             <Route element={<AdminLayout/>}>

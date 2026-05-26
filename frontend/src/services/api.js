@@ -55,6 +55,8 @@ export const userService = {
     forgotPassword: (email) =>
         apiCall('POST', '/api/forgot-password', { email }),
     
+    resetPassword: (code, pwd) =>
+        apiCall('POST', '/api/reset-password', { code, pwd }),
     getUser: (userId) =>
         apiCall('GET', `/api/users/${userId}`).then(res => res.data),
 
@@ -63,6 +65,19 @@ export const userService = {
 
     updateUser: (userId, updates) =>
         apiCall('PATCH', `/api/users/${userId}`, updates).then(res => res.data),
+    
+    uploadAvatar: async (userId, file) => {
+        const formData = new FormData();
+        formData.append('avatar', file);
+        const response = await fetch(`${API_URL}/api/users/${userId}/avatar`, {
+            method: 'POST',
+            credentials: 'include',
+            body: formData,
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Upload failed');
+        return data;
+    },
 };
 
 // Game CRUD and state transitions

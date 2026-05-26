@@ -25,6 +25,7 @@ export default defineConfig({
       // 127.0.0.1 (not localhost) so the proxy hop doesn't pay the same IPv6 fallback cost.
       // Production needs real CORS on the backend instead — see TOURNAMENT_PLAN.md.
       '/api': 'http://127.0.0.1:8476',
+      '/uploads': 'http://127.0.0.1:8476',
     },
   },
 })

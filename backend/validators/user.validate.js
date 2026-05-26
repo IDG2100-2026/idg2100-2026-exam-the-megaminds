@@ -102,7 +102,12 @@ export function validateUserUpdate(){
         body("banned")
             .optional()
             .isBoolean()
-            .withMessage("banned must be a boolean (true or false)")
+            .withMessage("banned must be a boolean (true or false)"),
+        body("aboutMe")
+            .optional()
+            .trim()
+            .isLength({ max: 300 })
+            .withMessage("About me can't exceed 300 characters")
     ];
 }
 

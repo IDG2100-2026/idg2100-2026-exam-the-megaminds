@@ -102,7 +102,18 @@ const userSchema = new mongoose.Schema({
     verificationToken: String,
     verificationTokenExpires: Date,
     resetPasswordToken: String,
-    resetPasswordExpires: Date
+    resetPasswordExpires: Date,
+    aboutMe: {
+        type: String,
+        default: '',
+        trim: true,
+        maxLength: [300, "About me can't exceed 300 characters"]
+    },
+    profilePicture: {
+        type: String,
+        default: null,
+        trim: true
+    }
 });
 
 userSchema.pre("validate", function(){
