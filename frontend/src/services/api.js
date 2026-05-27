@@ -65,6 +65,9 @@ export const userService = {
 
     updateUser: (userId, updates) =>
         apiCall('PATCH', `/api/users/${userId}`, updates).then(res => res.data),
+
+    getUserGames: (userId, page = 1, limit = 5) =>
+        apiCall('GET', `/api/users/${userId}/games?page=${page}&limit=${limit}`).then(res => res.data),
     
     uploadAvatar: async (userId, file) => {
         const formData = new FormData();
@@ -101,6 +104,9 @@ export const gameService = {
     // Records final result and triggers ELO update
     recordResult: (gameId, resultData) =>
         apiCall('PATCH', `/api/games/${gameId}/result`, resultData),
+
+    joinGame: (gameId) =>
+        apiCall('POST', `/api/games/${gameId}/join`),
 };
 
 // Matchmaking queue — pairs registered or anonymous users into a game

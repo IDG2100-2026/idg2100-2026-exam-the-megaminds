@@ -140,6 +140,11 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: null,
         trim: true
+    },
+    points: {
+        type: Number,
+        default: 1000,
+        min: 0
     }
 });
 

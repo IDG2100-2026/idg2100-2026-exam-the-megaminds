@@ -1,0 +1,42 @@
+/*
+  Global CSS variables for the Web Components.
+  Defined on :root so they cross the Shadow DOM boundary.
+*/
+:root {
+    --board-bg-color: #091509;
+    --die-bg-color: #f0ede8;
+    --die-face-color-red: #c0392b;
+    --die-face-color-black: #111111;
+    --die-held-color: #f59e0b;
+    --wood-border: 3px solid #3D8A3A;
+    --small-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+    --click-animation: click-pop 0.7s ease-out;
+}
+
+dice-poker-board {
+    display: block;
+    color: white;
+    background: linear-gradient(160deg, #091509 0%, #0f200f 100%);
+    padding: 16px;
+    border: 3px solid #3D8A3A;
+    border-radius: 16px;
+    width: 100%;
+    box-sizing: border-box;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(92, 184, 86, 0.08);
+}
+
+dice-poker-player {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    border-radius: 20px;
+}
+
+dice-poker-player::part(player) {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+}
+
+dice-poker-player[active] {
+    box-shadow: 0 0 0 3px gold, 0 0 24px rgba(255, 215, 0, 0.25);
+    border-radius: 20px;
+}

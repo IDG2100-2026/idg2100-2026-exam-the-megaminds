@@ -52,6 +52,7 @@ apiRouter.get("/games/:gameId", gameValidate.validateGameId(), validate, gameCon
 apiRouter.get("/games/:gameId/comments", gameValidate.validateGameId(), validate, gameController.getGameComments);
 
 apiRouter.post("/games", requireRegistered, requireEmailVerified, gameValidate.validateGameCreate(), validate, gameController.createGame);
+apiRouter.post("/games/:gameId/join", requireRegistered, requireEmailVerified, gameValidate.validateGameId(), validate, gameController.joinGame);
 apiRouter.post("/games/:gameId/comments", requireRegistered, gameValidate.validateGameId(), commentValidate.validateCommentCreate(), validate, gameController.createGameComment);
 apiRouter.delete("/games/:gameId", requireAdmin, gameValidate.validateGameId(), validate, gameController.deleteGame);
 
