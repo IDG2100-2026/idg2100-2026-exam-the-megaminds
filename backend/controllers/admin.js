@@ -2,13 +2,13 @@ import userService from "../services/users.service.js";
 import { ErrorLog } from "../models/errorLog.js";
 
 export async function banUser(req, res) {
-    const user = await userService.unbanUser(Number(req.params.userId));
+    const user = await userService.banUser(Number(req.params.userId));
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
     res.json({ success: true, data: user });
 }
 
-export async function unBanUser(req, res) {
-    const user = await userService.unBanUser(Number(req.params.userId));
+export async function unbanUser(req, res) {
+    const user = await userService.unbanUser(Number(req.params.userId));
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
     res.json({ success: true, data: user });
 }
@@ -42,9 +42,10 @@ export async function getErrorLogs(req, res) {
     const page = Math.max(Number(req.query.page) || 1, 1);
     const skip = (page - 1) * limit;
     const [logs, total] = await Promise.all([
-        ErrorLog.find().toSorted({ createdAt: -1 }).limit(limit).skip(skip),
+        ErrorLog.find().sort({ createdAt: -1 }).limit(limit).skip(skip),
         ErrorLog.countDocuments()
     ]);
+    res.json({ success: true, data: logs, total, page, limit });
 }
 
-export default { banUser, unBanUser, setUserRole, logError, getErrorLogs };
+export default { banUser, unbanUser, setUserRole, logError, getErrorLogs };
