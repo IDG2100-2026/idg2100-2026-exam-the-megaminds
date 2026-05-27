@@ -28,8 +28,14 @@ export default function GreetingComponent() {
                             alt={user.username}
                             className={styles.profileImage}
                             title="View Profile"
-                        /> 
+                        />
                     </Link>
+
+                    {user.role === "admin" && (
+                        <Link to="/admin" className={styles.adminLink}>
+                            Admin
+                        </Link>
+                    )}
 
                     <button
                     className={styles.logoutBtn}

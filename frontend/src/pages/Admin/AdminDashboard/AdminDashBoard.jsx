@@ -60,7 +60,7 @@ function OverviewTab() {
           value={activity.activeUsersWeek}
         />
         <StatCard
-          lable="Recent Games"
+          label="Recent Games"
           value={activity.recentGames?.length ?? 0}
           sub="last 10 finished"
         />
