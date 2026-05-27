@@ -119,5 +119,6 @@ export default {
     createGameComment,
     recordGameResult,
     updateGame,
-    deleteGame
+    deleteGame,
+    joinGame
 };
