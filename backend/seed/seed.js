@@ -55,7 +55,7 @@ async function seed() {
         },
         {
             gameId: "game-003",
-            rules: { bestof: 3, straightallowed: true, roundTime: 5 },
+            rules: { bestof: 3, straightallowed: true, roundTime: 10 },
             players: [{ userId: u2.userId, score: 2 }, { userId: u5.userId, score: 0 }],
             winnerId: u2.userId, status: "finished"
         },
@@ -79,7 +79,7 @@ async function seed() {
         },
         {
             gameId: "game-007",
-            rules: { bestof: 7, straightallowed: false, roundTime: 5 },
+            rules: { bestof: 7, straightallowed: false, roundTime: 10 },
             players: [{ userId: u9.userId, score: 4 }, { userId: u10.userId, score: 1 }],
             winnerId: u9.userId, status: "finished"
         },
@@ -97,7 +97,7 @@ async function seed() {
         },
         {
             gameId: "game-010",
-            rules: { bestof: 3, straightallowed: true, roundTime: 5 },
+            rules: { bestof: 3, straightallowed: true, roundTime: 10 },
             players: [{ userId: u12.userId, score: 2 }, { userId: u4.userId, score: 0 }],
             winnerId: u12.userId, status: "finished"
         },
@@ -123,7 +123,7 @@ async function seed() {
         },
         {
             gameId: "game-014",
-            rules: { bestof: 7, straightallowed: false, roundTime: 5 },
+            rules: { bestof: 7, straightallowed: false, roundTime: 10 },
             players: [{ userId: u2.userId }, { userId: u11.userId }],
             status: "pending"
         },

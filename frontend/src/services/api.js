@@ -161,6 +161,21 @@ export const tournamentService = {
     getGames: (tournamentId) =>
         apiCall('GET', `/api/tournaments/${tournamentId}/games`),
 
+    // Uploads a trophy image and returns its URL (to store in trophy.imageUrl).
+    // Uses raw fetch + FormData so the browser sets the multipart Content-Type.
+    uploadTrophyImage: async (file) => {
+        const formData = new FormData();
+        formData.append('image', file);
+        const response = await fetch(`${API_URL}/api/tournaments/trophy-image`, {
+            method: 'POST',
+            credentials: 'include',
+            body: formData,
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Upload failed');
+        return data.imageUrl;
+    },
+
 };
 
 // Comments are scoped to either a game or a tournament

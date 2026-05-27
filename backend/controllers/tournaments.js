@@ -64,6 +64,12 @@ export async function createTournamentComment(req, res) {
     res.status(201).json({ success: true, data: newComment });
 }
 
+export async function uploadTrophyImage(req, res) {
+    if (!req.file) return res.status(400).json({ success: false, message: "No image file recieved" });
+    const imageUrl = `/uploads/trophies/${req.file.filename}`;
+    res.status(201).json({ success: true, imageUrl});
+}
+
 export async function awardWinner(req, res) {
     const tournament = await tournamentService.awardWinner(req.params.tournamentId, req.validData.winnerId);
     broadcastToTournament(req.params.tournamentId, {type: "round-change", currentRound: tournament.currentRound });
@@ -85,5 +91,5 @@ export default {
     getAllTournaments, getTournamentById, getTournamentComments,
     createTournament, createTournamentComment, joinTournament,
     updateTournament, deleteTournament, awardWinner, startTournament, advanceTournament,
-    leaveTournament, getStandings, getTournamentGames
+    leaveTournament, getStandings, getTournamentGames, uploadTrophyImage
 };

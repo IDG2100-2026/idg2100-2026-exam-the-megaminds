@@ -13,7 +13,8 @@ import matchmakingController from "../controllers/matchmaking.js";
 import matchmakingValidate from "../validators/matchmaking.validate.js";
 import { validate } from "../validators/validate.js";
 import { identifyUser, requireRegistered, requireAdmin, requireEmailVerified } from "../middleware/auth.js";
-import { handleAvatarUpload } from "../middleware/upload.js";
+import { handleAvatarUpload, handleTrophyUpload } from "../middleware/upload.js";
+
 
 const apiRouter = express.Router();
 
@@ -65,6 +66,7 @@ apiRouter.get("/tournaments/:tournamentId", tournamentValidate.validateTournamen
 apiRouter.get("/tournaments/:tournamentId/comments", tournamentValidate.validateTournamentId(), validate, tournamentController.getTournamentComments);
 apiRouter.get("/tournaments/:tournamentId/standings", tournamentValidate.validateTournamentId(), validate, tournamentController.getStandings);
 apiRouter.get("/tournaments/:tournamentId/games", tournamentValidate.validateTournamentId(), validate, tournamentController.getTournamentGames);
+apiRouter.post("/tournaments/trophy-image", requireAdmin, handleTrophyUpload, tournamentController.uploadTrophyImage);
 
 
 apiRouter.post("/tournaments", requireAdmin, tournamentValidate.validateTournamentCreate(), validate, tournamentController.createTournament);
