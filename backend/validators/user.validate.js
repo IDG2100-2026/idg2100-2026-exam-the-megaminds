@@ -82,7 +82,7 @@ export function validateUserUpdate(){
             .withMessage("Please provide a valid email address")
             .bail()
             .custom(async (email, { req }) => {
-                const existingEmail = await User.findOne({ email, userId: { $ne: parseInt(req.params.uid, 10) } });
+                const existingEmail = await User.findOne({ email, userId: { $ne: parseInt(req.params.userId, 10) } });
                 if (existingEmail) {
                     throw new Error("This email is already in use");
                 }
@@ -102,7 +102,12 @@ export function validateUserUpdate(){
         body("banned")
             .optional()
             .isBoolean()
-            .withMessage("banned must be a boolean (true or false)")
+            .withMessage("banned must be a boolean (true or false)"),
+        body("aboutMe")
+            .optional()
+            .trim()
+            .isLength({ max: 300 })
+            .withMessage("About me can't exceed 300 characters")
     ];
 }
 

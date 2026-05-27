@@ -5,7 +5,7 @@ export const MAX_USERNAME_LENGTH = 20; //characters
 export const MIN_USER_AGE = 18; // years old
 
 export const GAME_BESTOF_OPTIONS = [3, 5, 7];       // number of rounds
-export const GAME_ROUND_TIME_OPTIONS = [5, 10, 15]; // seconds per round
+export const GAME_ROUND_TIME_OPTIONS = [10, 30, 90]; // seconds total for all rounds (Bullet/Blitz/Rapid)
 export const GAME_STATUSES = ["pending", "in-progress", "finished"];
 
 export const MIN_TOURNAMENT_TITLE_LENGTH = 3; //characters

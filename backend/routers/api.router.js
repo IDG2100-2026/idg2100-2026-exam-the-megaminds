@@ -13,6 +13,7 @@ import matchmakingController from "../controllers/matchmaking.js";
 import matchmakingValidate from "../validators/matchmaking.validate.js";
 import { validate } from "../validators/validate.js";
 import { identifyUser, requireRegistered, requireAdmin, requireEmailVerified } from "../middleware/auth.js";
+import { handleAvatarUpload } from "../middleware/upload.js";
 
 const apiRouter = express.Router();
 
@@ -28,6 +29,7 @@ apiRouter.get("/users/me", userController.getMe);
 apiRouter.get("/verify-email", userController.verifyEmail);
 apiRouter.post("/resend-verification", userController.resendVerification);
 apiRouter.post("/forgot-password", userController.forgotPassword);
+apiRouter.post("/reset-password", userController.resetPassword);
 
 // WebSocket token
 apiRouter.get("/ws-token", requireRegistered, userController.getWsToken);
@@ -40,6 +42,7 @@ apiRouter.get("/users/:userId/games", userValidate.validateUserId(), validate, u
 
 apiRouter.post("/users", userValidate.validateUserCreate(), validate, userController.createUser);
 apiRouter.patch("/users/:userId", requireRegistered, userValidate.validateUserUpdate(), validate, userController.updateUser);
+apiRouter.post("/users/:userId/avatar", requireRegistered, userValidate.validateUserId(), validate, handleAvatarUpload, userController.uploadUserAvatar);
 apiRouter.delete("/users/:userId", requireAdmin, userValidate.validateUserId(), validate, userController.deleteUser);
 
 // Games
