@@ -1,2 +1,8 @@
 node_modules
 .DS_Store
+
+# Ignore uploaded files but keep .gitkeep placeholders
+uploads/avatars/*
+!uploads/avatars/.gitkeep
+uploads/trophies/*
+!uploads/trophies/.gitkeep
