@@ -2,25 +2,6 @@ import { useState, useEffect } from "react";
 import { platformService, userService, adminService } from "@/services/api";
 import styles from "./AdminDashBoard.module.css";
 
-const MOCK_ERRORS = [
-  {
-    _id: "e1",
-    type: "frontend",
-    message: "Cannot read properties of undefined (reading 'userId')",
-    url: "/game/abc123",
-    userId: 1042,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    _id: "e2",
-    type: "backend",
-    message: "Cast to ObjectId failed for value",
-    url: "/api/games/bad-id",
-    userId: null,
-    createdAt: new Date().toISOString(),
-  },
-];
-
 export default function AdminDashBoard() {
   const [activeTab, setActiveTab] = useState("Overview");
 
@@ -129,11 +110,12 @@ function UsersTab() {
 
   const refetch = () => {
     setLoading(true);
-    setRefreshKey(k => k + 1);
+    setRefreshKey((k) => k + 1);
   };
 
   useEffect(() => {
-    userService.getAllUsers(page, LIMIT, search)
+    userService
+      .getAllUsers(page, LIMIT, search)
       .then((data) => {
         const list = Array.isArray(data) ? data : [];
         setUsers(list);
@@ -319,58 +301,95 @@ function UsersTab() {
 // Error Logs
 
 function ErrorLogsTab() {
+  const [logs, setLogs] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const LIMIT = 50;
+
+  useEffect(() => {
+    adminService
+      .getErrorLogs(page, LIMIT)
+      .then((res) => {
+        setLogs(res.data || []);
+        setTotal(res.total || 0);
+      })
+      .catch(() => setLogs([]))
+      .finally(() => setLoading(false));
+  }, [page]);
+
+  const hasMore = page * LIMIT < total;
+
   return (
     <div className={styles.tabContent}>
       <div className={styles.sectionHeader}>
         <h2>Error Logs</h2>
-        <span className={styles.totalCount}>{MOCK_ERRORS.length} total</span>
+        <span className={styles.totalCount}>{total} total</span>
       </div>
 
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th>Type</th>
-            <th>Message</th>
-            <th>URL</th>
-            <th>User</th>
-            <th>Time</th>
-          </tr>
-        </thead>
-        <tbody>
-          {MOCK_ERRORS.map((log) => (
-            <tr key={log._id}>
-              <td>
-                <span
-                  className={
-                    log.type === "backend"
-                      ? styles.badgeBanned
-                      : styles.badgePending
-                  }
-                >
-                  {log.type}
-                </span>
-              </td>
-              <td className={styles.errorMsg} title={log.message}>
-                {log.message.length > 80
-                  ? log.message.slice(0, 80) + "…"
-                  : log.message}
-              </td>
-              <td className={styles.dim}>{log.url ?? "-"}</td>
-              <td className={styles.dim}>{log.userId ?? "anon"}</td>
-              <td className={styles.dim}>
-                {new Date(log.createdAt).toLocaleString()}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className={styles.tableWrapper}>
+        {loading ? (
+          <div className={styles.loading}>Loading logs...</div>
+        ) : logs.length === 0 ? (
+          <div className={styles.empty}>No errors logged yet</div>
+        ) : (
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Message</th>
+                <th>URL</th>
+                <th>User</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              {logs.map((log) => (
+                <tr key={log._id}>
+                  <td>
+                    <span
+                      className={
+                        log.type === "backend"
+                          ? styles.badgeBanned
+                          : styles.badgePending
+                      }
+                    >
+                      {log.type}
+                    </span>
+                  </td>
+                  <td className={styles.errorMsg} title={log.message}>
+                    {log.message.length > 80
+                      ? log.message.slice(0, 80) + "…"
+                      : log.message}
+                  </td>
+                  <td className={styles.dim}>{log.url ?? "—"}</td>
+                  <td className={styles.dim}>{log.userId ?? "anon"}</td>
+                  <td className={styles.dim}>
+                    {new Date(log.createdAt).toLocaleString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
 
       <div className={styles.pagination}>
-        <button className={styles.pageBtn} disabled>
+        <button
+          className={styles.pageBtn}
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+          disabled={page === 1}
+        >
           ← Prev
         </button>
-        <span className={styles.pageInfo}>Page 1</span>
-        <button className={styles.pageBtn} disabled>
+        <span className={styles.pageInfo}>
+          Page {page} — {total} logs
+        </span>
+        <button
+          className={styles.pageBtn}
+          onClick={() => setPage((p) => p + 1)}
+          disabled={!hasMore}
+        >
           Next →
         </button>
       </div>
