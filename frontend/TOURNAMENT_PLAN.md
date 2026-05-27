@@ -35,20 +35,21 @@ Single source of truth for the tournament feature (frontend + its backend half).
 - **Detail page** — `TournamentDetail` + `useTournament(id)`; sections: rules (`TournamentRules`), players (`TournamentPlayersList`, resolves userIds→names), comments (`TournamentComments`, REST), countdown (`TournamentCountdown`/`useCountdown`), join/leave (`JoinLeaveButton`), admin panel (`AdminTournamentControls`), winner award (`AwardWinner`).
 - **Admin (full lifecycle from UI)** — create + edit (shared `TournamentForm`; edit route + widened `validateTournamentUpdate`), cancel ⇄ reopen, delete, start round, advance round, award winner. `tournamentId` auto-generated server-side (model `pre("validate")` slug + random suffix).
 - **Backend (ours)** — `TOURNAMENT_STATUSES` (incl. `cancelled`); `?status` comma-separated via `$in`; `?sortOrder`; `playerCount` via aggregation (`$size`); `leaveTournament` (`DELETE /tournaments/:id/participants/:userId`); auto-ID hook. **Security:** comment author from `req.userId` (not body), `.escape()` removed from comment validator (React encodes on render), `getMe` returns `role`.
-- **Live comments via WebSockets (Phase 4)** — `gameSocket.js` now has a parallel `tournamentRooms` map + `join-tournament` handler + `broadcastToTournament(id, msg)` (mirrors the game-room pattern; auth-first guard reused). `createTournamentComment` controller broadcasts `{type:"new-comment", comment}` after persisting. Frontend `useTournamentSocket(id)` (token→auth→join-tournament; clears its reconnect timer on unmount) feeds `TournamentComments`, which appends live with `commentId` dedupe + optimistic local append on post (works even if the socket drops). `● Live` badge when connected.
+- **Live comments via WebSockets (Phase 4)** — `gameSocket.js` now has a parallel `tournamentRooms` map + `join-tournament` handler + `broadcastToTournament(id, msg)` (mirrors the game-room pattern; auth-first guard reused). `createTournamentComment` controller broadcasts `{type:"new-comment", comment}` after persisting. Frontend `useTournamentSocket(id)` (token→auth→join-tournament; `closingRef` guards against reconnecting after an intentional unmount) feeds `TournamentComments`, which appends live with `commentId` dedupe + optimistic local append on post (works even if the socket drops). `● Live` badge when connected.
+- **`buyIn` / `eloRange`** — on the model (`buyIn` number default 0; `eloRange.{min,max}` nullable = open), validated on create + update (`.optional({nullable})`, cross-field `max>=min`), editable via `TournamentForm`, shown in `TournamentRules`. Enforced in `joinTournament`: status-must-be-pending + Elo gate (live) + buy-in gate (activates once `user.points` exists). Also removed the input `.escape()` from title/description/trophy (was double-encoding `'`→`&#x27;`).
+- **Standings** — `getStandings` tallies score + match-wins per participant; `/tournaments/:id/standings`; `TournamentStandings` table (shown for in-progress/finished). `useUserName` (module-cached) resolves ids→names.
+- **Ongoing games + player auto-redirect** — `getTournamentGames` + `/tournaments/:id/games`; `OngoingGames` lists the *current round's* games to non-participants/spectators. `usePlayerGameRedirect` sends a participant to their non-finished current-round game (and leaves them on a "waiting for next round" state once it's finished — the "back on completion" half).
+- **Homepage** — `TournamentPreview` is mounted on `HomePage` (lobby/activity remain teammates' sections).
 
 ### 🟡 Open — our side, unblocked
 - **Polish:** loading skeletons, empty states, error toasts, accessibility pass (focus/ARIA/keyboard).
-- **`AwardWinner` caveat:** sources finalists from the final round's game `winnerId`s — verify `gameService.getGame` response shape (`{ data: { winnerId } }`) once games record results.
+- **`AwardWinner` caveat:** sources finalists from the final round's game `winnerId`s — verify `gameService.getGame` response shape (`{ data: { winnerId } }`) now that rounds create real games.
+- **Live round-change push:** auto-redirect only re-fires on tournament reload; a `round-change` message over the (already-wired) tournament socket would make the round-to-round jump real-time. Also enables the spec's "countdown till next round" if a round-start time gets modeled.
 
 ### ⛔ Blocked / waiting
-- **Standings + running-tournament/spectator views** (player auto-redirect to their game; non-players see ongoing games) — needs the games feature (started tournament + game pages + recorded results).
+- **Extra points for tournament winner** — needs the points/betting feature (teammate).
 - **Trophy image upload** — waiting on a teammate's shared multer `POST /uploads` (profile page needs it too — build once). Trophy is a URL field for now.
 - **Real `cors`** on the backend before any prod/demo build (dev relies on the Vite proxy).
-
-### ⏸ Deferred / descoped
-- **Homepage assembly** — mounting `<TournamentPreview/>` (+ lobby/activity) is deferred to the very end; `HomePage.jsx` is still a shell.
-- **`buyIn` / `eloRange`** tournament fields (spec "Addition 3") — paused; not on the model. Revisit only if the grader wants buy-in/Elo-gated tournaments.
 
 ---
 
@@ -109,6 +110,7 @@ AI-looking code triggers extra questioning; be ready to explain *your* choices:
 
 ## 7. Log (condensed)
 
+- **2026-05-27** — Shipped buy-in/Elo gating (model+validator+form+display+join enforcement; fixed the `.escape()` double-encoding), standings (`getStandings` + table + cached `useUserName`), ongoing-games list for spectators, and player auto-redirect (`usePlayerGameRedirect`). Mounted `TournamentPreview` on the homepage. Plan §3 updated to match.
 - **2026-05-26** — Phase 4 shipped: live tournament comments over WebSockets. Added `tournamentRooms` + `join-tournament` + `broadcastToTournament` to `gameSocket.js` (mirrors game rooms, reuses the auth-first guard); broadcast on comment create; new `useTournamentSocket(id)` hook; `TournamentComments` now appends live with `commentId` dedupe + optimistic post + `● Live` badge. Open: anonymous viewers don't get live updates (see §4 note).
 - **2026-05-24** — Consolidated this doc (was heavily layered). Current state captured in §3. Highlights this stretch: merged `main` (JWT-cookie auth + login UI); consolidated services onto `api.js` (env → empty `VITE_API_URL`); built the full detail page + admin lifecycle (create/edit/cancel/reopen/delete/start/advance/award); auto-generated `tournamentId`; security fixes (comment author from JWT, removed input `.escape()`, `getMe` returns `role`); de-boilerplated global CSS. Sockets merged but game-only → Phase 4 is the solo track.
 - Earlier history (Phases 1–3 build-out, the sort/search iterations, the CORS/proxy and props-destructure fixes) is preserved in git history; no need to replay it here.

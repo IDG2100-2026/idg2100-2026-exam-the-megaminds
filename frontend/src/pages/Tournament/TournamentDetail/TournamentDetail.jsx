@@ -11,6 +11,7 @@ import AdminTournamentControls from "@/components/AdminTournamentControls/AdminT
 import TournamentCountdown from "@/components/TournamentCountdown/TournamentCountdown";
 import { useUserName } from "@/hooks/useUsername";
 import TournamentStandings from "@/components/TournamentStandings/TournamentStandings";
+import { usePlayerGameRedirect } from "@/hooks/usePlayerGameRedirect";
 import styles from "./TournamentDetail.module.css";
 
 
@@ -19,6 +20,7 @@ export default function TournamentDetail() {
     const { tournament, loading, error, refresh } = useTournament(tournamentid)
     const authorName = useUserName(tournament?.createdBy);
     const { user } = useAppContext();
+    const { checking, isParticipant } = usePlayerGameRedirect(tournament, user);
     if (loading) return <p className={styles.detail__status}>Loading Tournament...</p>;
     if (error) return <p className={styles.detail__status}>Error: {error}</p>;
     if (!tournament) return <p className={styles.detail__status}>Tournament not found.</p>;
@@ -45,18 +47,28 @@ export default function TournamentDetail() {
                 </dl>
                 {status === "pending" && <TournamentCountdown targetDate={startDate} label="Starts in" />}
             </section>
-                        {(status === "in-progress" || status === "finished") && (
+            {(status === "in-progress" || status === "finished") && (
                 <section className={styles.detail__section}>
                     <h2 className={styles.detail__heading}>Standings</h2>
                     <TournamentStandings tournamentId={tournament.tournamentId} />
                 </section>
             )}
-            {status === "in-progress" && !participants?.includes(user?.userId) && (
+            {status === "in-progress" && isParticipant && (
+                <section className={styles.detail__section}>
+                    <p className={styles.detail__status}>
+                        {checking
+                            ? "Taking you to your game…"
+                            : "Your game has finished — waiting for the next round to start."}
+                    </p>
+                </section>
+            )}
+            {status === "in-progress" && !isParticipant && (
                 <section className={styles.detail__section}>
                     <h2 className={styles.detail__heading}>Ongoing games</h2>
                     <OngoingGames tournament={tournament} />
                 </section>
             )}
+
 
             <section className={styles.detail__section}>
                 <h2 className={styles.detail__heading}>Rules</h2>
