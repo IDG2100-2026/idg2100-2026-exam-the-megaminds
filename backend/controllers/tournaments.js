@@ -66,6 +66,7 @@ export async function createTournamentComment(req, res) {
 
 export async function awardWinner(req, res) {
     const tournament = await tournamentService.awardWinner(req.params.tournamentId, req.validData.winnerId);
+    broadcastToTournament(req.params.tournamentId, {type: "round-change", currentRound: tournament.currentRound });
     res.status(200).json({ success: true, data: tournament });
 }
 
@@ -76,6 +77,7 @@ export async function startTournament(req, res) {
 
 export async function advanceTournament(req, res) {
     const tournament = await tournamentService.advanceTournament(req.params.tournamentId);
+    broadcastToTournament(req.params.tournamentId, {type: "round-change", currentRound: tournament.currentRound });
     res.status(200).json({ success: true, data: tournament });
 }
 

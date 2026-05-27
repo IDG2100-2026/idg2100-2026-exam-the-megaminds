@@ -12,15 +12,36 @@ import TournamentCountdown from "@/components/TournamentCountdown/TournamentCoun
 import { useUserName } from "@/hooks/useUsername";
 import TournamentStandings from "@/components/TournamentStandings/TournamentStandings";
 import { usePlayerGameRedirect } from "@/hooks/usePlayerGameRedirect";
+import { useEffect } from "react";
+import { TournamentSocketProvider, useTournamentSocketContext } from "@/context/TournamentSocketContext";
+import AwardWinner from "@/components/AwardWinner/AwardWinner";
 import styles from "./TournamentDetail.module.css";
 
 
+// Thin wrapper: opens the single tournament socket for the whole page, then renders
+// the content inside it so the detail page and comments share one connection.
 export default function TournamentDetail() {
     const { tournamentid } = useParams();
+    return (
+        <TournamentSocketProvider tournamentId={tournamentid}>
+            <TournamentDetailContent tournamentid={tournamentid} />
+        </TournamentSocketProvider>
+    );
+}
+
+function TournamentDetailContent({ tournamentid }) {
     const { tournament, loading, error, refresh } = useTournament(tournamentid)
     const authorName = useUserName(tournament?.createdBy);
     const { user } = useAppContext();
     const { checking, isParticipant } = usePlayerGameRedirect(tournament, user);
+    const { lastMessage } = useTournamentSocketContext();
+
+    useEffect(() => {
+        if (lastMessage?.type === "round-change" && lastMessage.currentRound !== tournament?.currentRound) {
+            refresh();
+        }
+    }, [lastMessage, tournament?.currentRound, refresh]);
+    
     if (loading) return <p className={styles.detail__status}>Loading Tournament...</p>;
     if (error) return <p className={styles.detail__status}>Error: {error}</p>;
     if (!tournament) return <p className={styles.detail__status}>Tournament not found.</p>;
@@ -50,7 +71,13 @@ export default function TournamentDetail() {
             {(status === "in-progress" || status === "finished") && (
                 <section className={styles.detail__section}>
                     <h2 className={styles.detail__heading}>Standings</h2>
-                    <TournamentStandings tournamentId={tournament.tournamentId} />
+                    <TournamentStandings key={`round-${tournament.currentRound}`} tournamentId={tournament.tournamentId} />
+                </section>
+            )}
+            {status === "in-progress" && user?.role === "admin" && (
+                <section className={styles.detail__section}>
+                    <h2 className={styles.detail__heading}>Finish tournament</h2>
+                    <AwardWinner tournament={tournament} onChange={refresh} />
                 </section>
             )}
             {status === "in-progress" && isParticipant && (
@@ -65,7 +92,7 @@ export default function TournamentDetail() {
             {status === "in-progress" && !isParticipant && (
                 <section className={styles.detail__section}>
                     <h2 className={styles.detail__heading}>Ongoing games</h2>
-                    <OngoingGames tournament={tournament} />
+                    <OngoingGames key={`round-${tournament.currentRound}`} tournament={tournament} />
                 </section>
             )}
 
