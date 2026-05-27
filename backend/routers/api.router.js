@@ -1,5 +1,6 @@
 import express from "express";
 import userController from "../controllers/users.js";
+import adminController from "../controllers/admin.js";
 import userValidate from "../validators/user.validate.js";
 import gameController from "../controllers/game.js";
 import gameValidate from "../validators/game.validate.js";
@@ -94,6 +95,15 @@ apiRouter.get("/matchmaking/queue", requireAdmin, matchmakingController.getQueue
 
 // Platform activity (public)
 apiRouter.get("/platform/activity", platformController.getPlatformActivity);
+
+// Admin actions on users
+apiRouter.patch("/users/:userId/ban", requireAdmin, userValidate.validateUserId(), validate, adminController.banUser);
+apiRouter.patch("/users/:userId/unban", requireAdmin, userValidate.validateUserId(), validate, adminController.unbanUser);
+apiRouter.patch("/users/:userId/role", requireAdmin, userValidate.validateUserId(), validate, adminController.setUserRole);
+
+// Error logging - POST is open so the error boundary can post without auth
+apiRouter.post("/errors", adminController.logError);
+apiRouter.get("/errors", requireAdmin, adminController.getErrorLogs);
 
 
 export default apiRouter;
