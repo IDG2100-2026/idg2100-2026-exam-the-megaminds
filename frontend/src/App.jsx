@@ -12,6 +12,17 @@ function App() {
         <AmbientSound />
       </AppProvider>
     </BrowserRouter>
+import ErrorBoundary from '@/components/ErrorBoundary/ErrorBoundary';
+
+function App() {
+  return (
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AppProvider>
+          <AppRoutes />
+        </AppProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   )
 }
 

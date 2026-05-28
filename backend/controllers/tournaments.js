@@ -42,6 +42,17 @@ export async function leaveTournament(req, res) {
     res.status(200).json({ success: true, data: tournament });
 }
 
+export async function getStandings(req, res) {
+    const standings = await tournamentService.getStandings(req.params.tournamentId);
+    res.status(200).json({ success: true, data: standings });
+}
+
+export async function getTournamentGames(req, res) {
+    const games = await tournamentService.getTournamentGames(req.params.tournamentId);
+    res.status(200).json({ success: true, data: games });
+}
+
+
 export async function getTournamentComments(req, res) {
     const comments = await tournamentService.getTournamentComments(req.params.tournamentId, req.query);
     res.status(200).json({ success: true, data: comments });
@@ -53,8 +64,15 @@ export async function createTournamentComment(req, res) {
     res.status(201).json({ success: true, data: newComment });
 }
 
+export async function uploadTrophyImage(req, res) {
+    if (!req.file) return res.status(400).json({ success: false, message: "No image file recieved" });
+    const imageUrl = `/uploads/trophies/${req.file.filename}`;
+    res.status(201).json({ success: true, imageUrl});
+}
+
 export async function awardWinner(req, res) {
     const tournament = await tournamentService.awardWinner(req.params.tournamentId, req.validData.winnerId);
+    broadcastToTournament(req.params.tournamentId, {type: "round-change", currentRound: tournament.currentRound });
     res.status(200).json({ success: true, data: tournament });
 }
 
@@ -65,6 +83,7 @@ export async function startTournament(req, res) {
 
 export async function advanceTournament(req, res) {
     const tournament = await tournamentService.advanceTournament(req.params.tournamentId);
+    broadcastToTournament(req.params.tournamentId, {type: "round-change", currentRound: tournament.currentRound });
     res.status(200).json({ success: true, data: tournament });
 }
 
@@ -72,5 +91,5 @@ export default {
     getAllTournaments, getTournamentById, getTournamentComments,
     createTournament, createTournamentComment, joinTournament,
     updateTournament, deleteTournament, awardWinner, startTournament, advanceTournament,
-    leaveTournament
+    leaveTournament, getStandings, getTournamentGames, uploadTrophyImage
 };

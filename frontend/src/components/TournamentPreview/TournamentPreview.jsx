@@ -1,6 +1,6 @@
-import {Link} from "react-router";
+import { Link } from "react-router";
 import TournamentCard from "@/components/TournamentCard/TournamentCard";
-import {useTournaments} from "@/hooks/useTournaments";
+import { useTournaments } from "@/hooks/useTournaments";
 import styles from "./TournamentPreview.module.css";
 
 export default function TournamentPreview() {
@@ -10,9 +10,10 @@ export default function TournamentPreview() {
     });
 
     return (
-        <section>
-            <div>
+        <section className={styles.preview}>
+            <div className={styles.preview__header}>
                 <h2 className={styles.preview__title}>Upcoming Tournaments</h2>
+
                 <Link to="/tournament" className={styles.preview__link}>See all →</Link>
             </div>
 

@@ -1,5 +1,6 @@
 import express from "express";
 import userController from "../controllers/users.js";
+import adminController from "../controllers/admin.js";
 import userValidate from "../validators/user.validate.js";
 import gameController from "../controllers/game.js";
 import gameValidate from "../validators/game.validate.js";
@@ -13,7 +14,8 @@ import matchmakingController from "../controllers/matchmaking.js";
 import matchmakingValidate from "../validators/matchmaking.validate.js";
 import { validate } from "../validators/validate.js";
 import { identifyUser, requireRegistered, requireAdmin, requireEmailVerified } from "../middleware/auth.js";
-import { handleAvatarUpload } from "../middleware/upload.js";
+import { handleAvatarUpload, handleTrophyUpload } from "../middleware/upload.js";
+
 
 const apiRouter = express.Router();
 
@@ -64,6 +66,10 @@ apiRouter.patch("/games/:gameId/result", requireRegistered, gameValidate.validat
 apiRouter.get("/tournaments", tournamentController.getAllTournaments);
 apiRouter.get("/tournaments/:tournamentId", tournamentValidate.validateTournamentId(), validate, tournamentController.getTournamentById);
 apiRouter.get("/tournaments/:tournamentId/comments", tournamentValidate.validateTournamentId(), validate, tournamentController.getTournamentComments);
+apiRouter.get("/tournaments/:tournamentId/standings", tournamentValidate.validateTournamentId(), validate, tournamentController.getStandings);
+apiRouter.get("/tournaments/:tournamentId/games", tournamentValidate.validateTournamentId(), validate, tournamentController.getTournamentGames);
+apiRouter.post("/tournaments/trophy-image", requireAdmin, handleTrophyUpload, tournamentController.uploadTrophyImage);
+
 
 apiRouter.post("/tournaments", requireAdmin, tournamentValidate.validateTournamentCreate(), validate, tournamentController.createTournament);
 apiRouter.post("/tournaments/:tournamentId/comments", requireRegistered, tournamentValidate.validateTournamentId(), commentValidate.validateCommentCreate(), validate, tournamentController.createTournamentComment);
@@ -98,6 +104,15 @@ apiRouter.get("/matchmaking/queue", requireAdmin, matchmakingController.getQueue
 
 // Platform activity (public)
 apiRouter.get("/platform/activity", platformController.getPlatformActivity);
+
+// Admin actions on users
+apiRouter.patch("/users/:userId/ban", requireAdmin, userValidate.validateUserId(), validate, adminController.banUser);
+apiRouter.patch("/users/:userId/unban", requireAdmin, userValidate.validateUserId(), validate, adminController.unbanUser);
+apiRouter.patch("/users/:userId/role", requireAdmin, userValidate.validateUserId(), validate, adminController.setUserRole);
+
+// Error logging - POST is open so the error boundary can post without auth
+apiRouter.post("/errors", adminController.logError);
+apiRouter.get("/errors", requireAdmin, adminController.getErrorLogs);
 
 
 export default apiRouter;

@@ -10,6 +10,7 @@ export const GAME_NUM_PLAYERS_OPTIONS = [2, 3, 5];
 export const GAME_BUYIN_OPTIONS = [1, 10, 50];
 export const GAME_STATUSES = ["pending", "in-progress", "finished"];
 
+export const TOURNAMENT_ROUND_LOBBY_SECONDS = 30;
 export const MIN_TOURNAMENT_TITLE_LENGTH = 3; //characters
 export const MAX_TOURNAMENT_TITLE_LENGTH = 100; //characters
 export const MIN_TOURNAMENT_DESC_LENGTH = 10; 

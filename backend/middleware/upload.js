@@ -39,3 +39,26 @@ export function handleAvatarUpload(req, res, next) {
         next();
     });
 }
+
+const trophyDir = path.join(__dirname, '..', 'uploads', 'trophies');
+fs.mkdirSync(trophyDir, { recursive: true });
+
+const trophyStorage = multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, trophyDir),
+    filename: (_req, file, cb) => {
+        const ext = path.extname(file.originalname).toLowerCase();
+        cb(null, `trophy-${Date.now()}${ext}`);
+    }
+});
+
+const trophyUpload = multer({ storage: trophyStorage, limits: { fileSize: 2 * 1024 * 1024}, fileFilter});
+
+export function handleTrophyUpload(req, res, next){
+    trophyUpload.single('image')(req, res, (err) => {
+        if (err){
+            const msg = err.code === 'LIMIT_FILE_SIZE' ? 'Image must be under 2 MB' : err.message;
+            return res.status(err.status ?? 400).json({ success: false, message: msg });
+        }
+        next();
+    });
+}

@@ -1,7 +1,7 @@
 import {useEffect, useState, useCallback} from "react";
 import {useAppContext} from "@/context/AppContext";
 import {commentService, userService} from "@/services/api";
-import {useTournamentSocket} from "@/hooks/useTournamentSocket";
+import {useTournamentSocketContext} from "@/context/TournamentSocketContext";
 import styles from "./TournamentComments.module.css";
 
 export default function TournamentComments({tournamentId}) {
@@ -12,7 +12,7 @@ export default function TournamentComments({tournamentId}) {
     const [error, setError] = useState(null);
     const [posting, setPosting] = useState(false);
 
-    const {lastMessage, connected} = useTournamentSocket(tournamentId);
+    const {lastMessage, connected} = useTournamentSocketContext();
 
     const addComment = useCallback((comment) => {
         setComments(prev =>
@@ -29,7 +29,7 @@ export default function TournamentComments({tournamentId}) {
     }, [tournamentId]);
 
     useEffect(() => {
-        if (lastMessage?.type === "new-comment") commentService.addTournamentComment(lastMessage.comment);
+        if (lastMessage?.type === "new-comment") addComment(lastMessage.comment);
     }, [lastMessage, addComment]);
 
     // Resolve any userIds that havent been looked up
