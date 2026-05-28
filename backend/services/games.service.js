@@ -3,6 +3,7 @@ import { User } from "../models/users.js";
 import { Comment } from "../models/comments.js";
 import { updateElo } from "./elo.service.js";
 
+
 //Pagination
 export async function getAllGames({ sort = "createdAt", limit = 10, page =1 }) {
     const skip = (page - 1) * limit;
@@ -24,7 +25,13 @@ export async function getGameById(gameId) {
 }
 
 export async function createGame(data) {
-    return Game.create(data);
+    const game = await Game.create(data);
+    const buyIn = data.rules?.buyIn ?? 0;
+    if (buyIn > 0 && data.players?.length > 0) {
+        const creatorId = data.players[0].userId;
+        await User.findOneAndUpdate({ userId: creatorId }, { $inc: { points: -buyIn } });
+    }
+    return game;
 }
 
 export async function updateGame(gameId, status) {
@@ -61,9 +68,7 @@ export async function recordGameResult(gameId, { players, roundTime }) {
     // Transfer buy-in points: losers lose buyIn, winner gains buyIn per loser
     const buyIn = result?.rules?.buyIn ?? 0;
     if (buyIn > 0) {
-        const loserIds = players.filter(p => p.userId !== winner.userId).map(p => p.userId);
-        await User.updateMany({ userId: { $in: loserIds } }, { $inc: { points: -buyIn } });
-        await User.findOneAndUpdate({ userId: winner.userId }, { $inc: { points: buyIn * loserIds.length } });
+        await User.findOneAndUpdate({ userId: winner.userId }, { $inc: { points: buyIn * players.length} });
     }
 
     return result;
@@ -76,12 +81,17 @@ export async function joinGame(gameId, userId) {
     if (game.players.some(p => p.userId === userId)) throw new Error("You are already in this game");
     if (game.players.length >= game.rules.numPlayers) throw new Error("This game is full");
 
-    const user = await User.findOne({ userId }, { elo: 1, username: 1 });
+    const user = await User.findOne({ userId }, { elo: 1, username: 1, points: 1 });
     if (!user) throw new Error("User not found");
 
-    const { minElo, maxElo } = game.rules;
-    if (minElo != null && user.elo < minElo) throw new Error(`Your ELO (${user.elo}) is below this game's minimum (${minElo})`);
+    const { minElo, maxElo, buyIn } = game.rules;
+    if (minElo != null && user.elo < minElo) throw new Error(`Tour ELO (${user.elo}) is below this game's minimum (${minElo})`);
     if (maxElo != null && user.elo > maxElo) throw new Error(`Your ELO (${user.elo}) is above this game's maximum (${maxElo})`);
+    if (buyIn > 0 && (user.points ?? 0) < buyIn) throw new Error(`You need ${buyIn} points to join this game (you have ${user.points ?? 0})`);
+
+    if (buyIn > 0) {
+        await User.findOneAndUpdate({ userId }, { $inc: { points: -buyIn} });
+    }
 
     game.players.push({ userId });
     if (game.players.length >= game.rules.numPlayers) {

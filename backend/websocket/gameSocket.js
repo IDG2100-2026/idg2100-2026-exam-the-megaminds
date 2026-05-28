@@ -1,7 +1,7 @@
 import { WebSocketServer } from "ws";
 import { consumeWsToken } from "../middleware/jwt.js";
-import { ensureEngine, rollDice, doneRolling, getState } from "../services/gameEngine.service.js";
-
+import { ensureEngine, rollDice, doneRolling, revealRound, startRound, getEngine, removeEngine, getState } from "../services/gameEngine.service.js";
+import { recordGameResult, getGameById } from "../services/games.service.js";
 
 // gameId -> Set of sockets in that game
 const rooms = new Map();
@@ -60,7 +60,16 @@ export function initGameSocket(server) {
                 socket.send(JSON.stringify({ type: "joined-game", gameId }));
 
                 await ensureEngine(gameId);
-                socket.send(JSON.stringify({ type: "state", state: getState(gameId, socket.userId) }));
+                const engine = getEngine(gameId);
+                if (engine?.status === 'waiting') {
+                    const game = await getGameById(gameId);
+                    if (game?.status === 'in-progress') {
+                        removeEngine(gameId);
+                        await ensureEngine(gameId);
+                    }
+                }
+                broadcastState(gameId);
+
             }
             
             if (msg.type === "join-tournament") {
@@ -82,6 +91,46 @@ export function initGameSocket(server) {
                 const result = doneRolling(socket.gameId, socket.userId);
                 if (result.error) return socket.send(JSON.stringify({ type: "error", message: result.error }));
                 broadcastState(socket.gameId);
+
+                if (result.roundComplete) {
+                    const reveal = revealRound(socket.gameId);
+                    if (reveal.error) return;
+                    broadcastState(socket.gameId);
+                    broadcastToGame(socket.gameId, {
+                        type: "round-result",
+                        winnerIds: reveal.winnerIds,
+                        handNames: reveal.handNames,
+                        scores: reveal.scores,
+                        isGameOver: reveal.isGameOver
+                    });
+
+                    if (reveal.isGameOver) {
+                        const gameId = socket.gameId;
+                        const engine = getEngine(gameId);
+                        const players = engine
+                            ? engine.players.map(p => ({ userId: p.userId, score: p.score }))
+                            : reveal.scores;
+                        const roundTime = engine?.rules?.roundTime;
+
+                        recordGameResult(gameId, { players, roundTime })
+                            .catch(err => console.error('Settlement failed:', err));
+                        
+                        removeEngine(gameId);
+
+                        setTimeout(() => broadcastToGame(gameId, {
+                            type: "game-over",
+                            winnerIds: reveal.gameWinnerIds,
+                            scores: reveal.scores
+                        }), 3000);
+                    } else {
+                        setTimeout(() => {
+                            const engine = getEngine(socket.gameId);
+                            if (!engine) return;
+                            startRound(engine);
+                            broadcastState(socket.gameId);
+                        }, 3000);
+                    }
+                }
                 return;
             }
 

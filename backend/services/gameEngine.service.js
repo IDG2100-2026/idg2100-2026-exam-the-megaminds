@@ -1,4 +1,5 @@
 import { getGameById } from "./games.service.js";
+import { decideRound } from "./handEval.service.js";
 
 const engines = new Map();
 
@@ -99,6 +100,45 @@ export function doneRolling(gameId, userId){
     return { roundComplete: true };
 }
 
+export function revealRound(gameId) {
+    const e = engines.get(gameId);
+    if (!e) return { error: "Game not found" };
+    if (e.phase !== "reveal") return { error: "Not the reveal phase" };
+
+    e.revealed = true;
+
+    const active = e.players.filter(p => !p.folded && p.faces.some(f => f !== null));
+    const { hands, winnerIds } = decideRound(active, e.rules.straightallowed ?? false);
+
+    const handNames = {};
+    hands.forEach(h => { handNames[h.userId] = h.name; });
+
+    winnerIds.forEach(uid => {
+        const p = e.players.find(p => p.userId === uid);
+        if (p) p.score += 1;
+    });
+
+    const winThreshold = Math.floor(e.rules.bestof / 2) + 1;
+    const isGameOver = e.players.some(p => p.score >= winThreshold) || e.currentRound >= e.rules.bestof;
+
+    if (isGameOver) {
+        e.phase = "finished";
+        const maxScore = Math.max(...e.players.map(p => p.score));
+        e.gameWinnerIds = e.players.filter(p => p.score === maxScore).map(p => p.userId);
+    } else {
+        e.currentRound += 1;
+    }
+
+    return {
+        isGameOver,
+        winnerIds,
+        handNames,
+        gameWinnerIds: e.gameWinnerIds ?? [],
+        scores: e.players.map(p => ({ userId: p.userId, score: p.score }))
+    };
+
+}
+
 
 export function getEngine(gameId) {
     return engines.get(gameId) ?? null;
@@ -140,4 +180,4 @@ export function getState(gameId, viewerId) {
     };
 }
 
-export default { ensureEngine, startRound, rollDice, doneRolling, getEngine, removeEngine, getState };
+export default { ensureEngine, startRound, rollDice, doneRolling, revealRound, getEngine, removeEngine, getState };

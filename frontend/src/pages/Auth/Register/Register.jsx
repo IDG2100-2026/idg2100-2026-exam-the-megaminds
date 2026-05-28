@@ -37,12 +37,19 @@ export default function Register() {
     eighteenYearsAgo.setFullYear(eighteenYearsAgo.getFullYear() - 18);
     const eighteenYearsAgoStr = eighteenYearsAgo.toISOString().split("T")[0];
 
+    const ninetyYearsAgo = new Date();
+    ninetyYearsAgo.setFullYear(ninetyYearsAgo.getFullYear() - 90);
+    const ninetyYearsAgoStr = ninetyYearsAgo.toISOString().split("T")[0];
+
     const dobError = 
         form.dob.length > 0 && new Date(form.dob) > eighteenYearsAgo;
+       
+    const ageCapError =
+        form.dob.length > 0 && new Date(form.dob) < ninetyYearsAgo;    
     
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (passwordMismatch || dobError) return;
+        if (passwordMismatch || dobError || ageCapError) return;
 
         setError("");
         setLoading(true);
@@ -184,12 +191,18 @@ export default function Register() {
                             name="dob"
                             value={form.dob}
                             onChange={handleChange}
+                            min={ninetyYearsAgoStr}
                             max={eighteenYearsAgoStr}
                             required
                         />
                         {dobError && (
                             <p className={styles.errorMsg} role="alert">
                                 You must be 18 or older to register
+                            </p>
+                        )}
+                        {ageCapError && (
+                            <p className={styles.errorMsg} role="alert">
+                                You must be under 90 years old to register
                             </p>
                         )}
                     </div>
@@ -220,7 +233,7 @@ export default function Register() {
                     <button
                         type="submit"
                         className={styles.submitBtn}
-                        disabled={loading || passwordMismatch || dobError || !agreedToTerms}
+                        disabled={loading || passwordMismatch || dobError || ageCapError || !agreedToTerms}
                     >
                         {loading ? "Creating account..." : "Create account"}
                     </button>

@@ -10,6 +10,7 @@ class DicePokerPlayer extends HTMLElement {
     this.playerName = this.getAttribute('playername') || 'Unknown';
     this.score      = this.getAttribute('score') || 0;
     this.rollCount  = 0;
+    this._holdMode = false;
   }
 
   static get observedAttributes() {
@@ -51,13 +52,20 @@ class DicePokerPlayer extends HTMLElement {
       detail: {userid: this.getAttribute('userid')}
     }));
     });
+    this.holdButton.addEventListener('click', () => {
+      this._holdMode = !this._holdMode;
+      this.holdButton.textContent = this._holdMode ? 'Holding' : 'Hold';
+    });
+
+
   }
   _wireHolds(){
     this.dice.forEach(die => {
       die.addEventListener('click', () => {
-        if (this.rollButton.disabled) return;
+        if (!this._holdMode || this.rollButton.disabled) return;
         die.toggleAttribute('onhold');
       })
+
     })
   }
 
@@ -72,21 +80,29 @@ class DicePokerPlayer extends HTMLElement {
     this._renderHeader(score, yourTurn ? rollsLeft: null);
     if (active) this.setAttribute('active', ''); else this.removeAttribute('active');
 
-    this.dice.forEach((die, i) =>{
-      const face = faces?.[i] ?? null;
-      if (face === null){
-        die.setAttribute('hidden-face', '')
-      } else{
-        die.removeAttribute('hidden-face');
-        die.setFace(face);
-      }
+    const isNewRound = !(faces ?? []).some(f => f !== null);
+    if (isNewRound) {
+        this._holdMode = false;
+        this.holdButton.textContent = 'Hold';
+        this.dice.forEach(d => d.removeAttribute('onhold'));
+    }
+
+    this.dice.forEach((die, i) => {
+        const face = faces?.[i] ?? null;
+        if (face === null) {
+            die.setAttribute('hidden-face', '');
+        } else {
+            die.removeAttribute('hidden-face');
+            die.setFace(face);
+        }
     });
+
 
     if (yourTurn) {
       const hasRolled = (faces ?? []).some(f => f !== null);
       this.rollButton.disabled = rollsLeft <= 0;
       this.continueButton.disabled = !hasRolled;
-      this.holdButton.disabled = true;
+      this.holdButton.disabled = !hasRolled || rollsLeft <= 0;
     } else {
       this.disableControls();
     }

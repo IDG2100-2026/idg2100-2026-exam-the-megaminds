@@ -13,6 +13,9 @@ class DicePokerBoard extends HTMLElement {
     this.waitingEl    = this.shadowRoot.querySelector('#waiting');
     this.waitingMsgEl = this.shadowRoot.querySelector('#waiting-msg');
     this.totalRounds = 3;
+    this.timerEl = this.shadowRoot.querySelector('#timer');
+    this._timerInterval = null;
+    this._lastToAct = null;
   }
 
   connectedCallback() {
@@ -32,6 +35,72 @@ class DicePokerBoard extends HTMLElement {
     this.waitingEl.style.display = 'none';
   }
 
+  _startTimer(seconds, isMyTurn) {
+    clearInterval(this._timerInterval);
+    let remaining = seconds;
+    this._tick(remaining);
+    this._timerInterval = setInterval(() => {
+      remaining -= 1;
+      this._tick(remaining);
+      if (remaining <= 0) {
+        clearInterval(this._timerInterval);
+        if (isMyTurn) this._autoFinish();
+      }
+    }, 1000);
+  }
+
+  _tick(remaining) {
+    if (!this.timerEl) return;
+    this.timerEl.textContent = `${Math.max(remaining, 0)}s`;
+    this.timerEl.classList.toggle('urgent', remaining <= 10)
+  }
+
+  _stopTimer(){
+    clearInterval(this._timerInterval);
+    if (this.timerEl) { this.timerEl.textContent = ''; this.timerEl.classList.remove('urgent'); }
+  }
+
+  _autoFinish() {
+    const localEl = this.querySelector('dice-poker-player[local]');
+    const needsRoll = localEl?.continueButton?.disabled ?? true;
+    if (needsRoll) {
+      this.dispatchEvent(new CustomEvent('request-roll', { bubbles: true, detail: { held: [] } }));
+      setTimeout(() => {
+        this.dispatchEvent(new CustomEvent('request-done', { bubbles: true, composed: true }));
+      }, 600);
+    } else {
+      this.dispatchEvent(new CustomEvent('request-done', { bubbles: true, composed: true }));
+    }
+  }
+
+  showRoundResult(winnerIds, handNames) {
+    const ids = (winnerIds ?? []).map(String);
+    const playerEls = [...this.querySelectorAll('dice-poker-player')];
+    const names = playerEls
+        .filter(el => ids.includes(el.getAttribute('userid')))
+        .map(el => el.getAttribute('playername'));
+    const hand = handNames?.[winnerIds?.[0]] ?? '';
+    if (this.statusMsgEl) {
+        this.statusMsgEl.textContent = names.length
+            ? `${names.join(' & ')} wins${hand ? ` — ${hand}` : ''}!`
+            : '';
+    }
+  }
+
+
+  showGameOver(winnerIds) {
+    this._stopTimer();
+    const ids = (winnerIds ?? []).map(String);
+    const playerEls = [...this.querySelectorAll('dice-poker-player')];
+    const names = playerEls
+      .filter(el => ids.includes(el.getAttribute('userid')))
+      .map(el => el.getAttribute('playername'));
+    if (this.roundInfoEl) this.roundInfoEl.textContent = 'Game Over';
+    if (this.statusMsgEl) {
+      this.statusMsgEl.textContent = names.length ? `${names.join(' & ')} wins!` : 'Game Over!';
+    }
+  }
+
   applyState(state, viewerId){
     if (!state) return;
 
@@ -40,6 +109,15 @@ class DicePokerBoard extends HTMLElement {
       return;
     }
     this._hideWaiting();
+
+    const roundtime = parseInt(this.getAttribute('roundtime')) || 30;
+    if (state.phase === 'finished') {
+      this._stopTimer();
+    } else if (state.toAct !== this._lastToAct) {
+      if (state.toAct) this._startTimer(roundtime, state.toAct === viewerId);
+      else this._stopTimer();
+    }
+    this._lastToAct = state.toAct;
   
     if(this.roundInfoEl){
       this.roundInfoEl.textContent = `Round ${state.currentRound} of ${this.totalRounds}`;
@@ -59,8 +137,12 @@ class DicePokerBoard extends HTMLElement {
       });
     });
     if (this.statusMsgEl){
-      const current = state.players.find(pl => pl.userId === state.toAct);
-      this.statusMsgEl.textContent = current ? `${current.username}'s turn` : '';
+      if (state.phase === 'finished') {
+        this.statusMsgEl.textContent = 'Game Over!';
+      } else {
+        const current = state.players.find(pl => pl.userId === state.toAct);
+        this.statusMsgEl.textContent = current ? `${current.username}'s turn` : '';
+      }
     }
   }
 

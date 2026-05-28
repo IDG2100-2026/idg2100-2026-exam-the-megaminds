@@ -13,8 +13,12 @@ export async function getGameById(req, res) {
 }
 
 export async function createGame(req, res) {
-    const newGame = await gameService.createGame(req.validData);
-    res.status(201).json({ success: true, data: newGame });
+    try {
+        const newGame = await gameService.createGame(req.validData);
+        res.status(201).json({ success: true, data: newGame });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
 }
 
 export async function updateGame(req, res) {
