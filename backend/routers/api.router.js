@@ -14,6 +14,8 @@ import matchmakingController from "../controllers/matchmaking.js";
 import matchmakingValidate from "../validators/matchmaking.validate.js";
 import { validate } from "../validators/validate.js";
 import { identifyUser, requireRegistered, requireAdmin, requireEmailVerified } from "../middleware/auth.js";
+import { handleAvatarUpload, handleTrophyUpload } from "../middleware/upload.js";
+
 
 const apiRouter = express.Router();
 
@@ -29,6 +31,7 @@ apiRouter.get("/users/me", userController.getMe);
 apiRouter.get("/verify-email", userController.verifyEmail);
 apiRouter.post("/resend-verification", userController.resendVerification);
 apiRouter.post("/forgot-password", userController.forgotPassword);
+apiRouter.post("/reset-password", userController.resetPassword);
 
 // WebSocket token
 apiRouter.get("/ws-token", requireRegistered, userController.getWsToken);
@@ -41,6 +44,7 @@ apiRouter.get("/users/:userId/games", userValidate.validateUserId(), validate, u
 
 apiRouter.post("/users", userValidate.validateUserCreate(), validate, userController.createUser);
 apiRouter.patch("/users/:userId", requireRegistered, userValidate.validateUserUpdate(), validate, userController.updateUser);
+apiRouter.post("/users/:userId/avatar", requireRegistered, userValidate.validateUserId(), validate, handleAvatarUpload, userController.uploadUserAvatar);
 apiRouter.delete("/users/:userId", requireAdmin, userValidate.validateUserId(), validate, userController.deleteUser);
 
 // Games
@@ -50,6 +54,7 @@ apiRouter.get("/games/:gameId", gameValidate.validateGameId(), validate, gameCon
 apiRouter.get("/games/:gameId/comments", gameValidate.validateGameId(), validate, gameController.getGameComments);
 
 apiRouter.post("/games", requireRegistered, requireEmailVerified, gameValidate.validateGameCreate(), validate, gameController.createGame);
+apiRouter.post("/games/:gameId/join", requireRegistered, requireEmailVerified, gameValidate.validateGameId(), validate, gameController.joinGame);
 apiRouter.post("/games/:gameId/comments", requireRegistered, gameValidate.validateGameId(), commentValidate.validateCommentCreate(), validate, gameController.createGameComment);
 apiRouter.delete("/games/:gameId", requireAdmin, gameValidate.validateGameId(), validate, gameController.deleteGame);
 
@@ -61,6 +66,10 @@ apiRouter.patch("/games/:gameId/result", requireRegistered, gameValidate.validat
 apiRouter.get("/tournaments", tournamentController.getAllTournaments);
 apiRouter.get("/tournaments/:tournamentId", tournamentValidate.validateTournamentId(), validate, tournamentController.getTournamentById);
 apiRouter.get("/tournaments/:tournamentId/comments", tournamentValidate.validateTournamentId(), validate, tournamentController.getTournamentComments);
+apiRouter.get("/tournaments/:tournamentId/standings", tournamentValidate.validateTournamentId(), validate, tournamentController.getStandings);
+apiRouter.get("/tournaments/:tournamentId/games", tournamentValidate.validateTournamentId(), validate, tournamentController.getTournamentGames);
+apiRouter.post("/tournaments/trophy-image", requireAdmin, handleTrophyUpload, tournamentController.uploadTrophyImage);
+
 
 apiRouter.post("/tournaments", requireAdmin, tournamentValidate.validateTournamentCreate(), validate, tournamentController.createTournament);
 apiRouter.post("/tournaments/:tournamentId/comments", requireRegistered, tournamentValidate.validateTournamentId(), commentValidate.validateCommentCreate(), validate, tournamentController.createTournamentComment);

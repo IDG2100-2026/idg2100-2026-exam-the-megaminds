@@ -65,10 +65,15 @@ const tournamentSchema = new mongoose.Schema({
             message: "maxPlayers must be greater than or equal to minPlayers"
         }
     },
-    buyIn: {
+        buyIn: {
         type: Number,
         default: 0,
         min: 0
+    },
+    // Elo gating — null on a side means "open" in that direction
+    eloRange: {
+        min: { type: Number, default: null, min: 0 },
+        max: { type: Number, default: null, min: 0 }
     },
     // Schedule
     startDate: {
@@ -100,6 +105,10 @@ const tournamentSchema = new mongoose.Schema({
     currentRound: {
         type: Number,
         default: 0
+    },
+    nextRoundStartsAt: {
+        type: Date,
+        defualt: null
     },
     // Each entry stores the game IDs for one round and any player who received a bye
     rounds: [

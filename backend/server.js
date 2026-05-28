@@ -7,6 +7,8 @@ import nonApiRouter from "./routers/non.api.router.js";
 import apiRouter from "./routers/api.router.js";
 import { connectDB, disconnectDB } from "./configs/db.js";
 import { errorHandler } from "./middleware/error.js";
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 // getting mongoose to connect to mongoDB
 await connectDB();
@@ -21,6 +23,9 @@ diceApp.use(cors({
 }));
 diceApp.use(cookieParser()); // handles non-API routes
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+diceApp.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // mounting routers
 diceApp.use("/", nonApiRouter);
 diceApp.use("/api", apiRouter);
@@ -34,12 +39,14 @@ const server = diceApp.listen(port, ()=>{console.log("Spanish Poker Dice app is 
 initGameSocket(server);
 
 // graceful shutdown
+let shuttingDown = false;
 async function shutDown(){
+    if (shuttingDown) return;
+    shuttingDown = true;
     console.log("\nThe Spanish Poker Dice app is being shut down...");
+    server.close();
     await disconnectDB();
-    server.close(()=>{
-        process.exit(0);
-    });
+    process.exit(0);
 }
 
 process.on("SIGINT", shutDown);

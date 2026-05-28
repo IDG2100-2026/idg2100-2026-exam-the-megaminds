@@ -55,6 +55,8 @@ export const userService = {
     forgotPassword: (email) =>
         apiCall('POST', '/api/forgot-password', { email }),
     
+    resetPassword: (code, pwd) =>
+        apiCall('POST', '/api/reset-password', { code, pwd }),
     getUser: (userId) =>
         apiCall('GET', `/api/users/${userId}`).then(res => res.data),
 
@@ -69,6 +71,21 @@ export const userService = {
 
     deleteUser: (userId) =>
         apiCall('DELETE', `/api/users/${userId}`),
+    getUserGames: (userId, page = 1, limit = 5) =>
+        apiCall('GET', `/api/users/${userId}/games?page=${page}&limit=${limit}`).then(res => res.data),
+    
+    uploadAvatar: async (userId, file) => {
+        const formData = new FormData();
+        formData.append('avatar', file);
+        const response = await fetch(`${API_URL}/api/users/${userId}/avatar`, {
+            method: 'POST',
+            credentials: 'include',
+            body: formData,
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Upload failed');
+        return data;
+    },
 };
 
 // Game CRUD and state transitions
@@ -89,6 +106,9 @@ export const gameService = {
     // Records final result and triggers ELO update
     recordResult: (gameId, resultData) =>
         apiCall('PATCH', `/api/games/${gameId}/result`, resultData),
+
+    joinGame: (gameId) =>
+        apiCall('POST', `/api/games/${gameId}/join`),
 };
 
 // Matchmaking queue — pairs registered or anonymous users into a game
@@ -142,6 +162,28 @@ export const tournamentService = {
 
     awardWinner: (tournamentId, winnerId) =>
         apiCall('PATCH', `/api/tournaments/${tournamentId}/winner`, { winnerId }),
+
+    getStandings: (tournamentId) =>
+        apiCall('GET', `/api/tournaments/${tournamentId}/standings`),
+    
+    getGames: (tournamentId) =>
+        apiCall('GET', `/api/tournaments/${tournamentId}/games`),
+
+    // Uploads a trophy image and returns its URL (to store in trophy.imageUrl).
+    // Uses raw fetch + FormData so the browser sets the multipart Content-Type.
+    uploadTrophyImage: async (file) => {
+        const formData = new FormData();
+        formData.append('image', file);
+        const response = await fetch(`${API_URL}/api/tournaments/trophy-image`, {
+            method: 'POST',
+            credentials: 'include',
+            body: formData,
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Upload failed');
+        return data.imageUrl;
+    },
+
 };
 
 // Comments are scoped to either a game or a tournament

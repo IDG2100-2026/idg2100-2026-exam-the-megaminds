@@ -3,9 +3,10 @@ import { useState, useEffect, useRef, useCallback } from "react";
 const WS_URL = import.meta.env.VITE_WS_URL;
 
 export function useTournamentSocket(tournamentId) {
-    const wsRef = useRef(null);
+        const wsRef = useRef(null);
     const connectRef = useRef(null);
     const reconnectRef = useRef(null);
+    const closingRef = useRef(false);
     const [lastMessage, setLastMessage] = useState(null);
     const [connected, setConnected] = useState(false);
 
@@ -33,6 +34,7 @@ export function useTournamentSocket(tournamentId) {
         }
         ws.onclose = () => {
             setConnected(false);
+            if (closingRef.current) return;
             reconnectRef.current = setTimeout(() => connectRef.current?.(), 3000);
         };
         ws.onerror = () => ws.close();
@@ -40,10 +42,12 @@ export function useTournamentSocket(tournamentId) {
 
     useEffect(() => { connectRef.current = connect; }, [connect]);
 
-    useEffect(() => {
-      connect();
+    useEffect(() => { 
+     closingRef.current = false;
+     connect();
     
       return () => {
+        closingRef.current = true;
         clearTimeout(reconnectRef.current);
         wsRef.current?.close();
       };

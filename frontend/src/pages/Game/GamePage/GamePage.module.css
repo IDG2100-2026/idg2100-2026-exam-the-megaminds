@@ -1,0 +1,214 @@
+.page {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.statusBar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+    font-size: 0.875rem;
+    flex-wrap: wrap;
+    background: var(--theme-background-alt);
+    padding: 10px 16px;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px var(--theme-shadow-light);
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.dotGreen { background: var(--theme-success); }
+.dotRed   { background: var(--theme-error); }
+
+.statusText {
+    color: var(--theme-text-secondary);
+    font-weight: 600;
+}
+
+.metaInfo {
+    color: var(--theme-text-secondary);
+    font-size: 0.8rem;
+    margin-left: 0.75rem;
+}
+
+.gameId {
+    margin-left: auto;
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: var(--theme-text-secondary);
+}
+
+/* Two-column layout */
+.content {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 20px;
+    align-items: start;
+}
+
+@media (max-width: 900px) {
+    .content {
+        grid-template-columns: 1fr;
+    }
+}
+
+.boardSection {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.leaveBtn {
+    align-self: flex-start;
+    background: var(--theme-error);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    box-shadow: 0 2px 8px var(--theme-shadow-medium);
+}
+
+.leaveBtn:hover {
+    opacity: 0.85;
+}
+
+/* Sidebar */
+.sidebar {
+    background: var(--theme-background-alt);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 4px 16px var(--theme-shadow-light);
+}
+
+.sidebarTitle {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0 0 4px;
+    color: var(--theme-accent-light);
+}
+
+.commentsList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.noComments {
+    font-size: 0.85rem;
+    color: var(--theme-text-secondary);
+    text-align: center;
+    padding: 1rem 0;
+    margin: 0;
+}
+
+.comment {
+    background: var(--theme-primary);
+    border-left: 3px solid var(--theme-accent);
+    border-radius: 0 8px 8px 0;
+    padding: 8px 12px;
+}
+
+.commentHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+    gap: 8px;
+}
+
+.commentAuthor {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--theme-accent-light);
+}
+
+.commentDate {
+    font-size: 0.72rem;
+    color: var(--theme-text-secondary);
+    white-space: nowrap;
+}
+
+.commentText {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--theme-text);
+    word-break: break-word;
+}
+
+/* Comment form */
+.commentForm {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.commentInput {
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--theme-primary);
+    border: 1px solid var(--theme-accent-dark);
+    border-radius: 8px;
+    color: var(--theme-text);
+    padding: 8px 12px;
+    font-size: 0.875rem;
+    font-family: inherit;
+    resize: vertical;
+    transition: border-color 0.15s;
+}
+
+.commentInput::placeholder {
+    color: var(--theme-text-secondary);
+}
+
+.commentInput:focus {
+    outline: none;
+    border-color: var(--theme-accent);
+}
+
+.commentSubmit {
+    align-self: flex-end;
+    background: linear-gradient(135deg, var(--theme-accent) 0%, var(--theme-accent-light) 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 7px 18px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.15s;
+    box-shadow: 0 2px 8px var(--theme-shadow-medium);
+}
+
+.commentSubmit:hover:not(:disabled) {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.commentSubmit:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.loginPrompt {
+    font-size: 0.85rem;
+    color: var(--theme-text-secondary);
+    text-align: center;
+    margin: 0;
+}

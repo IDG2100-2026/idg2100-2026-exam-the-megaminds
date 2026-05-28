@@ -4,8 +4,9 @@ import User from "../models/users.js";
 import {
     GAME_BESTOF_OPTIONS,
     GAME_ROUND_TIME_OPTIONS,
-    GAME_STATUSES,
-    GAME_PLAYERS_PER_MATCH
+    GAME_NUM_PLAYERS_OPTIONS,
+    GAME_BUYIN_OPTIONS,
+    GAME_STATUSES
 } from "../configs/constants.js";
 
 export function validateGameId(){
@@ -52,21 +53,29 @@ export function validateGameCreate(){
             .isInt()
             .isIn(GAME_ROUND_TIME_OPTIONS)
             .withMessage(`'roundTime' must be one of: ${GAME_ROUND_TIME_OPTIONS.join(", ")} seconds`),
-        
+
+        body("rules.numPlayers")
+            .isInt()
+            .isIn(GAME_NUM_PLAYERS_OPTIONS)
+            .withMessage(`'numPlayers' must be one of: ${GAME_NUM_PLAYERS_OPTIONS.join(", ")}`),
+
+        body("rules.buyIn")
+            .isInt()
+            .isIn(GAME_BUYIN_OPTIONS)
+            .withMessage(`'buyIn' must be one of: ${GAME_BUYIN_OPTIONS.join(", ")}`),
+
         body("players")
-            .isArray({ min: GAME_PLAYERS_PER_MATCH, max: GAME_PLAYERS_PER_MATCH })
-            .withMessage(`A game must have exactly ${GAME_PLAYERS_PER_MATCH} players`)
+            .isArray({ min: 1, max: 5 })
+            .withMessage("A game must have between 1 and 5 players")
             .bail()
-            // DB check — confirm both players exist, and that they are not the same person
             .custom(async (players) => {
+                const ids = players.map(p => p.userId);
+                if (new Set(ids).size !== ids.length) {
+                    throw new Error("A player cannot appear twice in the same game");
+                }
                 for (const player of players) {
                     const user = await User.findOne({ userId: player.userId });
-                    if (!user) {
-                        throw new Error(`User with ID ${player.userId} does not exist`);
-                    }
-                }
-                if (players[0].userId === players[1].userId) {
-                    throw new Error("A player cannot play against themselves");
+                    if (!user) throw new Error(`User with ID ${player.userId} does not exist`);
                 }
             })
     ];
@@ -74,39 +83,23 @@ export function validateGameCreate(){
 
 export function validateGameResult(){
     return [
-        body("winnerId")
-            .isInt({ min: 0, max: Number.MAX_SAFE_INTEGER })
-            .withMessage("Winner ID must be a valid integer")
+        body("players")
+            .isArray({ min: 2 })
+            .withMessage("players must be an array with at least 2 entries")
             .bail()
-            // DB check — confirm the winner user exists
-            .custom(async (winnerId) => {
-                const user = await User.findOne({ userId: winnerId });
-                if (!user) {
-                    throw new Error("Winner user does not exist");
-                }
-            }),
-        
-        body("loserId")
-            .isInt({ min: 0, max: Number.MAX_SAFE_INTEGER })
-            .withMessage("Loser ID must be a valid integer")
-            .bail()
-            // DB check — confirm the loser user exists
-            .custom(async (loserId) => {
-                const user = await User.findOne({ userId: loserId });
-                if (!user) {
-                    throw new Error("Loser user does not exist");
+            .custom(async (players) => {
+                for (const p of players) {
+                    if (typeof p.userId !== "number") throw new Error("Each player must have a numeric userId");
+                    if (typeof p.score !== "number" || p.score < 0) throw new Error("Each player must have a non-negative score");
+                    const user = await User.findOne({ userId: p.userId });
+                    if (!user) throw new Error(`User with ID ${p.userId} does not exist`);
                 }
             }),
 
-        body("loserScore")
-            .optional()
-            .isInt({ min: 0 })
-            .withMessage("Loser score must be a positive integer"),
-        
-        body("winnerScore")
-            .optional()
-            .isInt({ min: 0 })
-            .withMessage("Winner score must be a positive integer")
+        body("roundTime")
+            .isInt()
+            .isIn(GAME_ROUND_TIME_OPTIONS)
+            .withMessage(`roundTime must be one of: ${GAME_ROUND_TIME_OPTIONS.join(", ")}`)
     ];
 }
 

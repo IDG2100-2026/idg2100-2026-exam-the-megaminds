@@ -1,0 +1,61 @@
+.standings {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.standings th,
+.standings td {
+    padding: 10px 12px;
+    text-align: left;
+}
+
+.standings thead th {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--theme-text-secondary);
+    border-bottom: 1px solid var(--theme-accent-dark);
+}
+
+/* Right-align the numeric columns (points, wins) */
+.standings th:nth-child(n + 3),
+.standings td:nth-child(n + 3) {
+    text-align: right;
+}
+
+.standings tbody tr {
+    border-bottom: 1px solid var(--theme-accent-dark);
+}
+
+.standings tbody tr:last-child {
+    border-bottom: none;
+}
+
+.standings__rank {
+    width: 2.5rem;
+    font-weight: 700;
+    color: var(--theme-text-secondary);
+}
+
+.standings__player {
+    font-weight: 600;
+    color: var(--theme-accent-light);
+}
+
+.standings__points {
+    font-weight: 700;
+    color: var(--theme-text);
+}
+
+.standings__status {
+    margin: 0;
+    color: var(--theme-text-secondary);
+}
+
+@media (max-width: 768px) {
+    .standings th,
+    .standings td {
+        padding: 8px 8px;
+    }
+}

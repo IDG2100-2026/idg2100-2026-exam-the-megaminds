@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 import {
     GAME_BESTOF_OPTIONS,
     GAME_ROUND_TIME_OPTIONS,
+    GAME_NUM_PLAYERS_OPTIONS,
+    GAME_BUYIN_OPTIONS,
     GAME_STATUSES
 } from "../configs/constants.js";
 
@@ -13,10 +15,13 @@ const gameSchema = new mongoose.Schema({
         trim: true
     },
     rules: {
-        // enum restricts the value to only the allowed options
         bestof: { type: Number, required: true, enum: GAME_BESTOF_OPTIONS },
         straightallowed: { type: Boolean, required: true },
-        roundTime: { type: Number, required: true, enum: GAME_ROUND_TIME_OPTIONS }
+        roundTime: { type: Number, required: true, enum: GAME_ROUND_TIME_OPTIONS },
+        numPlayers: { type: Number, required: true, enum: GAME_NUM_PLAYERS_OPTIONS, default: 2 },
+        buyIn: { type: Number, required: true, enum: GAME_BUYIN_OPTIONS, default: 1 },
+        minElo: { type: Number, default: null },
+        maxElo: { type: Number, default: null }
     },
     players: [
         {

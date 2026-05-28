@@ -29,6 +29,15 @@ export async function recordGameResult(req, res) {
     res.status(200).json({ success: true, data: result });
 }
 
+export async function joinGame(req, res) {
+    try {
+        const game = await gameService.joinGame(req.params.gameId, req.userId);
+        res.status(200).json({ success: true, data: game });
+    } catch (err) {
+        res.status(400).json({ success: false, message: err.message });
+    }
+}
+
 export async function deleteGame(req, res) {
     const delGame = await gameService.deleteGame(req.validData.gameId);
     if (!delGame) return res.status(404).json({ message: "Game not found" });
@@ -54,6 +63,7 @@ export default {
     getGameById,
     getGameComments,
     createGame,
+    joinGame,
     createGameComment,
     recordGameResult,
     updateGame,

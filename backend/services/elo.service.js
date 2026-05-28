@@ -2,72 +2,116 @@ import { User } from "../models/users.js";
 
 // ELO formula based on the standard chess rating system
 export function calculateElo(winnerElo, loserElo) {
-    // K controls how many points can be won/lost in a single game — 32 is standard
     const K = 32;
-
-    // Expected score = how likely this player was to win based on the ELO gap
-    // A player with much higher ELO has an expectedScore close to 1 (almost certain to win)
     const expectedWinner = 1 / (1 + Math.pow(10, (loserElo - winnerElo) / 400));
-    const expectedLoser = 1 - expectedWinner; // the two must always sum to 1
-
+    const expectedLoser = 1 - expectedWinner;
     return {
-        // Actual score for winner is 1 (won); gain is smaller if they were already the favourite
         newWinnerElo: Math.round(winnerElo + K * (1 - expectedWinner)),
-        // Actual score for loser is 0 (lost); loss is smaller if they were already the underdog
         newLoserElo: Math.round(loserElo + K * (0 - expectedLoser))
     };
 }
 
-export async function updateElo(winnerId, loserId) {
-    const winner = await User.findOne({ userId: winnerId }).select("userId elo wins totalGames eloChangeLastWeek eloWeekStart winPercentage losses");
-    const loser = await User.findOne({ userId: loserId }).select("userId elo wins totalGames eloChangeLastWeek eloWeekStart winPercentage losses");
+// Maps roundTime (seconds) to the corresponding per-time-control Elo field
+function eloFieldForTime(roundTime) {
+    if (roundTime === 10) return "eloBullet";
+    if (roundTime === 30) return "eloBlitz";
+    return "eloRapid";
+}
 
-    const { newWinnerElo, newLoserElo } = calculateElo(winner.elo, loser.elo);
+// Multi-player pairwise Elo update.
+// players: [{ userId, score }]  (score = number of rounds won)
+// roundTime: 10 | 30 | 90
+export async function updateElo(players, roundTime) {
+    const eloField = eloFieldForTime(roundTime);
+
+    // Load all player docs in one go
+    const userIds = players.map(p => p.userId);
+    const userDocs = await User.find({ userId: { $in: userIds } })
+        .select(`userId elo ${eloField} wins losses totalGames winPercentage eloChangeLastWeek eloWeekStart winsLastMonth lossesLastMonth lastMonthReset`);
+
+    const byId = Object.fromEntries(userDocs.map(u => [u.userId, u]));
+
+    // Accumulate pairwise deltas for each player
+    const deltas = Object.fromEntries(userIds.map(id => [id, 0]));
+    const wonPairwise = Object.fromEntries(userIds.map(id => [id, 0]));
+    const lostPairwise = Object.fromEntries(userIds.map(id => [id, 0]));
+
+    for (let i = 0; i < players.length; i++) {
+        for (let j = i + 1; j < players.length; j++) {
+            const a = players[i];
+            const b = players[j];
+            const userA = byId[a.userId];
+            const userB = byId[b.userId];
+            if (!userA || !userB) continue;
+
+            const aElo = userA[eloField] ?? userA.elo ?? 1000;
+            const bElo = userB[eloField] ?? userB.elo ?? 1000;
+
+            if (a.score > b.score) {
+                const { newWinnerElo, newLoserElo } = calculateElo(aElo, bElo);
+                deltas[a.userId] += newWinnerElo - aElo;
+                deltas[b.userId] += newLoserElo - bElo;
+                wonPairwise[a.userId]++;
+                lostPairwise[b.userId]++;
+            } else if (b.score > a.score) {
+                const { newWinnerElo, newLoserElo } = calculateElo(bElo, aElo);
+                deltas[b.userId] += newWinnerElo - bElo;
+                deltas[a.userId] += newLoserElo - aElo;
+                wonPairwise[b.userId]++;
+                lostPairwise[a.userId]++;
+            }
+            // tie: no Elo change
+        }
+    }
+
+    // Determine overall winner (highest score) for win/loss stats
+    const maxScore = Math.max(...players.map(p => p.score));
+    const winnerId = players.find(p => p.score === maxScore)?.userId;
 
     const now = new Date();
     const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    // How many ELO points each player gains or loses from this game
-    const winnerDelta = newWinnerElo - winner.elo;
-    const loserDelta = newLoserElo - loser.elo;
+    for (const { userId } of players) {
+        const u = byId[userId];
+        if (!u) continue;
 
-    // eloChangeLastWeek tracks how much ELO a player has gained/lost over a rolling 7-day window.
-    const winnerWeekExpired = !winner.eloWeekStart || winner.eloWeekStart < oneWeekAgo;
-    const loserWeekExpired = !loser.eloWeekStart || loser.eloWeekStart < oneWeekAgo;
+        const delta = deltas[userId];
+        const currentElo = u[eloField] ?? u.elo ?? 1000;
+        const newElo = Math.max(0, currentElo + delta);
+        // Keep generic elo in sync (used for leaderboard)
+        const newGenericElo = Math.max(0, (u.elo ?? 1000) + delta);
 
-    // Pre-calculate new totals to use in winPercentage below
-    const winnerNewWins = winner.wins + 1;
-    const winnerNewTotal = winner.totalGames + 1;
-    const loserNewTotal = loser.totalGames + 1;
+        const weekExpired = !u.eloWeekStart || u.eloWeekStart < oneWeekAgo;
+        const monthExpired = !u.lastMonthReset || u.lastMonthReset < oneMonthAgo;
 
-    // Update winner: new ELO, weekly change, win percentage, and increment wins + totalGames
-    await User.findOneAndUpdate(
-        { userId: winnerId },
-        {
-            elo: newWinnerElo,
-            eloChangeLastWeek: winnerWeekExpired ? winnerDelta : winner.eloChangeLastWeek + winnerDelta,
-            // If the week expired, reset the window start to now
-            ...(winnerWeekExpired && { eloWeekStart: now }),
-            winPercentage: winnerNewWins / winnerNewTotal,
-            // $inc adds to the existing value rather than overwriting it
-            $inc: { wins: 1, totalGames: 1 }
-        }
-    );
+        const isWinner = userId === winnerId;
+        const newWins = u.wins + (isWinner ? 1 : 0);
+        const newLosses = u.losses + (isWinner ? 0 : 1);
+        const newTotal = u.totalGames + 1;
 
-    // Update loser: new ELO, weekly change, win percentage, and increment losses + totalGames
-    await User.findOneAndUpdate(
-        { userId: loserId },
-        {
-            elo: newLoserElo,
-            eloChangeLastWeek: loserWeekExpired ? loserDelta : loser.eloChangeLastWeek + loserDelta,
-            ...(loserWeekExpired && { eloWeekStart: now }),
-            // loser.wins stays the same since they didn't win
-            winPercentage: loser.wins / loserNewTotal,
-            $inc: { losses: 1, totalGames: 1 }
-        }
-    );
+        const newWinsLastMonth = monthExpired ? (isWinner ? 1 : 0) : u.winsLastMonth + (isWinner ? 1 : 0);
+        const newLossesLastMonth = monthExpired ? (isWinner ? 0 : 1) : u.lossesLastMonth + (isWinner ? 0 : 1);
+
+        await User.findOneAndUpdate(
+            { userId },
+            {
+                [eloField]: newElo,
+                elo: newGenericElo,
+                eloChangeLastWeek: weekExpired ? delta : u.eloChangeLastWeek + delta,
+                ...(weekExpired && { eloWeekStart: now }),
+                winsLastMonth: newWinsLastMonth,
+                lossesLastMonth: newLossesLastMonth,
+                ...(monthExpired && { lastMonthReset: now }),
+                winPercentage: newTotal > 0 ? newWins / newTotal : 0,
+                $inc: {
+                    wins: isWinner ? 1 : 0,
+                    losses: isWinner ? 0 : 1,
+                    totalGames: 1
+                }
+            }
+        );
+    }
 }
-export default {
-    calculateElo,
-    updateElo
-};
+
+export default { calculateElo, updateElo };

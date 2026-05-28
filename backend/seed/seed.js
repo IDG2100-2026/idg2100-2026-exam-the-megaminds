@@ -44,89 +44,104 @@ async function seed() {
         // Finished games
         {
             gameId: "game-001",
-            rules: { bestof: 3, straightallowed: true, roundTime: 10 },
+            rules: { bestof: 3, straightallowed: true, roundTime: 10, numPlayers: 2, buyIn: 1 },
             players: [{ userId: u1.userId, score: 2 }, { userId: u2.userId, score: 1 }],
             winnerId: u1.userId, status: "finished"
         },
         {
             gameId: "game-002",
-            rules: { bestof: 5, straightallowed: false, roundTime: 15 },
+            rules: { bestof: 5, straightallowed: false, roundTime: 30, numPlayers: 2, buyIn: 10 },
             players: [{ userId: u3.userId, score: 3 }, { userId: u4.userId, score: 2 }],
             winnerId: u3.userId, status: "finished"
         },
         {
             gameId: "game-003",
-            rules: { bestof: 3, straightallowed: true, roundTime: 5 },
+            rules: { bestof: 3, straightallowed: true, roundTime: 10, numPlayers: 2, buyIn: 1 },
             players: [{ userId: u2.userId, score: 2 }, { userId: u5.userId, score: 0 }],
             winnerId: u2.userId, status: "finished"
         },
         {
             gameId: "game-004",
-            rules: { bestof: 7, straightallowed: true, roundTime: 10 },
+            rules: { bestof: 7, straightallowed: true, roundTime: 10, numPlayers: 2, buyIn: 50 },
             players: [{ userId: u6.userId, score: 4 }, { userId: u1.userId, score: 0 }],
             winnerId: u6.userId, status: "finished"
         },
         {
             gameId: "game-005",
-            rules: { bestof: 3, straightallowed: false, roundTime: 10 },
+            rules: { bestof: 3, straightallowed: false, roundTime: 10, numPlayers: 2, buyIn: 1 },
             players: [{ userId: u7.userId, score: 2 }, { userId: u8.userId, score: 1 }],
             winnerId: u7.userId, status: "finished"
         },
         {
             gameId: "game-006",
-            rules: { bestof: 5, straightallowed: true, roundTime: 15 },
+            rules: { bestof: 5, straightallowed: true, roundTime: 30, numPlayers: 2, buyIn: 10 },
             players: [{ userId: u3.userId, score: 3 }, { userId: u6.userId, score: 1 }],
             winnerId: u3.userId, status: "finished"
         },
         {
             gameId: "game-007",
-            rules: { bestof: 7, straightallowed: false, roundTime: 5 },
+            rules: { bestof: 7, straightallowed: false, roundTime: 10, numPlayers: 2, buyIn: 50 },
             players: [{ userId: u9.userId, score: 4 }, { userId: u10.userId, score: 1 }],
             winnerId: u9.userId, status: "finished"
         },
         {
             gameId: "game-008",
-            rules: { bestof: 3, straightallowed: true, roundTime: 10 },
+            rules: { bestof: 3, straightallowed: true, roundTime: 10, numPlayers: 2, buyIn: 1 },
             players: [{ userId: u7.userId, score: 2 }, { userId: u10.userId, score: 0 }],
             winnerId: u7.userId, status: "finished"
         },
         {
             gameId: "game-009",
-            rules: { bestof: 5, straightallowed: false, roundTime: 10 },
+            rules: { bestof: 5, straightallowed: false, roundTime: 10, numPlayers: 2, buyIn: 1 },
             players: [{ userId: u1.userId, score: 3 }, { userId: u8.userId, score: 2 }],
             winnerId: u1.userId, status: "finished"
         },
         {
             gameId: "game-010",
-            rules: { bestof: 3, straightallowed: true, roundTime: 5 },
+            rules: { bestof: 3, straightallowed: true, roundTime: 10, numPlayers: 2, buyIn: 1 },
             players: [{ userId: u12.userId, score: 2 }, { userId: u4.userId, score: 0 }],
             winnerId: u12.userId, status: "finished"
         },
         // In-progress
         {
             gameId: "game-011",
-            rules: { bestof: 5, straightallowed: false, roundTime: 15 },
+            rules: { bestof: 5, straightallowed: false, roundTime: 30, numPlayers: 2, buyIn: 10 },
             players: [{ userId: u4.userId }, { userId: u6.userId }],
             status: "in-progress"
         },
         {
             gameId: "game-012",
-            rules: { bestof: 3, straightallowed: true, roundTime: 10 },
+            rules: { bestof: 3, straightallowed: true, roundTime: 10, numPlayers: 2, buyIn: 1 },
             players: [{ userId: u11.userId }, { userId: u9.userId }],
             status: "in-progress"
         },
         // Pending
         {
             gameId: "game-013",
-            rules: { bestof: 5, straightallowed: true, roundTime: 15 },
+            rules: { bestof: 5, straightallowed: true, roundTime: 30, numPlayers: 2, buyIn: 10 },
             players: [{ userId: u3.userId }, { userId: u5.userId }],
             status: "pending"
         },
         {
             gameId: "game-014",
-            rules: { bestof: 7, straightallowed: false, roundTime: 5 },
+            rules: { bestof: 7, straightallowed: false, roundTime: 10, numPlayers: 2, buyIn: 50 },
             players: [{ userId: u2.userId }, { userId: u11.userId }],
             status: "pending"
+        },
+        // Nordic Masters Cup (tournament-002) — round 1: one finished, one still playing
+        {
+            gameId: "t-tournament-002-r1-0",
+            rules: { bestof: 7, straightallowed: true, roundTime: 90 },
+            players: [{ userId: u1.userId, score: 2 }, { userId: u3.userId, score: 3 }],
+            winnerId: u3.userId, status: "finished",
+            tournamentId: "tournament-002"
+        },
+        {
+            gameId: "t-tournament-002-r1-1",
+            rules: { bestof: 7, straightallowed: true, roundTime: 90 },
+            players: [{ userId: u4.userId, score: 1 }, { userId: u6.userId, score: 2 }],
+            status: "in-progress",
+            tournamentId: "tournament-002"
         }
     ]);
     console.log("Created games.");
@@ -167,12 +182,19 @@ async function seed() {
             tournamentId: "tournament-002",
             title: "Nordic Masters Cup",
             description: "An elite invitational tournament for top-ranked players in the Nordic region. Straight hands are allowed.",
-            format: { bestof: 7, straightallowed: true, roundTime: 15 },
+            format: { bestof: 7, straightallowed: true, roundTime: 30 },
             minPlayers: 2,
             maxPlayers: 8,
             startDate: new Date("2026-04-02"),
             status: "in-progress",
             participants: [u1.userId, u3.userId, u4.userId, u6.userId],
+            buyIn: 50,
+            eloRange: { min: 1500, max: null },
+            games: ["t-tournament-002-r1-0", "t-tournament-002-r1-1"],
+            currentRound: 1,
+            rounds: [
+                { roundNumber: 1, games: ["t-tournament-002-r1-0", "t-tournament-002-r1-1"], byeUserId: null }
+            ],
             trophy: { title: "Nordic Masters Trophy" },
             createdBy: u1.userId
         }

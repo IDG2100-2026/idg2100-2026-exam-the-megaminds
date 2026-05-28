@@ -35,13 +35,11 @@ export function validateTournamentCreate(){
         // tournamentId is generated server-side (see model pre-validate hook) — not accepted from the client.
         body("title")
             .trim()
-            .escape()
             .isLength({ min: MIN_TOURNAMENT_TITLE_LENGTH, max: MAX_TOURNAMENT_TITLE_LENGTH })
             .withMessage(`Tournament title must be between ${MIN_TOURNAMENT_TITLE_LENGTH} and ${MAX_TOURNAMENT_TITLE_LENGTH} characters`),
         
         body("description")
             .trim()
-            .escape()
             .isLength({ min: MIN_TOURNAMENT_DESC_LENGTH, max: MAX_TOURNAMENT_DESC_LENGTH })
             .withMessage(`Tournament description must be between ${MIN_TOURNAMENT_DESC_LENGTH} and ${MAX_TOURNAMENT_DESC_LENGTH} characters`),
         
@@ -68,7 +66,29 @@ export function validateTournamentCreate(){
         body("maxPlayers")
             .isInt({ min: MIN_TOURNAMENT_PLAYERS, max: 10000 })
             .withMessage(`Maximum players must be at least ${MIN_TOURNAMENT_PLAYERS}`),
-        
+
+        body("buyIn")
+            .optional()
+            .isInt({ min: 0 })
+            .withMessage("Buy-in must be a non-negative integer"),
+
+        body("eloRange.min")
+            .optional({ nullable: true })
+            .isInt({ min: 0 })
+            .withMessage("Elo minimum must be a non-negative integer"),
+
+        body("eloRange.max")
+            .optional({ nullable: true })
+            .isInt({ min: 0 })
+            .withMessage("Elo maximum must be a non-negative integer")
+            .bail()
+            .custom((max, { req }) => {
+                const min = req.body.eloRange?.min;
+                if (min != null && max != null && Number(max) < Number(min)) {
+                    throw new Error("Elo maximum must be greater than or equal to Elo minimum");
+                }
+                return true;
+            }),
         // Start date validation
         body("startDate")
             .isISO8601()
@@ -77,15 +97,18 @@ export function validateTournamentCreate(){
         // Trophy info
         body("trophy.title")
             .trim()
-            .escape()
             .isLength({ min: MIN_TROPHY_TITLE_LENGTH, max: MAX_TROPHY_TITLE_LENGTH })
             .withMessage(`Trophy title must be between ${MIN_TROPHY_TITLE_LENGTH} and ${MAX_TROPHY_TITLE_LENGTH} characters`),
         
         body("trophy.imageUrl")
             .optional({ checkFalsy: true })
             .trim()
-            .isURL()
-            .withMessage("Trophy image URL must be a valid URL"),
+            .custom((val) => {
+                // Accept an uploaded image (relative /uploads/ path) or an external http(s) URL
+                if (val.startsWith("/uploads/")) return true;
+                if (/^https?:\/\/.+/i.test(val)) return true;
+                throw new Error("Trophy image must be an uploaded image or a valid http(s) URL");
+            }),
 
         body("createdBy")
             .isInt({ min: 0, max: Number.MAX_SAFE_INTEGER })
@@ -166,6 +189,29 @@ export function validateTournamentUpdate(){
             .isInt({ min: MIN_TOURNAMENT_PLAYERS, max: 10000 })
             .withMessage(`Maximum players must be at least ${MIN_TOURNAMENT_PLAYERS}`),
 
+        body("buyIn")
+            .optional()
+            .isInt({ min: 0 })
+            .withMessage("Buy-in must be a non-negative integer"),
+
+        body("eloRange.min")
+            .optional({ nullable: true })
+            .isInt({ min: 0 })
+            .withMessage("Elo minimum must be a non-negative integer"),
+
+        body("eloRange.max")
+            .optional({ nullable: true })
+            .isInt({ min: 0 })
+            .withMessage("Elo maximum must be a non-negative integer")
+            .bail()
+            .custom((max, { req }) => {
+                const min = req.body.eloRange?.min;
+                if (min != null && max != null && Number(max) < Number(min)) {
+                    throw new Error("Elo maximum must be greater than or equal to Elo minimum");
+                }
+                return true;
+            }),
+
         body("startDate")
             .optional()
             .isISO8601()
@@ -178,8 +224,11 @@ export function validateTournamentUpdate(){
 
         body("trophy.imageUrl")
             .optional({ checkFalsy: true }).trim()
-            .isURL()
-            .withMessage("Trophy image URL must be a valid URL")
+            .custom((val) => {
+                if (val.startsWith("/uploads/")) return true;
+                if (/^https?:\/\/.+/i.test(val)) return true;
+                throw new Error("Trophy image must be an uploaded image or a valid http(s) URL");
+            })
     ];
 }
 
