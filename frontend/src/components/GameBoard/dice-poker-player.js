@@ -95,8 +95,11 @@ class DicePokerPlayer extends HTMLElement {
   }
 
   holdDice() {
-    // Die listeners are already registered — this is now just a UX affordance
-    // Clicking Hold signals the player is ready to select dice
+    this.dispatchEvent(new CustomEvent('player-hold', {
+      bubbles: true,
+      composed: true,
+      detail: { name: this.playerName }
+    }));
   }
 
   disablePlayer() {
@@ -154,8 +157,8 @@ class DicePokerPlayer extends HTMLElement {
       :host {
         display: block;
         padding: 12px;
-        background: linear-gradient(160deg, #0d1f0d 0%, #162816 100%);
-        border: 1px solid #3D8A3A;
+        background: var(--theme-background-alt, #162816);
+        border: 1px solid var(--theme-accent-dark, #3D8A3A);
         border-radius: 20px;
         min-width: 260px;
       }
@@ -170,21 +173,21 @@ class DicePokerPlayer extends HTMLElement {
         justify-content: space-between;
         align-items: center;
         margin-bottom: 6px;
-        color: white;
+        color: var(--theme-text, white);
       }
       #name {
         font-size: 1rem;
         font-weight: 700;
-        color: #6FD86F;
+        color: var(--theme-accent-light, #6FD86F);
       }
       #wins {
         font-size: 1.1rem;
         font-weight: 700;
-        color: gold;
+        color: var(--theme-accent, gold);
       }
       #rolls {
         font-size: 0.8rem;
-        color: rgba(255,255,255,0.55);
+        color: var(--theme-text-secondary, rgba(255,255,255,0.55));
         margin: 4px 0 8px;
         min-height: 1.1em;
       }
@@ -223,9 +226,9 @@ class DicePokerPlayer extends HTMLElement {
         opacity: 0.85;
         transform: translateY(-1px);
       }
-      #roll     { background: #5CB856; color: white; }
+      #roll     { background: var(--theme-accent, #5CB856); color: var(--theme-text-inverse, white); }
       #hold     { background: var(--die-held-color); color: #111; }
-      #continue { background: #1a3a1a; color: #6FD86F; border: 1px solid #3D8A3A; }
+      #continue { background: var(--theme-primary, #1a3a1a); color: var(--theme-accent-light, #6FD86F); border: 1px solid var(--theme-accent-dark, #3D8A3A); }
     </style>
     <div part="player">
       <div class="header">

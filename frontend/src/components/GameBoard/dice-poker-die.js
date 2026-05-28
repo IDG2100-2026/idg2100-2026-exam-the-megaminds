@@ -71,12 +71,12 @@ class DicePokerDie extends HTMLElement {
         box-shadow: 2px 6px 8px rgba(0,0,0,0.4);
       }
       :host([hidden-face]) {
-        background-color: #2a5a2a;
+        background-color: var(--theme-background-alt, #2a5a2a);
         cursor: not-allowed;
       }
       .black { color: var(--die-face-color-black); }
       .red   { color: var(--die-face-color-red); }
-      .hidden { color: rgba(255,255,255,0.3); font-size: 1.5rem; }
+      .hidden { color: var(--theme-text-secondary, rgba(255,255,255,0.3)); font-size: 1.5rem; }
     </style>
     <div id="face"></div>`;
     return template;

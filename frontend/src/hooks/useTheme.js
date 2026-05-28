@@ -16,7 +16,7 @@ export function useTheme() {
 
         if (user?.userId) {
             try {
-                await userService.updateUser(user.userId, { theme: { ...theme, mode: newMode } });
+                await userService.updateUser(user.userId, { preferences: { ...theme, mode: newMode } });
             } catch (err) {
                 console.error('Failed to save theme preference:', err);
             }
@@ -30,7 +30,7 @@ export function useTheme() {
 
         if (user?.userId) {
             try {
-                await userService.updateUser(user.userId, { theme: { ...theme, boardColor: colorKey } });
+                await userService.updateUser(user.userId, { preferences: { ...theme, boardColor: colorKey } });
             } catch (err) {
                 console.error('Failed to save board color preference:', err);
             }
@@ -43,9 +43,22 @@ export function useTheme() {
 
         if (user?.userId) {
             try {
-                await userService.updateUser(user.userId, { theme: { ...theme, soundEnabled: newSound } });
+                await userService.updateUser(user.userId, { preferences: { ...theme, soundEnabled: newSound } });
             } catch (err) {
                 console.error('Failed to save sound preference:', err);
+            }
+        }
+    }, [theme, setTheme, user]);
+
+    const toggleLobbyMusic = useCallback(async () => {
+        const newVal = !theme.lobbyMusic;
+        setTheme(prev => ({ ...prev, lobbyMusic: newVal }));
+
+        if (user?.userId) {
+            try{
+                await userService.updateUser(user.userId, {preferences: { ...theme, lobbyMusic: newVal } });
+            } catch (err) {
+                console.error('Failed to save lobby music preference:', err);
             }
         }
     }, [theme, setTheme, user]);
@@ -59,6 +72,8 @@ export function useTheme() {
         changeBoardColor,
         soundEnabled: theme.soundEnabled,
         toggleSound,
+        lobbyMusic: theme.lobbyMusic,
+        toggleLobbyMusic,
     };
 }
 

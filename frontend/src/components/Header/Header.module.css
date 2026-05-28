@@ -191,6 +191,38 @@
     text-shadow: none;
 }
 
+/* Settings */
+.settingsWrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding-right: 8px;
+}
+
+.settingsBtn {
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: var(--theme-text-secondary);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 6px 8px;
+    line-height: 1;
+    transition: all 0.15s;
+}
+
+.settingsBtn:hover {
+    color: var(--theme-accent-light);
+    border-color: var(--theme-accent-dark);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.settingsBtnActive {
+    color: var(--theme-accent-light);
+    border-color: var(--theme-accent);
+    background: rgba(255, 255, 255, 0.08);
+}
+
 /* Hamburger Menu */
 .hamburger {
     display: none;

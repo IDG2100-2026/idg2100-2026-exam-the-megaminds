@@ -1,18 +1,18 @@
 .gameCard {
     background: var(--theme-background-alt);
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 4px 16px var(--theme-shadow-light);
+    border-radius: 10px;
+    padding: 14px;
+    box-shadow: 0 2px 8px var(--theme-shadow-light);
     transition: all 0.3s ease;
     border: 1px solid transparent;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 10px;
 }
 
 .gameCard:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px var(--theme-shadow-strong);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px var(--theme-shadow-strong);
     border-color: var(--theme-accent);
 }
 
@@ -20,20 +20,20 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 12px;
+    padding-bottom: 8px;
     border-bottom: 1px solid var(--theme-primary);
 }
 
 .eloDisplay {
     color: var(--theme-text-secondary);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
 }
 
 .eloBadge {
     background: var(--theme-accent);
     color: white;
-    padding: 4px 8px;
+    padding: 2px 6px;
     border-radius: 4px;
     font-weight: 700;
     margin-left: 4px;
@@ -41,25 +41,25 @@
 
 .playersCount {
     color: var(--theme-accent-light);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
     background: var(--theme-primary);
-    padding: 4px 8px;
+    padding: 3px 7px;
     border-radius: 4px;
 }
 
 .rulesDisplay {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 5px;
 }
 
 .ruleBadge {
     background: var(--theme-primary);
     color: var(--theme-text);
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 12px;
+    padding: 3px 7px;
+    border-radius: 5px;
+    font-size: 11px;
     font-weight: 500;
     border: 1px solid var(--theme-accent-dark);
 }
@@ -67,24 +67,24 @@
 .playersDisplay {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
 }
 
 .playerTag {
     background: var(--theme-primary);
     color: var(--theme-text);
-    padding: 8px 10px;
-    border-radius: 6px;
-    font-size: 13px;
+    padding: 5px 8px;
+    border-radius: 5px;
+    font-size: 12px;
     border-left: 3px solid var(--theme-accent);
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .playerAvatar {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     object-fit: cover;
 }
@@ -97,26 +97,26 @@
 .playerTagEmpty {
     background: var(--theme-primary);
     color: var(--theme-text-secondary);
-    padding: 8px 10px;
-    border-radius: 6px;
-    font-size: 13px;
+    padding: 5px 8px;
+    border-radius: 5px;
+    font-size: 12px;
     font-style: italic;
     border-left: 3px solid var(--theme-accent-dark);
 }
 
 .actionButtons {
     display: flex;
-    gap: 10px;
-    margin-top: 8px;
+    gap: 8px;
+    margin-top: 2px;
 }
 
 .viewBtn,
 .joinBtn {
     flex: 1;
-    padding: 10px 12px;
+    padding: 7px 10px;
     border: none;
     border-radius: 6px;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -155,9 +155,9 @@
 .inGameBadge {
     background: rgba(76, 175, 80, 0.2);
     color: #4CAF50;
-    padding: 10px 12px;
+    padding: 7px 10px;
     border-radius: 6px;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     text-align: center;
     border: 1px solid rgba(76, 175, 80, 0.3);
@@ -183,6 +183,6 @@
 
 @media (max-width: 768px) {
     .gameCard {
-        padding: 16px;
+        padding: 12px;
     }
 }

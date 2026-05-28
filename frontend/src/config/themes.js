@@ -11,6 +11,14 @@ export const BOARD_COLORS = {
   purple: '#2D1B3D',
 };
 
+export const BOARD_COLORS_LIGHT = {
+  green: '#4a8c22',
+  blue: '#2a6a8a',
+  burgundy: '#7a3535',
+  grey: '#6a6a6a',
+  purple: '#5a2d7a',
+};
+
 export const DEFAULT_BOARD_COLOR = 'green';
 
 export const THEMES = {

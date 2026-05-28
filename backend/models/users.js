@@ -145,6 +145,10 @@ const userSchema = new mongoose.Schema({
         type: Number,
         default: 1000,
         min: 0
+    },
+    preferences: {
+        type: mongoose.Schema.Types.Mixed,
+        default: {}
     }
 });
 

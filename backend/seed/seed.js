@@ -39,7 +39,7 @@ async function seed() {
 
     const [u1, u2, u3, u4, u5, u6, u7, u8, u9, u10, u11, u12] = users;
 
-    // Create 14 games — 10 finished, 2 in-progress, 2 pending
+    // Create 17 games — 10 finished, 2 in-progress, 5 pending (each waiting for 1 more player)
     const games = await Game.create([
         // Finished games
         {
@@ -115,17 +115,35 @@ async function seed() {
             players: [{ userId: u11.userId }, { userId: u9.userId }],
             status: "in-progress"
         },
-        // Pending
+        // Pending — each waiting for one more player to join
         {
             gameId: "game-013",
-            rules: { bestof: 5, straightallowed: true, roundTime: 30, numPlayers: 2, buyIn: 10 },
-            players: [{ userId: u3.userId }, { userId: u5.userId }],
+            rules: { bestof: 3, straightallowed: false, roundTime: 10, numPlayers: 2, buyIn: 1 },
+            players: [{ userId: u3.userId }],
             status: "pending"
         },
         {
             gameId: "game-014",
-            rules: { bestof: 7, straightallowed: false, roundTime: 10, numPlayers: 2, buyIn: 50 },
-            players: [{ userId: u2.userId }, { userId: u11.userId }],
+            rules: { bestof: 5, straightallowed: true, roundTime: 30, numPlayers: 2, buyIn: 10 },
+            players: [{ userId: u5.userId }],
+            status: "pending"
+        },
+        {
+            gameId: "game-015",
+            rules: { bestof: 7, straightallowed: false, roundTime: 90, numPlayers: 2, buyIn: 50 },
+            players: [{ userId: u7.userId }],
+            status: "pending"
+        },
+        {
+            gameId: "game-016",
+            rules: { bestof: 3, straightallowed: true, roundTime: 10, numPlayers: 3, buyIn: 1 },
+            players: [{ userId: u2.userId }, { userId: u4.userId }],
+            status: "pending"
+        },
+        {
+            gameId: "game-017",
+            rules: { bestof: 5, straightallowed: false, roundTime: 30, numPlayers: 3, buyIn: 10 },
+            players: [{ userId: u6.userId }, { userId: u8.userId }],
             status: "pending"
         },
         // Nordic Masters Cup (tournament-002) — round 1: one finished, one still playing
