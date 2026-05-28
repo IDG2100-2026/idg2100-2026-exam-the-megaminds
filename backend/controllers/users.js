@@ -2,8 +2,9 @@
 import userService from "../services/users.service.js";
 import { generateWsToken } from "../middleware/jwt.js";
 import checkPwd from "../utils/hash.js";
-import { signToken, setTokenCookie } from "../middleware/jwt.js";
 import User from "../models/users.js";
+import { signAccessToken, setAccessCookie, setRefreshCookie, clearAuthCookies } from "../middleware/jwt.js";
+import { issueRefreshSession, rotateRefreshSession, revokeRefreshSession } from "../services/auth.service.js";
 
 // Verifies credentials, signs a JWT and sets it as an httpOnly cookie
 export async function login(req, res) {
@@ -21,15 +22,35 @@ export async function login(req, res) {
     }
 
     const role = user.isAdmin ? "admin" : "registered";
-    const token = signToken(user.userId, role);
-    setTokenCookie(res, token);
+    setAccessCookie(res, signAccessToken(user.userId, role, req.ip));
+    setRefreshCookie(res, await issueRefreshSession(user.userId, req.get("user-agent")));
 
     res.json({ success: true, user: { userId: user.userId, username: user.username, elo: user.elo, role } });
 }
+export async function refresh(req, res){
+    const rotated = await rotateRefreshSession(req.cookies?.refreshToken, req.get("user-agent"));
+    if (!rotated){
+        clearAuthCookies(res);
+        return res.status(401).json({ success: false, message: "Session expired, please login again"});
+    }
 
+    const user = await User.findOne({ userId: rotated.userId });
+    if (!user || user.banned) {
+        await revokeRefreshSession(rotated.rawToken);
+        clearAuthCookies(res);
+        return res.status(401).json({ success: false, message: "Session is no longer valid"});
+    }
+
+    const role = user.isAdmin ? "admin" : "registered";
+    setAccessCookie(res, signAccessToken(user.userId, role, req.ip));
+    setRefreshCookie(res, rotated.rawToken);
+
+    res.json({ success: true, user: { userId: user.userId, username: user.username, elo: user.elo, role}});
+}
 // Clears the JWT cookie
 export async function logout(req, res) {
-    res.clearCookie("token");
+    await revokeRefreshSession(req.cookies?.refreshToken);
+    clearAuthCookies(res);
     res.json({ success: true, message: "Logged out" });
 }
 
@@ -145,6 +166,7 @@ export async function uploadUserAvatar(req, res) {
 export default {
     login,
     logout,
+    refresh,
     getMe,
     getAllUsers,
     getUserById,

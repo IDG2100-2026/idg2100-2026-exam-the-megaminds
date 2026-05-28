@@ -26,6 +26,7 @@ apiRouter.use(identifyUser);
 
 // Auth
 apiRouter.post("/login", userController.login);
+apiRouter.post("/refresh", userController.refresh);
 apiRouter.post("/logout", userController.logout);
 apiRouter.get("/users/me", userController.getMe);
 apiRouter.get("/verify-email", userController.verifyEmail);
