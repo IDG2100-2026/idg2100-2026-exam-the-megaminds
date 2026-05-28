@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { flushSync } from "react-dom";
 
 const WS_URL = import.meta.env.VITE_WS_URL;
 
@@ -31,7 +32,7 @@ export function useWebSocket(gameId) {
                 setConnected(true);
             }
 
-        setLastMessage(msg);
+        flushSync(() => setLastMessage(msg));
         };
 
         ws.onclose = () => {

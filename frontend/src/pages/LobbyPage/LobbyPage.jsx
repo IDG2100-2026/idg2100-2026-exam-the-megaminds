@@ -35,7 +35,7 @@ export default function LobbyPage() {
                 setLoading(true);
                 const data = await gameService.getAllGames(1, 100);
 
-                const allGames = data.data || [];
+                const allGames = data || [];
 
                 // Show only joinable games: pending games waiting for an opponent
                 const pending = allGames.filter(game =>

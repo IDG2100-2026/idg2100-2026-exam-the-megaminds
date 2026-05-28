@@ -32,6 +32,17 @@ export default function GamePage() {
             .catch(() => {});
     }, [gameid]);
 
+        useEffect(() => {
+        if (lastMessage?.type !== 'state') return;
+        const wsPlayerCount = lastMessage.state?.players?.length ?? 0;
+        if (wsPlayerCount > (game?.players?.length ?? 0)) {
+            gameService.getGame(gameid)
+                .then(res => setGame(res.data))
+                .catch(() => {});
+        }
+    }, [lastMessage]);
+
+
     const handleAddComment = async (e) => {
         e.preventDefault();
         if (!commentText.trim() || !user) return;

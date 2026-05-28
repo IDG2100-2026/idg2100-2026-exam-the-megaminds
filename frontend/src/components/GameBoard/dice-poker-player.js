@@ -6,139 +6,115 @@ class DicePokerPlayer extends HTMLElement {
     this.rollButton    = this.shadowRoot.getElementById('roll');
     this.holdButton    = this.shadowRoot.getElementById('hold');
     this.continueButton = this.shadowRoot.getElementById('continue');
+    this.dice = [...this.shadowRoot.querySelectorAll('dice-poker-die')];
     this.playerName = this.getAttribute('playername') || 'Unknown';
     this.score      = this.getAttribute('score') || 0;
     this.rollCount  = 0;
+    this._holdMode = false;
   }
 
   static get observedAttributes() {
-    return ['active', 'score', 'local', 'winner', 'playername'];
+    return ['local', 'playername'];
   }
 
   connectedCallback() {
     // Re-read name here because React sets attributes after the constructor runs
     this.playerName = this.getAttribute('playername') || 'Unknown';
-    this.render();
-    this.setEventListeners();
-    this.rollButton.disabled    = true;
-    this.holdButton.disabled    = true;
-    this.continueButton.disabled = true;
+    this._renderHeader(this._score, null);
+    this._wireButtons();
+    this._wireHolds();
+    this.disableControls();
     // Opponents start with hidden dice — local player's dice are always visible
     if (!this.hasAttribute('local')) this.hideDice();
   }
 
-  render() {
+  attributeChangedCallback(name, _old, val){
+    if (name === 'playername') {this.playerName = val || 'Unknown'; this._renderHeader(this._score, null); }
+  }
+
+  _renderHeader(score, rollsLeft){
+    this._score = score ?? 0;
     this.shadowRoot.querySelector('#name').textContent = this.playerName;
-    this.shadowRoot.querySelector('#wins').textContent = `Score: ${this.score}`;
-    // Only show roll counter for the local player
+    this.shadowRoot.querySelector('#wins').textContent = `Score: ${this._score}`;
     const rollsEl = this.shadowRoot.querySelector('#rolls');
-    rollsEl.textContent = this.hasAttribute('local')
-      ? `Rolls left: ${3 - this.rollCount}`
-      : '';
+    rollsEl.textContent = this.hasAttribute('local') && rollsLeft != null ? `Rolls left: ${rollsLeft}` : '';
   }
+  _wireButtons(){
+    this.rollButton.addEventListener('click', () => {
+      this.dispatchEvent(new CustomEvent('request-roll', {
+        bubbles: true, composed: true,
+        detail: { userid: this.getAttribute('userid'), held: this.getHeld() }
+      }));
+    });
+    this.continueButton.addEventListener('click', () => {
+      this.dispatchEvent(new CustomEvent('request-done', {
+      bubbles: true, composed: true,
+      detail: {userid: this.getAttribute('userid')}
+    }));
+    });
+    this.holdButton.addEventListener('click', () => {
+      this._holdMode = !this._holdMode;
+      this.holdButton.textContent = this._holdMode ? 'Holding' : 'Hold';
+    });
 
-  attributeChangedCallback(name, _oldValue, newValue) {
-    if (name === 'score') { this.score = newValue; this.render(); }
-    if (name === 'playername') { this.playerName = newValue || 'Unknown'; this.render(); }
+
   }
-
-  setEventListeners() {
-    this.rollButton.addEventListener('click', () => this.rollDice());
-    this.holdButton.addEventListener('click', () => this.holdDice());
-    this.continueButton.addEventListener('click', () => this.finishTurn());
-
-    // Register die-click listeners once — only toggle hold when hold button is active
-    this.shadowRoot.querySelectorAll('dice-poker-die').forEach(die => {
+  _wireHolds(){
+    this.dice.forEach(die => {
       die.addEventListener('click', () => {
-        if (this.holdButton.disabled) return;
-        if (!die.hasAttribute('onhold')) {
-          die.setAttribute('onhold', '');
+        if (!this._holdMode || this.rollButton.disabled) return;
+        die.toggleAttribute('onhold');
+      })
+
+    })
+  }
+
+
+  getHeld() {
+    return this.dice 
+      .map((die, i) => (die.hasAttribute('onhold') ? i : -1))
+      .filter(i => i >= 0);
+  }
+
+  applyPlayer({ faces, score, active, yourTurn, rollsLeft }) {
+    this._renderHeader(score, yourTurn ? rollsLeft: null);
+    if (active) this.setAttribute('active', ''); else this.removeAttribute('active');
+
+    const isNewRound = !(faces ?? []).some(f => f !== null);
+    if (isNewRound) {
+        this._holdMode = false;
+        this.holdButton.textContent = 'Hold';
+        this.dice.forEach(d => d.removeAttribute('onhold'));
+    }
+
+    this.dice.forEach((die, i) => {
+        const face = faces?.[i] ?? null;
+        if (face === null) {
+            die.setAttribute('hidden-face', '');
         } else {
-          die.removeAttribute('onhold');
+            die.removeAttribute('hidden-face');
+            die.setFace(face);
         }
-      });
     });
-  }
 
-  startTurn() {
-    this.rollButton.disabled    = false;
-    this.holdButton.disabled    = true;
-    this.continueButton.disabled = true;
-    this.rollCount = 0;
-    this.render();
-    // Clear any holds from the previous round
-    this.shadowRoot.querySelectorAll('dice-poker-die').forEach(die => {
-      die.removeAttribute('onhold');
-    });
-  }
 
-  rollDice() {
-    this.rollCount++;
-    const maxRolls = 3;
-    if (this.rollCount >= maxRolls) {
-      this.rollButton.disabled = true;
-      this.holdButton.disabled = true;
+    if (yourTurn) {
+      const hasRolled = (faces ?? []).some(f => f !== null);
+      this.rollButton.disabled = rollsLeft <= 0;
+      this.continueButton.disabled = !hasRolled;
+      this.holdButton.disabled = !hasRolled || rollsLeft <= 0;
+    } else {
+      this.disableControls();
     }
-    if (this.rollCount === 1) {
-      this.holdButton.disabled    = false;
-      this.continueButton.disabled = false;
-    }
-    this.shadowRoot.querySelectorAll('dice-poker-die').forEach(die => {
-      if (!die.hasAttribute('onhold')) die.diceRoll();
-    });
-    this.render();
-    this.dispatchEvent(new CustomEvent('player-roll', {
-      bubbles: true,
-      composed: true,
-      detail: { faces: this.getFaces(), name: this.playerName, rollsLeft: maxRolls - this.rollCount }
-    }));
   }
 
-  holdDice() {
-    this.dispatchEvent(new CustomEvent('player-hold', {
-      bubbles: true,
-      composed: true,
-      detail: { name: this.playerName }
-    }));
+  disableControls(){
+    this.rollButton.disabled = true;
+    this.holdButton.disabled = true;
+    this.continueButton.disabled = true
   }
-
-  disablePlayer() {
-    this.rollButton.disabled    = true;
-    this.holdButton.disabled    = true;
-    this.continueButton.disabled = true;
-  }
-
-  getFaces() {
-    return [...this.shadowRoot.querySelectorAll('dice-poker-die')].map(d => d.getAttribute('face'));
-  }
-
-  finishTurn() {
-    const faces = this.getFaces();
-    this.rollCount = 0;
-    this.render();
-    this.shadowRoot.querySelectorAll('dice-poker-die').forEach(die => {
-      die.removeAttribute('onhold');
-    });
-    this.dispatchEvent(new CustomEvent('player-turn-finished', {
-      bubbles: true,
-      composed: true,
-      detail: { faces, name: this.playerName }
-    }));
-  }
-
-  receiveFaces(faces) {
-    const dice = this.shadowRoot.querySelectorAll('dice-poker-die');
-    dice.forEach((die, i) => { if (faces[i] !== undefined) die.setFace(faces[i]); });
-    this.render();
-  }
-
-  revealDice() {
-    this.shadowRoot.querySelectorAll('dice-poker-die').forEach(die => die.removeAttribute('hidden-face'));
-  }
-
-  hideDice() {
-    this.shadowRoot.querySelectorAll('dice-poker-die').forEach(die => die.setAttribute('hidden-face', ''));
-  }
+  hideDice() {this.dice.forEach(d => d.setAttribute('hidden-face', '')); }
+  revealDice() {this.dice.forEach(d => d.removeAttribute('hidden-face')); }
 
   _getTemplate() {
     const template = document.createElement('template');

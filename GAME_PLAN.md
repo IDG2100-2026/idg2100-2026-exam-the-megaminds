@@ -146,7 +146,7 @@ pointsWeekStart: { type: Date, default: Date.now }  // for the weekly +100 lazy 
 Client → server (all require prior `auth` + `join-game`):
 | type | payload | server action |
 |------|---------|---------------|
-| `roll` | `{ held: number[] }` | validate it's their turn & rolls remain; RNG the unheld dice; reply `your-dice` |
+| `roll` | `{ held: number[] }` | validate it's their turn & rolls remain; RNG the unheld dice; push `state` (roller sees own faces) |
 | `done-rolling` | — | lock their dice for the round; advance turn |
 | `bet` / `raise` | `{ amount }` | validate `amount ≤ stack` (and ≥ highestBet for raise); move to pot |
 | `match` | — | move `highestBet − alreadyIn` from stack to pot |
@@ -156,9 +156,8 @@ Client → server (all require prior `auth` + `join-game`):
 Server → client(s):
 | type | to | payload |
 |------|----|---------|
-| `state` | per-socket | full redacted snapshot (for join + reload restore) |
-| `your-dice` | roller only | real faces + rolls left |
-| `betting-update` | room | `{ pot, highestBet, stacks, toAct, folded }` |
+| `state` | per-socket | full redacted snapshot (for join + reload restore). **Implemented.** Subsumes `your-dice`: `getState` shows a viewer their own faces, so the per-socket `state` push already delivers the roller's real dice and hides others'. No separate `your-dice` message. |
+| `betting-update` | room | `{ pot, highestBet, stacks, toAct, folded }` (may also just be folded into `state`) |
 | `round-reveal` | room | all non-folded players' real faces + each hand name |
 | `round-result` | room | `{ winnerId, handName, scores }` |
 | `game-over` | room | `{ winnerId, finalScores, pointsDelta }` |
@@ -172,17 +171,38 @@ Keep payloads small and **redacted by recipient** — that redaction *is* the bl
 
 > Build the engine in slices that each leave the game runnable. Do them one at a time (snippet-in-chat workflow).
 
-1. **Lift hand eval to backend** — new `handEval.service.js` (port `#evaluateHand` + `handRules`); unit-test against known hands. *No behavior change yet.*
-2. **Engine skeleton** — `gameEngine.service.js` with the in-memory `Map`, `createEngine(game)`, `getState(gameId, viewerId)` (redacted). Wire `join-game` to seed it and send `state`.
-3. **Server-side rolling** — add `roll`/`done-rolling` cases; RNG on the server; `your-dice` to the roller; broadcast a generic `turn-change`. Strip rolling from the web component (it now just renders faces from `your-dice`).
-4. **Reveal + scoring on server** — when all done rolling, reveal + evaluate + `round-result`; replace the board's `compareTurns`/`roundEnd` with rendering of server messages.
-5. **Game-over + settlement** — settle stacks→points, `updateElo`, persist `finished`, `game-over`. Retire `PATCH /result` + the client `recordResult` call.
-6. **Buy-in reservation at join** + refund on pre-start leave.
-7. **Betting** — pot/stacks/folded/toAct + `bet`/`match`/`raise`/`fold` + `betting-update`; betting UI in the board.
-8. **Server clock** — total-time budget + auto-play on timeout/abandon.
-9. **Reload restore** — `state` on rejoin fully rehydrates the board.
-10. **Weekly +100 grant** (lazy on getMe/login).
-11. **Polish** — sounds (settings-gated), spectator view (read-only redaction for non-players), empty/loading/error states.
+1. ✅ **Lift hand eval to backend** — `backend/services/handEval.service.js` (`evaluateHand`, `compareHands`, `decideRound` → returns `winnerIds[]` so draws can split). Pure, no DB.
+2. ✅ **Engine skeleton** — `backend/services/gameEngine.service.js`: in-memory `Map<gameId, engine>`, `ensureEngine(gameId)` (idempotent — reuses existing so a 2nd joiner doesn't reset state), `getState(gameId, viewerId)` (per-viewer redaction), `getEngine`/`removeEngine`. `join-game` in `gameSocket.js` seeds the engine and sends that socket its redacted `state`.
+3. 🔵 **Server-side rolling** — *backend done, frontend in progress.*
+   - ✅ Backend: `startRound`, `rollDice(gameId,userId,held)` (server RNG of unheld dice), `doneRolling` (advances `toAct`, → `phase:"reveal"` when all done). `gameSocket.js`: `broadcastState(gameId)` (per-socket redacted push) + `roll` / `done-rolling` cases. `ensureEngine` calls `startRound` when game is `in-progress`.
+   - ✅ FE sub-piece 1/3 — `dice-poker-player.js` rewritten as renderer + intent emitter: Roll→`request-roll {held}`, Done→`request-done`; `getHeld()`; `applyPlayer({faces,score,active,yourTurn,rollsLeft})`; click-die-to-hold. No local rolling.
+   - ✅ FE sub-piece 2/3 — `dice-poker-board.js`: local engine fully removed; now just `applyState(state, viewerId)` which finds the `<dice-poker-player>` children by `userid` and calls `applyPlayer` on each (`active` = whose turn for everyone; `yourTurn` = viewer's own turn → enables controls). `#timer` span left in template, unused until step 8.
+   - 🔜 **NEXT — FE sub-piece 3/3 — `GameBoard.jsx` (NOT FINISHED — apply this to make it run).** Two `useEffect`s on `boardRef`, plus deletions:
+     - **Delete** the old effect that listened for `game-start`/`turn-finish`/`game-ended` and POSTed `gameService.recordResult` (that was the client-authority leak). Drop the now-unused `gameService` import and `refreshUser`.
+     - **Effect A (intents up):** `board.addEventListener('request-roll', e => send({type:'roll', held: e.detail.held ?? []}))` and `'request-done' → send({type:'done-rolling'})`; clean up listeners on unmount; dep `[send]`.
+     - **Effect B (state down):** `if (lastMessage?.type === 'state') boardRef.current?.applyState(lastMessage.state, user?.userId)`; deps `[lastMessage, user?.userId]`.
+     - In the rendered `<dice-poker-player>`, **remove the `score={...}` attribute** (score now comes via `applyPlayer`); keep `playername`, `userid`, and `local` for the viewer.
+     - `GamePage.jsx` needs **no change** this step (cosmetic "Leave Game" stays until step 6).
+     - After this: testable with 2 browsers (two seeded users in one in-progress game, e.g. `game-012` = `RollOrNot99` + `HighRoller5`, pw `Dice1234`, both open `/game/game-012`). Rolling/turn-passing works; round **stops at `phase:"reveal"`** — that's expected, reveal/scoring is step 4.
+4. **Reveal + scoring on server** — at `phase:"reveal"`: reveal all (set `engine.revealed=true`), `decideRound` (handEval), bump winner `score`, broadcast `state` + a `round-result`. Start next round or → game-over.
+5. **Game-over + settlement** — settle stacks→points, `updateElo(players, roundTime)`, persist `finished`+`winnerId`, broadcast `game-over`. Retire `PATCH /result` + the client `recordResult` call.
+6. **Buy-in reservation at join** + refund on pre-start leave (sets each player's `stack`, currently 0).
+7. **Betting** — pot/stacks/folded/toAct + `bet`/`match`/`raise`/`fold` + a `betting` phase between rolling and reveal; betting UI in the board.
+8. **Server clock** — total-time budget + auto-play on timeout/abandon (implement as `rollDice`→`doneRolling` so it flows through the same guards).
+9. **Reload restore** — `state` on rejoin fully rehydrates the board (mostly free once FE is a pure function of `state`).
+10. **Weekly +100 grant** (lazy on getMe/login; add `pointsWeekStart` to user model).
+11. **Polish** — sounds (settings-gated), spectator view (read-only redaction for non-players), empty/loading/error states, wrap `JSON.parse(data)` in `gameSocket.js` in try/catch.
+
+### ▶ Resume here (cold-start / teammate handoff)
+- **Branch:** the game/betting branch (not `master`/`tournament`). `git pull` first.
+- **Done:** steps 1, 2, step 3 **backend**, and FE sub-pieces **1 & 2** (`dice-poker-player.js` + `dice-poker-board.js` are finished). Backend rolls authoritatively; both web components are pure renderers/intent-emitters.
+- **⚠ DO NEXT — finish FE sub-piece 3/3 (`GameBoard.jsx`).** This is the only missing wire; until it's in, the board renders nothing in-browser (no one calls `applyState`). The exact change is spelled out in step 3 above (two `useEffect`s — intents up via `send`, state down via `applyState` — plus deleting the old `game-start`/`turn-finish`/`game-ended`/`recordResult` effect and the `score={...}` attribute). Then verify with 2 browsers as described.
+- **After that:** step 4 (server reveal + scoring at `phase:"reveal"`).
+- **Contracts already fixed (don't redesign):**
+  - Player → board events: `request-roll` (detail `{ userid, held: number[] }`) and `request-done`. Bubbling + composed.
+  - Board → player call: `applyPlayer({ faces, score, active, yourTurn, rollsLeft })`. `faces[i] === null` ⇒ render that die face-down (covers both "not rolled" and "redacted opponent").
+  - WS in: `{type:"roll", held}`, `{type:"done-rolling"}`. WS out: `{type:"state", state}` (per-socket, redacted) and `{type:"error", message}`.
+  - `state` shape: `{ gameId, rules, status, currentRound, phase, pot, highestBet, toAct, revealed, players:[{ userId, username, score, stack, folded, done, rollsLeft, connected, hasRolled, faces }] }`.
 
 ---
 
@@ -199,4 +219,5 @@ Keep payloads small and **redacted by recipient** — that redaction *is* the bl
 
 ## 12. Log
 
+- **2026-05-28 (cont.)** — On the game/betting branch. Shipped **step 1** (`handEval.service.js`), **step 2** (`gameEngine.service.js` skeleton + redacted `getState` + `join-game` seeding), and **step 3 backend** (`startRound`/`rollDice`/`doneRolling`, `broadcastState`, `roll`/`done-rolling` socket cases). Dropped the planned `your-dice` message — the per-socket redacted `state` push already gives the roller their own faces (one mechanism). **Step 3 frontend**: FE sub-pieces 1 & 2 done — `dice-poker-player.js` and `dice-poker-board.js` rewritten as pure renderers/intent-emitters (`request-roll`/`request-done`, `applyPlayer`, `applyState`; no local rolling/engine). **NOT FINISHED:** FE sub-piece 3 (`GameBoard.jsx` glue — the two `useEffect`s + deleting the old `recordResult` wiring). Handoff: a teammate is picking this up. Exact remaining change + 2-browser test steps are in §10 step 3 and the "Resume here" block. Until `GameBoard.jsx` is wired, the board renders nothing in-browser.
 - **2026-05-28** — Doc created. Audited the game feature: board UI + Web Components + pairwise Elo are solid, but **all game logic is client-side** and the WS server has no play handlers (`game-start`/`turn-finish`/`game-ended` are dropped) — so the game isn't real-time or spec-compliant, and **betting doesn't exist**. Plan above reorganises the work around a server-authoritative engine + betting + points economy. Moving to a dedicated branch to build it.
