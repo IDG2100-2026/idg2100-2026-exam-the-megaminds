@@ -1,6 +1,7 @@
 import { WebSocketServer } from "ws";
 import { consumeWsToken } from "../middleware/jwt.js";
-import { ensureEngine, getState } from "../services/gameEngine.service.js";
+import { ensureEngine, rollDice, doneRolling, getState } from "../services/gameEngine.service.js";
+
 
 // gameId -> Set of sockets in that game
 const rooms = new Map();
@@ -19,6 +20,11 @@ export function broadcastToTournament(tournamentId, message){
     });
 }
 
+function broadcastState(gameId) {
+    rooms.get(gameId)?.forEach(socket => {
+        socket.send(JSON.stringify({type: "state", state: getState(gameId, socket.userId) }));
+    });
+}
 export function initGameSocket(server) {
     const wss = new WebSocketServer({ server });
 
@@ -64,6 +70,21 @@ export function initGameSocket(server) {
                 socket.tournamentId = tournamentId;
                 socket.send(JSON.stringify({ type: "joined-tournament", tournamentId }));
             }
+            
+            if (msg.type === "roll") {
+                const result = rollDice(socket.gameId, socket.userId, msg.held ?? []);
+                if (result.error) return socket.send(JSON.stringify({ type: "error", message: result.error }));
+                broadcastState(socket.gameId);   // owner sees real faces, others stay hidden
+                return;
+            }
+
+            if (msg.type === "done-rolling") {
+                const result = doneRolling(socket.gameId, socket.userId);
+                if (result.error) return socket.send(JSON.stringify({ type: "error", message: result.error }));
+                broadcastState(socket.gameId);
+                return;
+            }
+
         });
 
         socket.on("close", () => {
