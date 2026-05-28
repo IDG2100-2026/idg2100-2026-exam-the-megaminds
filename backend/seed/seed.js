@@ -49,7 +49,7 @@ async function seed() {
         },
         {
             gameId: "game-002",
-            rules: { bestof: 5, straightallowed: false, roundTime: 15 },
+            rules: { bestof: 5, straightallowed: false, roundTime: 90 },
             players: [{ userId: u3.userId, score: 3 }, { userId: u4.userId, score: 2 }],
             winnerId: u3.userId, status: "finished"
         },
@@ -73,7 +73,7 @@ async function seed() {
         },
         {
             gameId: "game-006",
-            rules: { bestof: 5, straightallowed: true, roundTime: 15 },
+            rules: { bestof: 5, straightallowed: true, roundTime: 90 },
             players: [{ userId: u3.userId, score: 3 }, { userId: u6.userId, score: 1 }],
             winnerId: u3.userId, status: "finished"
         },
@@ -104,7 +104,7 @@ async function seed() {
         // In-progress
         {
             gameId: "game-011",
-            rules: { bestof: 5, straightallowed: false, roundTime: 15 },
+            rules: { bestof: 5, straightallowed: false, roundTime: 90 },
             players: [{ userId: u4.userId }, { userId: u6.userId }],
             status: "in-progress"
         },
@@ -117,7 +117,7 @@ async function seed() {
         // Pending
         {
             gameId: "game-013",
-            rules: { bestof: 5, straightallowed: true, roundTime: 15 },
+            rules: { bestof: 5, straightallowed: true, roundTime: 90 },
             players: [{ userId: u3.userId }, { userId: u5.userId }],
             status: "pending"
         },
@@ -130,14 +130,14 @@ async function seed() {
         // Nordic Masters Cup (tournament-002) — round 1: one finished, one still playing
         {
             gameId: "t-tournament-002-r1-0",
-            rules: { bestof: 7, straightallowed: true, roundTime: 15 },
+            rules: { bestof: 7, straightallowed: true, roundTime: 90 },
             players: [{ userId: u1.userId, score: 2 }, { userId: u3.userId, score: 3 }],
             winnerId: u3.userId, status: "finished",
             tournamentId: "tournament-002"
         },
         {
             gameId: "t-tournament-002-r1-1",
-            rules: { bestof: 7, straightallowed: true, roundTime: 15 },
+            rules: { bestof: 7, straightallowed: true, roundTime: 90 },
             players: [{ userId: u4.userId, score: 1 }, { userId: u6.userId, score: 2 }],
             status: "in-progress",
             tournamentId: "tournament-002"
@@ -181,7 +181,7 @@ async function seed() {
             tournamentId: "tournament-002",
             title: "Nordic Masters Cup",
             description: "An elite invitational tournament for top-ranked players in the Nordic region. Straight hands are allowed.",
-            format: { bestof: 7, straightallowed: true, roundTime: 15 },
+            format: { bestof: 7, straightallowed: true, roundTime: 90 },
             minPlayers: 2,
             maxPlayers: 8,
             startDate: new Date("2026-04-02"),

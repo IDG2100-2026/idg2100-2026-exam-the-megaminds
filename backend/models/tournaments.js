@@ -106,6 +106,10 @@ const tournamentSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    nextRoundStartsAt: {
+        type: Date,
+        defualt: null
+    },
     // Each entry stores the game IDs for one round and any player who received a bye
     rounds: [
         {

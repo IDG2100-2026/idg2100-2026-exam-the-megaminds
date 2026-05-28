@@ -5,10 +5,20 @@ import { tournamentService } from "@/services/api";
 export function usePlayerGameRedirect(tournament, user) {
     const navigate = useNavigate();
     const [checking, setChecking] = useState(false);
+    const [lobbyOver, setLobbyOver] = useState(false);
 
     const isParticipant = !!user && tournament?.participants?.includes(user.userId);
-    const active = tournament?.status === "in-progress" && isParticipant;
+    const active = tournament?.status === "in-progress" && isParticipant && lobbyOver;
 
+    useEffect(()=> {
+        const t = tournament?.nextRoundStartsAt;
+        if (!t) { setLobbyOver(true); return;}
+        const ms = new Date(t) - Date.now();
+        if (ms <= 0 ) { setLobbyOver(true); return;}
+        setLobbyOver(false);
+        const id = setTimeout(() => setLobbyOver(true), ms);
+        return () => clearTimeout(id);
+    }, [tournament?.nextRoundStartsAt]);
 
     useEffect(() =>{
         if (!active) return;
@@ -35,5 +45,5 @@ export function usePlayerGameRedirect(tournament, user) {
         return () => { cancelled = true; };
     }, [active, tournament?.tournamentId, tournament?.currentRound, tournament?.rounds, user?.userId, navigate]);
 
-    return {checking, isParticipant};
+    return {checking, isParticipant, lobbyOver};
 }

@@ -8,6 +8,7 @@ export const GAME_BESTOF_OPTIONS = [3, 5, 7];       // number of rounds
 export const GAME_ROUND_TIME_OPTIONS = [10, 30, 90]; // seconds total for all rounds (Bullet/Blitz/Rapid)
 export const GAME_STATUSES = ["pending", "in-progress", "finished"];
 
+export const TOURNAMENT_ROUND_LOBBY_SECONDS = 30;
 export const MIN_TOURNAMENT_TITLE_LENGTH = 3; //characters
 export const MAX_TOURNAMENT_TITLE_LENGTH = 100; //characters
 export const MIN_TOURNAMENT_DESC_LENGTH = 10; 

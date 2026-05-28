@@ -2,6 +2,7 @@ import { Tournament } from "../models/tournaments.js";
 import { Comment } from "../models/comments.js";
 import { User } from "../models/users.js";
 import { Game } from "../models/games.js";
+import { TOURNAMENT_ROUND_LOBBY_SECONDS } from "../configs/constants.js";
 import gamesService, { createGame } from "./games.service.js";
 
 export async function getAllTournaments({ sort = "startDate", limit = 10, page = 1, status, sortOrder = "asc" }) {
@@ -152,6 +153,7 @@ async function createRound(tournament, players, roundNumber) {
         { tournamentId: tournamentId },
         {
             currentRound: roundNumber,
+            nextRoundStartsAt: new Date(Date.now() + TOURNAMENT_ROUND_LOBBY_SECONDS * 1000),
             $push: { games: { $each: roundGameIds }, rounds: { roundNumber, games: roundGameIds, byeUserId } }
         },
         { returnDocument: "after" }

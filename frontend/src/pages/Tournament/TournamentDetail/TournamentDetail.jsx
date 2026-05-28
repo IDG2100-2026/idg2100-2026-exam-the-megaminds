@@ -33,7 +33,7 @@ function TournamentDetailContent({ tournamentid }) {
     const { tournament, loading, error, refresh } = useTournament(tournamentid)
     const authorName = useUserName(tournament?.createdBy);
     const { user } = useAppContext();
-    const { checking, isParticipant } = usePlayerGameRedirect(tournament, user);
+    const { checking, isParticipant, lobbyOver } = usePlayerGameRedirect(tournament, user);
     const { lastMessage } = useTournamentSocketContext();
 
     useEffect(() => {
@@ -41,13 +41,13 @@ function TournamentDetailContent({ tournamentid }) {
             refresh();
         }
     }, [lastMessage, tournament?.currentRound, refresh]);
-    
+
     if (loading) return <p className={styles.detail__status}>Loading Tournament...</p>;
     if (error) return <p className={styles.detail__status}>Error: {error}</p>;
     if (!tournament) return <p className={styles.detail__status}>Tournament not found.</p>;
 
     const { title, description, status, startDate, format,
-        minPlayers, maxPlayers, participants, trophy, buyIn, eloRange } = tournament
+        minPlayers, maxPlayers, participants, trophy, buyIn, eloRange, nextRoundStartsAt } = tournament
 
     return (
         <main className={styles.detail}>
@@ -74,6 +74,11 @@ function TournamentDetailContent({ tournamentid }) {
                     <TournamentStandings key={`round-${tournament.currentRound}`} tournamentId={tournament.tournamentId} />
                 </section>
             )}
+            {status === "in-progress" && nextRoundStartsAt && new Date(nextRoundStartsAt) > new Date() && (
+                <section className={styles.detail__section}>
+                    <TournamentCountdown targetDate={nextRoundStartsAt} label="Next round in" />
+                </section>
+            )}
             {status === "in-progress" && user?.role === "admin" && (
                 <section className={styles.detail__section}>
                     <h2 className={styles.detail__heading}>Finish tournament</h2>
@@ -85,7 +90,9 @@ function TournamentDetailContent({ tournamentid }) {
                     <p className={styles.detail__status}>
                         {checking
                             ? "Taking you to your game…"
-                            : "Your game has finished — waiting for the next round to start."}
+                            : !lobbyOver
+                                ? "Get ready — your next game is starting soon."
+                                : "Your game has finished — waiting for the next round to start." }
                     </p>
                 </section>
             )}
