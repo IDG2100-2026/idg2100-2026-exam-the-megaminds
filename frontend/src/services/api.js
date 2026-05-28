@@ -190,4 +190,9 @@ export const adminService = {
 
     logError: (errorData) =>
         apiCall('POST', '/api/errors', errorData).catch(() => {}),
-};
+
+    getAllComment: (page = 1, limit = 20, search = "") => 
+        apiCall('GET', `/api/comments?page=${page}&limit=${limit}&order=desc${search ? `&search=${encodeURIComponent(search)}`: ""}`) 
+
+    }
+
