@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { platformService, userService, adminService } from "@/services/api";
+import { platformService, userService, adminService, commentService } from "@/services/api";
 import styles from "./AdminDashBoard.module.css";
+
 
 export default function AdminDashBoard() {
   const [activeTab, setActiveTab] = useState("Overview");
@@ -15,7 +16,7 @@ export default function AdminDashBoard() {
       </div>
 
       <div className={styles.tabs}>
-        {["Overview", "Users", "Error Logs"].map((tab) => (
+        {["Overview", "Users", "Error Logs", "Comments"].map((tab) => (
           <button
             key={tab}
             className={`${styles.tab} ${activeTab === tab ? styles.activeTab : ""}`}
@@ -29,6 +30,7 @@ export default function AdminDashBoard() {
       {activeTab === "Overview" && <OverviewTab />}
       {activeTab === "Users" && <UsersTab />}
       {activeTab === "Error Logs" && <ErrorLogsTab />}
+      {activeTab === "Comments" && <CommentsTab />}
     </div>
   );
 }
@@ -396,6 +398,135 @@ function ErrorLogsTab() {
     </div>
   );
 }
+
+// Comments
+
+function CommentsTab() {
+  const [comments, setComments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [msg, setMsg] = useState({ text: "", isError: false });
+  const [refreshKey, setRefreshKey] = useState(0);
+  const LIMIT = 20;
+
+  const showMsg = (text, isError = false) => {
+    setMsg({ text, isError });
+    setTimeout(() => setMsg({ text: "", isError: false }), 3000);
+  };
+
+  useEffect(() => {
+    adminService
+      .getAllComments(page, LIMIT, search)
+      .then((res) => {
+        const list = Array.isArray(res.data) ? res.data : [];
+        setComments(list);
+        setHasMore(list.length === LIMIT);
+      })
+      .catch(() => showMsg("Failed to load comments", true))
+      .finally(() => setLoading(false));
+  }, [page, search, refreshKey]);
+
+  const handleSearch = (e) => {
+    setSearch(e.target.value);
+    setPage(1);
+  };
+
+  const handleDelete = async (commentId) => {
+    if (!window.confirm("Delete this comment? This cannot be undone.")) return;
+    try {
+      await commentService.deleteComment(commentId);
+      showMsg("Comment deleted");
+      setRefreshKey((k) => k + 1);
+    } catch (err) {
+      showMsg(err.message, true);
+    }
+  };
+
+  return (
+    <div className={styles.tabContent}>
+      {msg.text && (
+        <div className={`${styles.actionMsg} ${msg.isError ? styles.actionError : styles.actionSuccess}`}>
+          {msg.text}
+        </div>
+      )}
+
+      <div className={styles.toolbar}>
+        <input
+          className={styles.searchInput}
+          type="text"
+          placeholder="Search comment text..."
+          value={search}
+          onChange={handleSearch}
+        />
+      </div>
+
+      <div className={styles.tableWrapper}>
+        {loading ? (
+          <div className={styles.loading}>Loading comments...</div>
+        ) : comments.length === 0 ? (
+          <div className={styles.empty}>No comments found</div>
+        ) : (
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Text</th>
+                <th>Context</th>
+                <th>User</th>
+                <th>Posted</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {comments.map((c) => (
+                <tr key={c.commentId}>
+                  <td className={styles.errorMsg} title={c.text}>
+                    {c.text.length > 80 ? c.text.slice(0, 80) + "…" : c.text}
+                  </td>
+                  <td className={styles.mono}>
+                    {c.gameId ? `game: ${c.gameId}` : `tournament: ${c.tournamentId}`}
+                  </td>
+                  <td className={styles.dim}>{c.userId}</td>
+                  <td className={styles.dim}>
+                    {new Date(c.createdAt).toLocaleString()}
+                  </td>
+                  <td>
+                    <button
+                      className={styles.btnDanger}
+                      onClick={() => handleDelete(c.commentId)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      <div className={styles.pagination}>
+        <button
+          className={styles.pageBtn}
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+          disabled={page === 1}
+        >
+          ← Prev
+        </button>
+        <span className={styles.pageInfo}>Page {page}</span>
+        <button
+          className={styles.pageBtn}
+          onClick={() => setPage((p) => p + 1)}
+          disabled={!hasMore}
+        >
+          Next →
+        </button>
+      </div>
+    </div>
+  );
+}
+
 
 // Shared
 
