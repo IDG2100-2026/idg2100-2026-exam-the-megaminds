@@ -74,7 +74,7 @@ export const userService = {
 // Game CRUD and state transitions
 export const gameService = {
     getAllGames: (page = 1, limit = 20) =>
-        apiCall('GET', `/api/games?page=${page}&limit=${limit}`),
+        apiCall('GET', `/api/games?page=${page}&limit=${limit}`).then(res => res.data),
 
     getGame: (gameId) =>
         apiCall('GET', `/api/games/${gameId}`),
@@ -191,8 +191,11 @@ export const adminService = {
     logError: (errorData) =>
         apiCall('POST', '/api/errors', errorData).catch(() => {}),
 
-    getAllComment: (page = 1, limit = 20, search = "") => 
-        apiCall('GET', `/api/comments?page=${page}&limit=${limit}&order=desc${search ? `&search=${encodeURIComponent(search)}`: ""}`) 
+    deleteGame: (gameId) =>
+        apiCall('DELETE', `/api/games/${gameId}`),
+
+    getAllComments: (page = 1, limit = 20, search = "") => 
+        apiCall('GET', `/api/comments?page=${page}&limit=${limit}&order=desc${search ? `&search=${encodeURIComponent(search)}`: ""}`),
 
     }
 

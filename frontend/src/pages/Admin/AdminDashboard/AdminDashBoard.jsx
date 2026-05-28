@@ -1,7 +1,12 @@
 import { useState, useEffect } from "react";
-import { platformService, userService, adminService, commentService } from "@/services/api";
+import {
+  platformService,
+  userService,
+  adminService,
+  commentService,
+  gameService,
+} from "@/services/api";
 import styles from "./AdminDashBoard.module.css";
-
 
 export default function AdminDashBoard() {
   const [activeTab, setActiveTab] = useState("Overview");
@@ -16,7 +21,7 @@ export default function AdminDashBoard() {
       </div>
 
       <div className={styles.tabs}>
-        {["Overview", "Users", "Error Logs", "Comments"].map((tab) => (
+        {["Overview", "Users", "Error Logs", "Comments", "Games"].map((tab) => (
           <button
             key={tab}
             className={`${styles.tab} ${activeTab === tab ? styles.activeTab : ""}`}
@@ -31,6 +36,7 @@ export default function AdminDashBoard() {
       {activeTab === "Users" && <UsersTab />}
       {activeTab === "Error Logs" && <ErrorLogsTab />}
       {activeTab === "Comments" && <CommentsTab />}
+      {activeTab === "Games" && <GamesTab />}
     </div>
   );
 }
@@ -399,6 +405,135 @@ function ErrorLogsTab() {
   );
 }
 
+// Games
+
+function GamesTab() {
+  const [games, setGames] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [msg, setMsg] = useState({ text: "", isError: false });
+  const [refreshKey, setRefreshKey] = useState(0);
+  const LIMIT = 20;
+
+  const showMsg = (text, isError = false) => {
+    setMsg({ text, isError });
+    setTimeout(() => setMsg({ text: "", isError: false }), 3000);
+  };
+
+  useEffect(() => {
+    gameService
+      .getAllGames(page, LIMIT)
+      .then((data) => {
+        const list = Array.isArray(data) ? data : [];
+        setGames(list);
+        setHasMore(list.length === LIMIT);
+      })
+      .catch(() => showMsg("Failed to load games", true))
+      .finally(() => setLoading(false));
+  }, [page, refreshKey]);
+
+  const handleDelete = async (gameId) => {
+    if (!window.confirm(`Delete game "${gameId}"? This cannot be undone.`))
+      return;
+    try {
+      await adminService.deleteGame(gameId);
+      showMsg(`Game "${gameId}" deleted`);
+      setRefreshKey((k) => k + 1);
+    } catch (err) {
+      showMsg(err.message, true);
+    }
+  };
+
+  return (
+    <div className={styles.tabContent}>
+      {msg.text && (
+        <div
+          className={`${styles.actionMsg} ${msg.isError ? styles.actionError : styles.actionSuccess}`}
+        >
+          {msg.text}
+        </div>
+      )}
+
+      <div className={styles.tableWrapper}>
+        {loading ? (
+          <div className={styles.loading}>Loading games...</div>
+        ) : games.length === 0 ? (
+          <div className={styles.empty}>No games found</div>
+        ) : (
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Game ID</th>
+                <th>Status</th>
+                <th>Best of</th>
+                <th>Players</th>
+                <th>Winner</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {games
+                .filter((g) => g?.gameId)
+                .map((g) => (
+                  <tr key={g.gameId}>
+                    <td className={styles.mono}>{g.gameId}</td>
+                    <td>
+                      <span
+                        className={
+                          g.status === "finished"
+                            ? styles.badgeActive
+                            : g.status === "active"
+                              ? styles.badgeAdmin
+                              : styles.badgePending
+                        }
+                      >
+                        {g.status}
+                      </span>
+                    </td>
+                    <td>{g.rules?.bestof}</td>
+                    <td>{g.players?.length ?? 0}</td>
+                    <td className={styles.dim}>{g.winnerId ?? "—"}</td>
+                    <td className={styles.dim}>
+                      {new Date(g.createdAt).toLocaleString()}
+                    </td>
+                    <td>
+                      <button
+                        className={styles.btnDanger}
+                        onClick={() => handleDelete(g.gameId)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      <div className={styles.pagination}>
+        <button
+          className={styles.pageBtn}
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+          disabled={page === 1}
+        >
+          ← Prev
+        </button>
+        <span className={styles.pageInfo}>Page {page}</span>
+        <button
+          className={styles.pageBtn}
+          onClick={() => setPage((p) => p + 1)}
+          disabled={!hasMore}
+        >
+          Next →
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // Comments
 
 function CommentsTab() {
@@ -447,7 +582,9 @@ function CommentsTab() {
   return (
     <div className={styles.tabContent}>
       {msg.text && (
-        <div className={`${styles.actionMsg} ${msg.isError ? styles.actionError : styles.actionSuccess}`}>
+        <div
+          className={`${styles.actionMsg} ${msg.isError ? styles.actionError : styles.actionSuccess}`}
+        >
           {msg.text}
         </div>
       )}
@@ -485,7 +622,9 @@ function CommentsTab() {
                     {c.text.length > 80 ? c.text.slice(0, 80) + "…" : c.text}
                   </td>
                   <td className={styles.mono}>
-                    {c.gameId ? `game: ${c.gameId}` : `tournament: ${c.tournamentId}`}
+                    {c.gameId
+                      ? `game: ${c.gameId}`
+                      : `tournament: ${c.tournamentId}`}
                   </td>
                   <td className={styles.dim}>{c.userId}</td>
                   <td className={styles.dim}>
@@ -526,7 +665,6 @@ function CommentsTab() {
     </div>
   );
 }
-
 
 // Shared
 
