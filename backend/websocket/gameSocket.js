@@ -1,5 +1,6 @@
 import { WebSocketServer } from "ws";
 import { consumeWsToken } from "../middleware/jwt.js";
+import { ensureEngine, getState } from "../services/gameEngine.service.js";
 
 // gameId -> Set of sockets in that game
 const rooms = new Map();
@@ -24,7 +25,7 @@ export function initGameSocket(server) {
     wss.on("connection", (socket) => {
         socket.authenticated = false;
 
-        socket.on("message", (data) => {
+        socket.on("message", async (data) => {
             const msg = JSON.parse(data);
 
             // Step 1 - auth must happen first
@@ -51,6 +52,9 @@ export function initGameSocket(server) {
                 rooms.get(gameId).add(socket);
                 socket.gameId = gameId;
                 socket.send(JSON.stringify({ type: "joined-game", gameId }));
+
+                await ensureEngine(gameId);
+                socket.send(JSON.stringify({ type: "state", state: getState(gameId, socket.userId) }));
             }
             
             if (msg.type === "join-tournament") {
