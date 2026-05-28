@@ -90,6 +90,24 @@
     font-size: 0.9rem;
 }
 
+.trophyHint {
+    color: var(--theme-text-secondary);
+    text-transform: none;
+    letter-spacing: normal;
+    font-size: 0.8rem;
+}
+
+.trophyPreview {
+    margin-top: 8px;
+    width: 100%;
+    max-width: 160px;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--theme-accent-dark);
+    background: var(--theme-background-card);
+}
+
 @media (max-width: 768px) {
     .row {
         flex-direction: column;

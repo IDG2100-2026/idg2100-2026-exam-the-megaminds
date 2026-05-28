@@ -2,7 +2,8 @@ import { Tournament } from "../models/tournaments.js";
 import { Comment } from "../models/comments.js";
 import { User } from "../models/users.js";
 import { Game } from "../models/games.js";
-import { createGame } from "./games.service.js";
+import { TOURNAMENT_ROUND_LOBBY_SECONDS } from "../configs/constants.js";
+import gamesService, { createGame } from "./games.service.js";
 
 export async function getAllTournaments({ sort = "startDate", limit = 10, page = 1, status, sortOrder = "asc" }) {
     const skip = (Number(page) - 1) * Number(limit);
@@ -88,6 +89,36 @@ export async function getTournamentComments(tournamentId, { sort = "createdAt", 
         .skip(Number(skip));
 }
 
+export async function getTournamentGames(tournamentId) {
+    return Game.find({ tournamentId });
+}
+
+
+export async function getStandings(tournamentId){
+    const tournament = await Tournament.findOne({ tournamentId });
+    if (!tournament) { const e = new Error("Tournament not found"); e.status = 404; throw e; }
+
+    const games = await Game.find({ tournamentId });
+
+    const tally = new Map();
+    for (const userId of tournament.participants) {
+        tally.set(userId, { userId, points: 0, wins: 0, gamesPlayed: 0 });
+    }
+    for (const game of games) {
+        for(const player of game.players) {
+            const entry = tally.get(player.userId)
+                ?? {userId: player.userId, points: 0, wins: 0, gamesPlayed: 0};
+            entry.points += player.score ?? 0;
+            if (game.status === "finished") {
+                entry.gamesPlayed += 1;
+                if (game.winnerId === player.userId) entry.wins += 1;
+            }
+            tally.set(player.userId, entry);
+        }
+    }
+    return [...tally.values()].sort((a, b) => b.points - a.points || b.wins - a.wins);
+}
+
 export async function createTournamentComment(tournamentId, { userId, text }) {
     return Comment.create({ tournamentId: tournamentId, userId, text });
 }
@@ -122,6 +153,7 @@ async function createRound(tournament, players, roundNumber) {
         { tournamentId: tournamentId },
         {
             currentRound: roundNumber,
+            nextRoundStartsAt: new Date(Date.now() + TOURNAMENT_ROUND_LOBBY_SECONDS * 1000),
             $push: { games: { $each: roundGameIds }, rounds: { roundNumber, games: roundGameIds, byeUserId } }
         },
         { returnDocument: "after" }
@@ -202,5 +234,7 @@ export default {
     startTournament,
     advanceTournament,
     awardWinner,
-    leaveTournament
+    leaveTournament,
+    getStandings,
+    getTournamentGames
 };

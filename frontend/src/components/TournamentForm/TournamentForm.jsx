@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { tournamentService } from "@/services/api";
 import styles from "./TournamentForm.module.css";
 
 const EMPTY = {
@@ -28,6 +29,23 @@ export default function TournamentForm({ initialValues, onSubmit, submitLabel = 
     });
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState(null);
+    const [uploadingTrophy, setUploadingTrophy] = useState(false);
+
+    // Upload the chosen image, then store the returned URL in trophy.imageUrl
+    async function handleTrophyFile(e) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setUploadingTrophy(true);
+        setError(null);
+        try {
+            const url = await tournamentService.uploadTrophyImage(file);
+            setValues((v) => ({ ...v, trophy: { ...v.trophy, imageUrl: url } }));
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setUploadingTrophy(false);
+        }
+    }
 
     // Update a top-level field
     const set = (field) => (e) =>
@@ -83,11 +101,11 @@ export default function TournamentForm({ initialValues, onSubmit, submitLabel = 
                 </label>
 
                 <label className={styles.field}>
-                    <span>Round time (s)</span>
+                    <span>Time limit (s, total)</span>
                     <select value={values.format.roundTime} onChange={setNested("format", "roundTime", Number)}>
-                        <option value={5}>5</option>
                         <option value={10}>10</option>
-                        <option value={15}>15</option>
+                        <option value={30}>30</option>
+                        <option value={90}>90</option>
                     </select>
                 </label>
 
@@ -137,14 +155,23 @@ export default function TournamentForm({ initialValues, onSubmit, submitLabel = 
                     <input value={values.trophy.title} onChange={setNested("trophy", "title")} required minLength={2} maxLength={100} />
                 </label>
                 <label className={styles.field}>
-                    <span>Trophy image URL (optional)</span>
-                    <input value={values.trophy.imageUrl} onChange={setNested("trophy", "imageUrl")} />
+                    <span>Trophy image (optional)</span>
+                    <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        onChange={handleTrophyFile}
+                        disabled={uploadingTrophy}
+                    />
+                    {uploadingTrophy && <small className={styles.trophyHint}>Uploading…</small>}
+                    {values.trophy.imageUrl && (
+                        <img className={styles.trophyPreview} src={values.trophy.imageUrl} alt="Trophy preview" />
+                    )}
                 </label>
             </div>
 
             {error && <p className={styles.error}>{error}</p>}
 
-            <button type="submit" className={styles.submit} disabled={busy}>
+            <button type="submit" className={styles.submit} disabled={busy || uploadingTrophy}>
                 {busy ? "Saving…" : submitLabel}
             </button>
         </form>

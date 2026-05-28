@@ -103,8 +103,12 @@ export function validateTournamentCreate(){
         body("trophy.imageUrl")
             .optional({ checkFalsy: true })
             .trim()
-            .isURL()
-            .withMessage("Trophy image URL must be a valid URL"),
+            .custom((val) => {
+                // Accept an uploaded image (relative /uploads/ path) or an external http(s) URL
+                if (val.startsWith("/uploads/")) return true;
+                if (/^https?:\/\/.+/i.test(val)) return true;
+                throw new Error("Trophy image must be an uploaded image or a valid http(s) URL");
+            }),
 
         body("createdBy")
             .isInt({ min: 0, max: Number.MAX_SAFE_INTEGER })
@@ -220,8 +224,11 @@ export function validateTournamentUpdate(){
 
         body("trophy.imageUrl")
             .optional({ checkFalsy: true }).trim()
-            .isURL()
-            .withMessage("Trophy image URL must be a valid URL")
+            .custom((val) => {
+                if (val.startsWith("/uploads/")) return true;
+                if (/^https?:\/\/.+/i.test(val)) return true;
+                throw new Error("Trophy image must be an uploaded image or a valid http(s) URL");
+            })
     ];
 }
 

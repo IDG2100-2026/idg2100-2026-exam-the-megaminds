@@ -52,7 +52,7 @@ export default function AdminTournamentControls({tournament, onChange}) {
             </button>
             )}
             {status === "in-progress" && (
-            <button className={styles.controls__advance} onClick={()=> tournamentService.advanceRound(tournamentId)}>Advance Round</button>
+            <button className={styles.controls__advance} onClick={() => run(() => tournamentService.advanceRound(tournamentId))}>Advance Round</button>
             )}
             {status !== "cancelled" && status !== "finished" && (
                 <button className={styles.controls__cancel} onClick={handleCancel}>Cancel</button>
