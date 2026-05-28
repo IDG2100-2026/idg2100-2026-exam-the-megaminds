@@ -40,15 +40,16 @@ Single source of truth for the tournament feature (frontend + its backend half).
 - **Standings** — `getStandings` tallies score + match-wins per participant; `/tournaments/:id/standings`; `TournamentStandings` table (shown for in-progress/finished). `useUserName` (module-cached) resolves ids→names.
 - **Ongoing games + player auto-redirect** — `getTournamentGames` + `/tournaments/:id/games`; `OngoingGames` lists the *current round's* games to non-participants/spectators. `usePlayerGameRedirect` sends a participant to their non-finished current-round game (and leaves them on a "waiting for next round" state once it's finished — the "back on completion" half).
 - **Homepage** — `TournamentPreview` is mounted on `HomePage` (lobby/activity remain teammates' sections).
+- **Next-round countdown** (spec line 61) — Option B (lobby window): `createRound` stamps `nextRoundStartsAt = now + TOURNAMENT_ROUND_LOBBY_SECONDS` (30s, in `constants.js`); model field added. `TournamentDetail` renders `TournamentCountdown` to it while in-progress and the window is in the future; `usePlayerGameRedirect` is gated behind a one-shot `setTimeout` that flips `lobbyOver` when the window passes, so participants only get pulled into their game *after* the lobby ends. Rides the existing `round-change` broadcast so all viewers get the new window live.
 
 ### 🟡 Open — our side, unblocked
 - **Polish:** loading skeletons, empty states, error toasts, accessibility pass (focus/ARIA/keyboard).
-- **Next-round countdown** (spec): needs a round-start timestamp first — rounds are admin-advanced, so there's no scheduled start to count to. Design call before code.
-- **Live round-change push:** auto-redirect only re-fires on tournament reload; a `round-change` message over the (already-wired) tournament socket would make the round-to-round jump real-time. Also enables the spec's "countdown till next round" if a round-start time gets modeled.
 
 ### ⛔ Blocked / waiting
-- **Extra points for tournament winner** — needs the points/betting feature (teammate).
+- **Extra points for tournament winner** — **now unblocked.** The user `points` field exists (`backend/models/users.js`, default 1000), so the game/points work is no longer a hard prerequisite. TODO: in `awardWinner` (`tournaments.service.js`), `$inc` the winner's `points` by a prize amount — either a fixed constant or a new `prizePoints` field on the tournament model+validator+form. Coordinate the prize sizing with the points economy in `GAME_PLAN.md` §6 so tournament prizes don't unbalance the weekly grant.
 - **Real `cors`** on the backend before any prod/demo build (dev relies on the Vite proxy).
+
+> See `GAME_PLAN.md` (repo root) for the game + betting + points work. Note the buy-in gate in `joinTournament` is **already live** (it reads `user.points`, which now defaults to 1000) — no longer "activates once points exist".
 
 ---
 
@@ -75,14 +76,17 @@ Fallback: polling (`usePolling` exists in `frontend reference/`) is acceptable i
   tournamentId: string,            // primary id (NOT _id); auto-generated server-side
   title: string,                   // 3–100
   description: string,             // 10–500
-  format: { bestof: 3|5|7, straightallowed: boolean, roundTime: 5|10|15 },
+  format: { bestof: 3|5|7, straightallowed: boolean, roundTime: 10|30|90 },
   minPlayers: number,              // ≥2
   maxPlayers: number,              // ≥minPlayers
   startDate: ISODateString,
   status: 'pending'|'in-progress'|'finished'|'cancelled',
   participants: number[],          // userIds (numeric — fetch names via userService.getUser)
+  buyIn: number,                   // points required to enter (default 0)
+  eloRange: { min: number|null, max: number|null },  // null = open on that side
   games: string[],                 // gameIds
   currentRound: number,            // 0 = not started
+  nextRoundStartsAt: ISODateString|null,  // lobby window end → next-round countdown target
   rounds: [{ roundNumber, games: string[], byeUserId: number|null }],
   trophy: { title: string, imageUrl: string|null },
   createdBy: number,               // userId
@@ -109,6 +113,7 @@ AI-looking code triggers extra questioning; be ready to explain *your* choices:
 
 ## 7. Log (condensed)
 
+- **2026-05-28** — **Next-round countdown shipped** (Option B / lobby window): `TOURNAMENT_ROUND_LOBBY_SECONDS=30` + `nextRoundStartsAt` model field; `createRound` stamps it each round; `TournamentDetail` shows `TournamentCountdown` during the window; `usePlayerGameRedirect` gated behind a `lobbyOver` `setTimeout` so participants are redirected only after the lobby ends (one boolean flip, no polling). Also noted that the game/points work now lives in `GAME_PLAN.md`, the tournament buy-in gate is already live (points default 1000), and the winner-bonus-points task is unblocked.
 - **2026-05-27 (cont.)** — `AwardWinner` wired into `TournamentDetail` (was orphaned) + Advance Round button uses `run()`. **Trophy image upload:** teammate's uploader was avatar-only, so added a separate `handleTrophyUpload` (uploads/trophies/, field `image`, reuses the image filter), `POST /tournaments/trophy-image` (admin) → returns URL, `tournamentService.uploadTrophyImage`, file input + preview in `TournamentForm`. Relaxed `trophy.imageUrl` validator to accept `/uploads/...` paths (was `.isURL()`, which rejected the relative upload path).
 - **2026-05-27** — Shipped buy-in/Elo gating (model+validator+form+display+join enforcement; fixed the `.escape()` double-encoding), standings (`getStandings` + table + cached `useUserName`), ongoing-games list for spectators, and player auto-redirect (`usePlayerGameRedirect`). Mounted `TournamentPreview` on the homepage. Plan §3 updated to match. **Live round-change:** `start`/`advance` controllers broadcast `{type:"round-change", currentRound}`; `TournamentDetail` subscribes (guarded `refresh()` on round delta) so the participant redirect + standings/ongoing remount in real time. **Socket consolidation:** `TournamentSocketProvider`/`useTournamentSocketContext` (`src/context/`) opens the tournament WS once; `TournamentDetail` (split into a thin provider wrapper + `TournamentDetailContent`) and `TournamentComments` both consume it → one connection per page (was two). **AwardWinner wired:** was an orphaned component (admins couldn't finish a tournament); now mounted as an admin-only "Finish tournament" section in `TournamentDetail` (in-progress). Also fixed the Advance Round button to use `run()` (was swallowing errors + not refreshing).
 - **2026-05-26** — Phase 4 shipped: live tournament comments over WebSockets. Added `tournamentRooms` + `join-tournament` + `broadcastToTournament` to `gameSocket.js` (mirrors game rooms, reuses the auth-first guard); broadcast on comment create; new `useTournamentSocket(id)` hook; `TournamentComments` now appends live with `commentId` dedupe + optimistic post + `● Live` badge. Open: anonymous viewers don't get live updates (see §4 note).
