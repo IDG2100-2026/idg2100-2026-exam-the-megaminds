@@ -76,13 +76,13 @@ export default function LobbyPage() {
 
         // Filter by Best Of
         if (filters.bestOf !== "all") {
-            result = result.filter(game => game.rules.bestOf === parseInt(filters.bestOf));
+            result = result.filter(game => game.rules.bestof === parseInt(filters.bestOf));
         }
 
         // Filter by Straights
         if (filters.straights !== "all") {
             const allowStraights = filters.straights === "yes";
-            result = result.filter(game => game.rules.allowedStraights === allowStraights);
+            result = result.filter(game => game.rules.straightallowed === allowStraights);
         }
 
         // Filter by Round Time

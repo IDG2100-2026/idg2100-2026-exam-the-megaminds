@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useState, useContext, useEffect } from "react";
-import { DEFAULT_THEME, DEFAULT_BOARD_COLOR, getTheme } from "@/config/themes";
+import { DEFAULT_THEME, DEFAULT_BOARD_COLOR, getTheme, BOARD_COLORS, BOARD_COLORS_LIGHT } from "@/config/themes";
 import { applyThemeToDocument } from "@/hooks/useTheme";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { userService } from "@/services/api";
@@ -25,16 +25,20 @@ export function AppProvider({ children }) {
     const [soundEnabled, setSoundEnabled] = useLocalStorage('soundEnabled', true);
     const [profilePic, setProfilePic] = useLocalStorage('profilePic', true);
     const [displayNames, setDisplayNames] = useLocalStorage('displayNames', true);
+    const [lobbyCount, setLobbyCount] = useLocalStorage('lobbyCount', 5);
+    const [lobbyMusic, setLobbyMusic] = useLocalStorage('lobbyMusic', true);
 
-    const theme = { mode: themeMode, boardColor, soundEnabled, profilePic, displayNames };
+    const theme = { mode: themeMode, boardColor, soundEnabled, profilePic, displayNames, lobbyCount, lobbyMusic };
 
     const setTheme = (updater) => {
         const next = typeof updater === 'function' ? updater(theme) : updater;
         if (next.mode !== undefined) setThemeMode(next.mode);
         if (next.boardColor !== undefined) setBoardColor(next.boardColor);
         if (next.soundEnabled !== undefined) setSoundEnabled(next.soundEnabled);
+        if (next.lobbyMusic !== undefined) setLobbyMusic(next.lobbyMusic);
         if (next.profilePic !== undefined) setProfilePic(next.profilePic);
         if (next.displayNames !== undefined) setDisplayNames(next.displayNames);
+        if (next.lobbyCount !== undefined) setLobbyCount(next.lobbyCount);
     };
 
     // Apply theme to CSS variables whenever themeMode changes
@@ -42,12 +46,20 @@ export function AppProvider({ children }) {
         applyThemeToDocument(getTheme(themeMode));
     }, [themeMode]);
 
+    useEffect(() => {
+        const colors = themeMode === 'dark' ? BOARD_COLORS : BOARD_COLORS_LIGHT;
+        document.documentElement.style.setProperty('--board-bg-color', colors[boardColor] || colors.green);
+    }, [boardColor, themeMode]);
+
     // On mount, check if the user is already logged in via cookie
     useEffect(() => {
         const initializeUser = async () => {
             try {
                 const loggedInUser = await userService.getMe();
                 setUser(loggedInUser);
+                if (loggedInUser?.preferences && Object.keys(loggedInUser.preferences).length > 0) {
+                    setTheme(loggedInUser.preferences);
+                }
             } catch {
                 setUser(null);
             } finally {
@@ -100,6 +112,8 @@ export function AppProvider({ children }) {
             login,
             logout,
             refreshUser,
+            lobbyCount,
+            setLobbyCount,
         }}>
             {children}
         </AppContext.Provider>

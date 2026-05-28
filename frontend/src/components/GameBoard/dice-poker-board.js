@@ -353,7 +353,7 @@ class DicePokerBoard extends HTMLElement {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        color: white;
+        color: var(--theme-text, white);
         padding: 4px 4px 12px;
         font-size: 0.95rem;
         flex-wrap: wrap;
@@ -363,7 +363,7 @@ class DicePokerBoard extends HTMLElement {
         font-weight: 700;
         font-size: 1rem;
         letter-spacing: 0.03em;
-        color: #6FD86F;
+        color: var(--theme-text, white);
       }
       #status-msg {
         font-style: italic;
@@ -377,19 +377,19 @@ class DicePokerBoard extends HTMLElement {
         font-size: 1rem;
         padding: 3px 12px;
         border-radius: 6px;
-        background: rgba(0,0,0,0.4);
-        border: 1px solid #3D8A3A;
+        background: rgba(0,0,0,0.3);
+        border: 1px solid var(--theme-accent-dark, #3D8A3A);
         min-width: 56px;
         text-align: center;
-        color: #6FD86F;
+        color: var(--theme-text, #6FD86F);
       }
       @keyframes blink {
         0%, 100% { opacity: 1; }
         50%       { opacity: 0.35; }
       }
       .timer.urgent {
-        color: #FF6B6B;
-        border-color: #FF6B6B;
+        color: var(--theme-danger, #FF6B6B);
+        border-color: var(--theme-danger, #FF6B6B);
         animation: blink 0.5s ease-in-out infinite;
       }
       .flex {
@@ -404,7 +404,7 @@ class DicePokerBoard extends HTMLElement {
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        color: #6FD86F;
+        color: var(--theme-text, #6FD86F);
         padding: 2rem;
         gap: 0.5rem;
       }

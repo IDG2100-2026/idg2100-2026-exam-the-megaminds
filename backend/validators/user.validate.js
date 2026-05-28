@@ -107,7 +107,11 @@ export function validateUserUpdate(){
             .optional()
             .trim()
             .isLength({ max: 300 })
-            .withMessage("About me can't exceed 300 characters")
+            .withMessage("About me can't exceed 300 characters"),
+        body("preferences")
+            .optional()
+            .isObject()
+            .withMessage("preferences must be an object")
     ];
 }
 

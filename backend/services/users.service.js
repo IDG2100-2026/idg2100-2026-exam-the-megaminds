@@ -78,7 +78,7 @@ export async function updateUser(userId, data) {
     return User.findOneAndUpdate(
         { userId: userId },
         data,
-        { returnDocument: "after", new: true }
+        { returnDocument: "after" }
     ).select("-pwd");
 }
 
