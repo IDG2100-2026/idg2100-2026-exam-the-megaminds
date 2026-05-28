@@ -299,6 +299,10 @@ export default function ProfilePage() {
                         </span>
                         <span className={styles.statLabel}>Elo change (week)</span>
                     </div>
+                    <div className={styles.statCard}>
+                        <span className={styles.statValue}>{profile.points ?? 1000}</span>
+                        <span className={styles.statLabel}>Points balance</span>
+                    </div>
                 </div>
             </section>
 
@@ -326,7 +330,7 @@ export default function ProfilePage() {
                 )}
                 <ul className={styles.gamesList}>
                     {games.map((game) => {
-                        const isFinished = game.status === 'complete';
+                        const isFinished = game.status === 'finished';
                         const isWinner = game.winnerId === user.userId;
                         const resultClass = !isFinished ? styles.ongoing : isWinner ? styles.win : styles.loss;
                         const resultLabel = !isFinished ? game.status : isWinner ? 'Win' : 'Loss';

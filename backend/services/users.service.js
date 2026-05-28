@@ -33,7 +33,25 @@ export async function getAllUsers({ sort = "elo", limit = 10, page = 1, search, 
 
 // the select("-pwd") makes sure the password is not displayed even though it is hashed
 export async function getUserById(userId) {
-    return User.findOne({ userId: userId }).select("-pwd");
+    const user = await User.findOne({ userId: userId }).select("-pwd");
+    if (!user) return null;
+
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+    const winsLastMonth = await Game.countDocuments({
+        winnerId: userId,
+        status: "finished",
+        createdAt: { $gte: thirtyDaysAgo }
+    });
+
+    const lossesLastMonth = await Game.countDocuments({
+        "players.userId": userId,
+        status: "finished",
+        winnerId: { $ne: userId },
+        createdAt: { $gte: thirtyDaysAgo }
+    });
+
+    return { ...user.toObject(), winsLastMonth, lossesLastMonth };
 }
 
 export async function createUser(data) {

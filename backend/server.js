@@ -39,12 +39,14 @@ const server = diceApp.listen(port, ()=>{console.log("Spanish Poker Dice app is 
 initGameSocket(server);
 
 // graceful shutdown
+let shuttingDown = false;
 async function shutDown(){
+    if (shuttingDown) return;
+    shuttingDown = true;
     console.log("\nThe Spanish Poker Dice app is being shut down...");
+    server.close();
     await disconnectDB();
-    server.close(()=>{
-        process.exit(0);
-    });
+    process.exit(0);
 }
 
 process.on("SIGINT", shutDown);

@@ -39,7 +39,7 @@ export default function LobbyPage() {
 
                 // Show only joinable games: pending games waiting for an opponent
                 const pending = allGames.filter(game =>
-                    game.status === 'pending' && game.players.length < 2
+                    game.status === 'pending' && game.players.length < game.rules.numPlayers
                 );
                 const enriched = await enrichGames(pending);
                 setGames(enriched);
@@ -48,7 +48,7 @@ export default function LobbyPage() {
                 if (user) {
                     const active = allGames.filter(game =>
                         game.players.some(p => p.userId === user.userId) &&
-                        game.status !== 'complete'
+                        game.status !== 'finished'
                     );
                     const enrichedActive = await enrichGames(active);
                     setUserGames(enrichedActive);
@@ -122,20 +122,15 @@ export default function LobbyPage() {
     };
 
     const handleJoinGame = async (gameId) => {
-        if (!user) {
-            navigate("/login");
-            return;
-        }
-
+        if (!user) { navigate("/login"); return; }
         setJoiningId(gameId);
         setJoinMessage("");
-
         try {
-            // TODO: add POST /api/games/:gameId/join endpoint on backend
+            await gameService.joinGame(gameId);
             setJoinMessage("Joined! Redirecting to game...");
             setTimeout(() => navigate(`/game/${gameId}`), 1000);
         } catch (err) {
-            setJoinMessage(err.message);
+            setJoinMessage(err.message || 'Failed to join game');
             setJoiningId(null);
         }
     };

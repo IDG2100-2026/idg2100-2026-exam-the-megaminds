@@ -6,13 +6,13 @@ export default function LobbyGameCard({ game, user, joiningId, onViewGame, onJoi
         ? (game.players.reduce((sum, p) => sum + (p.elo ?? 1000), 0) / game.players.length).toFixed(0)
         : '—';
     const isUserInGame = user && game.players.some(p => p.userId === user.userId);
-    const canJoin = game.players.length < 2 && !isUserInGame;
+    const canJoin = game.players.length < game.rules.numPlayers && !isUserInGame;
 
     return (
         <div className={styles.gameCard}>
             <div className={styles.gameHeader}>
                 <div className={styles.eloDisplay}>Avg Elo: <span className={styles.eloBadge}>{avgElo}</span></div>
-                <div className={styles.playersCount}>{game.players.length}/2 Players</div>
+                <div className={styles.playersCount}>{game.players.length}/{game.rules.numPlayers} Players</div>
             </div>
 
             <div className={styles.rulesDisplay}>
@@ -45,8 +45,8 @@ export default function LobbyGameCard({ game, user, joiningId, onViewGame, onJoi
                 </button>
                 {canJoin && (
                     <button
-                        className={`${styles.joinBtn} ${joiningId === game._id ? styles.joining : ""}`}
-                        onClick={() => onJoinGame(game._id)}
+                        className={`${styles.joinBtn} ${joiningId === game.gameId ? styles.joining : ""}`}
+                        onClick={() => onJoinGame(game.gameId)}
                         disabled={joiningId === game.gameId}
                     >
                         {joiningId === game.gameId ? "Joining..." : "Join"}
