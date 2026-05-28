@@ -39,7 +39,7 @@ export async function joinGame(req, res) {
 }
 
 export async function deleteGame(req, res) {
-    const delGame = await gameService.deleteGame(req.params.gameId);
+    const delGame = await gameService.deleteGame(req.validData.gameId);
     if (!delGame) return res.status(404).json({ message: "Game not found" });
     res.status(200).json({ success: true, message: "Game deleted successfully" });
 }
