@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 import { useAppContext } from '@/context/AppContext';
-import { gameService } from '@/services/api';
 import './dice-poker-board.js';
 import './dice-poker-die.js';
 import './dice-poker-player.js';
@@ -8,7 +7,7 @@ import './GameBoard.css';
 
 export default function GameBoard({ game, send, lastMessage }) {
     const boardRef = useRef(null);
-    const { user, refreshUser } = useAppContext();
+    const { user } = useAppContext();
 
     useEffect(() => {
         const board = boardRef.current;
