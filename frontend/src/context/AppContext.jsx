@@ -76,6 +76,9 @@ export function AppProvider({ children }) {
         try {
             const loggedInUser = await userService.login(username, pwd);
             setUser(loggedInUser);
+            if (loggedInUser?.preferences && Object.keys(loggedInUser.preferences).length > 0) {
+                setTheme(loggedInUser.preferences);
+            }
             return loggedInUser;
         } finally {
             setIsLoading(false);
