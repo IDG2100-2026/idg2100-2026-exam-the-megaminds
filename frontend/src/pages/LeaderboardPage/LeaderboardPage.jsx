@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router';
 import { leaderboardService } from '@/services/api';
 import styles from './LeaderboardPage.module.css';
 
 const LIMIT = 20;
 
 export default function LeaderboardPage() {
+    const navigate = useNavigate();
     const [players, setPlayers] = useState([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
@@ -43,7 +45,11 @@ export default function LeaderboardPage() {
                         return (
                             <tr key={player.userId} className={styles.row}>
                                 <td className={`${styles.td} ${styles.rank} ${rankClass}`}>#{idx + 1}</td>
-                                <td className={styles.td}>{player.username}</td>
+                                <td className={styles.td}>
+                                    <span className={styles.usernameLink} onClick={() => navigate(`/profile/${player.userId}`)}>
+                                        {player.username}
+                                    </span>
+                                </td>
                                 <td className={styles.td}>{player.elo}</td>
                                 <td className={`${styles.td} ${weekChange >= 0 ? styles.pos: styles.neg}`}>
                                     {weekChange >= 0 ? '+' : ''}{weekChange}

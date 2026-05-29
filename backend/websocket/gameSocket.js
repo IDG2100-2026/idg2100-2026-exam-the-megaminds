@@ -133,6 +133,11 @@ export function initGameSocket(server) {
                 }
                 return;
             }
+            
+            if (msg.type === 'comment-added') {
+                broadcastToGame(socket.gameId, { type: 'comment-added'});
+                return;
+            }
 
         });
 

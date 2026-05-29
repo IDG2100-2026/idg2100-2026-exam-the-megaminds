@@ -1,18 +1,14 @@
 .gameCard {
     background: var(--theme-background-alt);
+    border: 1px solid var(--theme-accent-dark);
     border-radius: 10px;
-    padding: 14px;
-    box-shadow: 0 2px 8px var(--theme-shadow-light);
-    transition: all 0.3s ease;
-    border: 1px solid transparent;
+    padding: 1rem;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 0.625rem;
 }
 
 .gameCard:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 18px var(--theme-shadow-strong);
     border-color: var(--theme-accent);
 }
 
@@ -20,46 +16,48 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--theme-primary);
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--theme-accent-dark);
 }
 
 .eloDisplay {
     color: var(--theme-text-secondary);
-    font-size: 11px;
+    font-size: 0.72rem;
     font-weight: 600;
 }
 
 .eloBadge {
     background: var(--theme-accent);
-    color: white;
-    padding: 2px 6px;
+    color: #fff;
+    padding: 0.1rem 0.4rem;
     border-radius: 4px;
     font-weight: 700;
-    margin-left: 4px;
+    margin-left: 0.25rem;
+    font-size: 0.72rem;
 }
 
 .playersCount {
     color: var(--theme-accent-light);
-    font-size: 11px;
+    font-size: 0.72rem;
     font-weight: 600;
-    background: var(--theme-primary);
-    padding: 3px 7px;
+    background: var(--theme-background);
+    border: 1px solid var(--theme-accent-dark);
+    padding: 0.15rem 0.45rem;
     border-radius: 4px;
 }
 
 .rulesDisplay {
     display: flex;
     flex-wrap: wrap;
-    gap: 5px;
+    gap: 0.3rem;
 }
 
 .ruleBadge {
-    background: var(--theme-primary);
+    background: var(--theme-background);
     color: var(--theme-text);
-    padding: 3px 7px;
+    padding: 0.15rem 0.45rem;
     border-radius: 5px;
-    font-size: 11px;
+    font-size: 0.72rem;
     font-weight: 500;
     border: 1px solid var(--theme-accent-dark);
 }
@@ -67,122 +65,91 @@
 .playersDisplay {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 0.3rem;
 }
 
 .playerTag {
-    background: var(--theme-primary);
+    background: var(--theme-background);
     color: var(--theme-text);
-    padding: 5px 8px;
+    padding: 0.3rem 0.5rem;
     border-radius: 5px;
-    font-size: 12px;
+    font-size: 0.78rem;
     border-left: 3px solid var(--theme-accent);
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 0.4rem;
 }
 
 .playerAvatar {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     object-fit: cover;
 }
 
 .playerInfo {
     flex: 1;
-    text-align: left;
 }
 
 .playerTagEmpty {
-    background: var(--theme-primary);
+    background: var(--theme-background);
     color: var(--theme-text-secondary);
-    padding: 5px 8px;
+    padding: 0.3rem 0.5rem;
     border-radius: 5px;
-    font-size: 12px;
+    font-size: 0.78rem;
     font-style: italic;
     border-left: 3px solid var(--theme-accent-dark);
 }
 
 .actionButtons {
     display: flex;
-    gap: 8px;
-    margin-top: 2px;
+    gap: 0.5rem;
+    margin-top: 0.125rem;
 }
 
 .viewBtn,
 .joinBtn {
     flex: 1;
-    padding: 7px 10px;
+    padding: 0.45rem 0.625rem;
     border: none;
     border-radius: 6px;
-    font-size: 12px;
+    font-size: 0.78rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
 }
 
 .viewBtn {
-    background: var(--theme-primary);
+    background: var(--theme-background);
     color: var(--theme-text);
     border: 1px solid var(--theme-accent-dark);
 }
 
 .viewBtn:hover {
-    background: var(--theme-primary-light);
     border-color: var(--theme-accent);
+    color: var(--theme-accent-light);
 }
 
 .joinBtn {
-    background: linear-gradient(135deg, var(--theme-accent) 0%, var(--theme-accent-light) 100%);
-    color: white;
+    background: var(--theme-accent);
+    color: #fff;
 }
 
 .joinBtn:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    opacity: 0.85;
 }
 
 .joinBtn:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
 }
 
-.joinBtn.joining {
-    opacity: 0.8;
-}
-
 .inGameBadge {
-    background: rgba(76, 175, 80, 0.2);
+    background: rgba(76, 175, 80, 0.15);
     color: #4CAF50;
-    padding: 7px 10px;
+    padding: 0.45rem 0.625rem;
     border-radius: 6px;
-    font-size: 12px;
+    font-size: 0.78rem;
     font-weight: 600;
     text-align: center;
     border: 1px solid rgba(76, 175, 80, 0.3);
-}
-
-@media (prefers-color-scheme: light) {
-    .playersCount {
-        color: white;
-        background: #1b6b1a;
-    }
-
-    .ruleBadge {
-        color: #1b6b1a;
-        border-color: #1b6b1a;
-        font-weight: 600;
-    }
-
-    .viewBtn:hover {
-        border-color: #1b6b1a;
-        color: #1b6b1a;
-    }
-}
-
-@media (max-width: 768px) {
-    .gameCard {
-        padding: 12px;
-    }
 }

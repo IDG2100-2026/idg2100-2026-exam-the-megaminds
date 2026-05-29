@@ -93,3 +93,13 @@
 .loadMoreBtn:hover {
     opacity: 0.85;
 }
+
+.usernameLink {
+    cursor: pointer;
+    color: var(--theme-accent);
+    font-weight: 600;
+}
+
+.usernameLink:hover {
+    text-decoration: underline;
+}

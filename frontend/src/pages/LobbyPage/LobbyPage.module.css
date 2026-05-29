@@ -1,252 +1,230 @@
 .container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem 1rem 4rem;
     display: flex;
     flex-direction: column;
-    gap: 30px;
-    padding: 40px 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-    min-height: calc(100vh - 120px);
-    background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-light) 100%);
+    gap: 1.5rem;
 }
 
+/* Header */
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     background: var(--theme-background-alt);
-    padding: 30px;
+    border: 1px solid var(--theme-accent-dark);
     border-radius: 12px;
-    box-shadow: 0 8px 32px var(--theme-shadow-strong);
+    padding: 1.5rem 2rem;
 }
 
 .headerContent h1 {
-    color: var(--theme-accent-light);
-    margin: 0 0 8px 0;
-    font-size: 36px;
+    color: var(--theme-text);
+    margin: 0 0 0.25rem;
+    font-size: 1.6rem;
+    font-weight: 700;
 }
 
 .headerContent p {
     color: var(--theme-text-secondary);
     margin: 0;
-    font-size: 14px;
+    font-size: 0.9rem;
 }
 
 .createBtn {
-    background: linear-gradient(135deg, var(--theme-accent) 0%, var(--theme-accent-light) 100%);
-    color: white;
+    background: var(--theme-accent);
+    color: #fff;
     border: none;
-    padding: 12px 24px;
+    padding: 0.6rem 1.5rem;
     border-radius: 8px;
+    font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
-    font-size: 14px;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    white-space: nowrap;
 }
 
-.createBtn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-}
+.createBtn:hover { opacity: 0.85; }
 
-/* Your Current Games Section */
+/* Your active games */
 .yourGamesSection {
     background: var(--theme-background-alt);
-    padding: 20px;
+    border: 1px solid var(--theme-accent-dark);
     border-radius: 12px;
-    box-shadow: 0 4px 16px var(--theme-shadow-light);
+    padding: 1.25rem 1.5rem;
 }
 
 .yourGamesSection h2 {
-    color: var(--theme-accent-light);
-    margin: 0 0 15px 0;
-    font-size: 18px;
+    color: var(--theme-text);
+    margin: 0 0 1rem;
+    font-size: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .yourGamesList {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 0.75rem;
 }
 
 .yourGameCard {
-    background: var(--theme-primary);
-    padding: 15px;
-    border-radius: 8px;
+    background: var(--theme-background);
+    border: 1px solid var(--theme-accent-dark);
     border-left: 4px solid var(--theme-accent);
+    border-radius: 8px;
+    padding: 0.9rem 1rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: all 0.2s ease;
-}
-
-.yourGameCard:hover {
-    background: var(--theme-primary-light);
-    box-shadow: 0 2px 8px var(--theme-shadow-light);
+    gap: 1rem;
 }
 
 .gameInfo {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 0.4rem;
 }
 
 .gameStatus {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 0.75rem;
 }
 
 .pendingBadge {
-    background: rgba(255, 193, 7, 0.2);
+    background: rgba(255, 193, 7, 0.15);
     color: #FFC107;
-    padding: 4px 10px;
+    padding: 0.2rem 0.6rem;
     border-radius: 4px;
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 600;
 }
 
 .inProgressBadge {
-    background: rgba(76, 175, 80, 0.2);
+    background: rgba(76, 175, 80, 0.15);
     color: #4CAF50;
-    padding: 4px 10px;
+    padding: 0.2rem 0.6rem;
     border-radius: 4px;
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 600;
 }
 
 .eloInfo {
     color: var(--theme-accent);
-    font-size: 12px;
+    font-size: 0.78rem;
     font-weight: 600;
 }
 
 .gameRules {
     color: var(--theme-text-secondary);
-    font-size: 12px;
-    text-align: left;
+    font-size: 0.78rem;
 }
 
 .playersInfo {
     display: flex;
-    gap: 8px;
+    gap: 0.5rem;
     flex-wrap: wrap;
 }
 
 .playerTagSmall {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 0.4rem;
     background: var(--theme-background-alt);
-    padding: 4px 8px;
+    border: 1px solid var(--theme-accent-dark);
+    padding: 0.2rem 0.5rem;
     border-radius: 4px;
-    font-size: 12px;
+    font-size: 0.78rem;
     color: var(--theme-text);
 }
 
 .playerAvatarSmall {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     object-fit: cover;
 }
 
 .viewGameBtn {
     background: var(--theme-accent);
-    color: white;
+    color: #fff;
     border: none;
-    padding: 8px 16px;
+    padding: 0.45rem 1rem;
     border-radius: 6px;
-    font-size: 12px;
+    font-size: 0.8rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
     white-space: nowrap;
-    margin-left: 10px;
 }
 
-.viewGameBtn:hover {
-    background: var(--theme-accent-light);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
+.viewGameBtn:hover { opacity: 0.85; }
 
-/* Filter Panel */
+/* Filter panel */
 .filterPanel {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
     background: var(--theme-background-alt);
-    padding: 25px;
+    border: 1px solid var(--theme-accent-dark);
     border-radius: 12px;
-    box-shadow: 0 4px 16px var(--theme-shadow-light);
+    padding: 1.25rem 1.5rem;
 }
 
 .filterGroup {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 0.4rem;
 }
 
 .filterGroup label {
-    color: var(--theme-text);
-    font-size: 13px;
-    font-weight: 600;
+    color: var(--theme-text-secondary);
+    font-size: 0.75rem;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.05em;
 }
 
 .select {
-    background: var(--theme-primary);
+    background: var(--theme-background);
     color: var(--theme-text);
     border: 1px solid var(--theme-accent-dark);
-    padding: 10px 12px;
+    padding: 0.5rem 0.75rem;
     border-radius: 6px;
-    font-size: 13px;
+    font-size: 0.875rem;
     cursor: pointer;
-    transition: all 0.2s ease;
     width: 100%;
-    box-sizing: border-box;
-}
-
-.select:hover {
-    border-color: var(--theme-accent);
-    background: var(--theme-primary-light);
 }
 
 .select:focus {
     outline: none;
-    border-color: var(--theme-accent-light);
-    box-shadow: 0 0 0 2px rgba(var(--theme-accent-light), 0.1);
+    border-color: var(--theme-accent);
 }
 
-/* Elo Range */
+/* Elo range */
 .eloRange {
     display: flex;
-    gap: 8px;
+    gap: 0.5rem;
     align-items: flex-end;
-    width: 100%;
 }
 
 .eloRange > div {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 0.25rem;
     flex: 1;
-    min-width: 0;
 }
 
 .eloInput {
-    background: var(--theme-primary);
+    background: var(--theme-background);
     color: var(--theme-text);
     border: 1px solid var(--theme-accent-dark);
-    padding: 8px 10px;
+    padding: 0.45rem 0.5rem;
     border-radius: 6px;
-    font-size: 12px;
+    font-size: 0.8rem;
     text-align: center;
     width: 100%;
-    box-sizing: border-box;
 }
 
 .eloInput:focus {
@@ -256,155 +234,108 @@
 
 .eloLabel {
     color: var(--theme-text-secondary);
-    font-size: 11px;
+    font-size: 0.7rem;
     text-align: center;
 }
 
 .eloSeparator {
     color: var(--theme-text-secondary);
     font-weight: 600;
-    margin-top: 20px;
+    padding-bottom: 0.5rem;
 }
 
-/* Results */
+/* Results header */
 .resultsHeader {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-top: 10px;
 }
 
 .resultsHeader h2 {
-    color: var(--theme-accent-light);
+    color: var(--theme-text);
     margin: 0;
-    font-size: 20px;
+    font-size: 1rem;
+    font-weight: 700;
 }
 
+/* Messages */
 .messageBox {
-    padding: 14px 16px;
+    padding: 0.875rem 1rem;
     border-radius: 8px;
-    text-align: center;
     font-weight: 500;
-    animation: slideDown 0.3s ease;
+    font-size: 0.9rem;
 }
 
 .messageBox.success {
-    background: rgba(76, 175, 80, 0.15);
+    background: rgba(76, 175, 80, 0.12);
     color: #4CAF50;
     border: 1px solid rgba(76, 175, 80, 0.3);
 }
 
 .messageBox.error {
-    background: rgba(244, 67, 54, 0.15);
-    color: #f44336;
+    background: rgba(244, 67, 54, 0.12);
+    color: var(--theme-error);
     border: 1px solid rgba(244, 67, 54, 0.3);
 }
 
 .errorBox {
-    background: rgba(244, 67, 54, 0.15);
-    color: #f44336;
-    padding: 14px 16px;
+    background: rgba(244, 67, 54, 0.12);
+    color: var(--theme-error);
+    padding: 0.875rem 1rem;
     border-radius: 8px;
     border: 1px solid rgba(244, 67, 54, 0.3);
-    font-weight: 500;
 }
 
 .loadingSpinner {
     text-align: center;
-    color: var(--theme-text);
-    font-size: 16px;
-    padding: 40px;
+    color: var(--theme-text-secondary);
+    padding: 3rem 0;
 }
 
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Empty State */
+/* Empty state */
 .emptyState {
     text-align: center;
-    padding: 60px 20px;
+    padding: 3rem 1rem;
     background: var(--theme-background-alt);
+    border: 1px solid var(--theme-accent-dark);
     border-radius: 12px;
-    box-shadow: 0 4px 16px var(--theme-shadow-light);
 }
 
 .emptyState p {
     color: var(--theme-text-secondary);
-    font-size: 16px;
-    margin: 0 0 20px 0;
+    margin: 0 0 1rem;
 }
 
-/* Games List */
+/* Games list */
 .gamesList {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
 }
 
-/* Light Mode Overrides for Better Contrast */
-@media (prefers-color-scheme: light) {
-    .headerContent h1 {
-        color: #1b6b1a;
-    }
-
-    .resultsHeader h2 {
-        color: #1b6b1a;
-    }
-
-    .yourGamesSection h2 {
-        color: #1b6b1a;
-    }
-
-    .eloInfo {
-        color: #1b6b1a;
-        font-weight: 700;
-    }
-
-    .pendingBadge {
-        background: rgba(255, 152, 0, 0.25);
-        color: #FF6F00;
-        font-weight: 700;
-    }
-
-    .inProgressBadge {
-        background: rgba(27, 107, 26, 0.25);
-        color: #1b6b1a;
-        font-weight: 700;
-    }
+/* Load more */
+.loadMoreBtn {
+    display: block;
+    margin: 0.5rem auto 0;
+    padding: 0.6rem 2rem;
+    background: var(--theme-accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
 }
 
-/* Responsive */
-@media (max-width: 1024px) {
-    .filterPanel {
-        grid-template-columns: 1fr;
-    }
-}
+.loadMoreBtn:hover { opacity: 0.85; }
+.loadMoreBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 @media (max-width: 768px) {
-    .container {
-        padding: 20px 12px;
-        gap: 20px;
-    }
+    .container { padding: 1rem 0.75rem 3rem; }
+    .header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+    .filterPanel { grid-template-columns: 1fr 1fr; }
+    .gamesList { grid-template-columns: 1fr; }
+}
 
-    .header {
-        flex-direction: column;
-        gap: 16px;
-        text-align: center;
-    }
-
-    .filterPanel {
-        grid-template-columns: 1fr;
-    }
-
-    .gamesList {
-        grid-template-columns: 1fr;
-    }
+@media (max-width: 480px) {
+    .filterPanel { grid-template-columns: 1fr; }
 }
