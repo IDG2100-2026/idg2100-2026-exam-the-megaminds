@@ -1,5 +1,39 @@
 import userService from "../services/users.service.js";
+import SecurityIncident from "../models/securityIncident.js";
+import { User } from "../models/users.js";
+import platformService from "../services/platform.service.js";
 import { ErrorLog } from "../models/errorLog.js";
+
+export async function getDashboard(req, res) {
+    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    const [newProfiles, incidentCounts, recentIncidents, activity] = await Promise.all([
+        User.countDocuments({ createdAt: { $gte: oneWeekAgo } }),
+        SecurityIncident.aggregate([
+            { $group: { _id: "$type", count: { $sum: 1} } }
+        ]),
+
+        SecurityIncident.find()
+            .sort({ createdAt: -1})
+            .limit(20)
+            .select("type userId ip tokenIp userAgent path createdAt"),
+
+        platformService.getPlatformActivity()
+    ]);
+    const incidents = { "ip-change": 0, "rate-limit": 0};
+    for (const row of incidentCounts) incidents[row._id] = row.count;
+
+    res.json({
+        success: true,
+        data: {
+            newProfilesLastWeek: newProfiles,
+            incidents,
+            recentIncidents,
+            activity
+        }
+    });
+}
+
 
 export async function banUser(req, res) {
     const user = await userService.banUser(Number(req.params.userId));
@@ -48,4 +82,4 @@ export async function getErrorLogs(req, res) {
     res.json({ success: true, data: logs, total, page, limit });
 }
 
-export default { banUser, unbanUser, setUserRole, logError, getErrorLogs };
+export default { banUser, unbanUser, setUserRole, logError, getErrorLogs, getDashboard };

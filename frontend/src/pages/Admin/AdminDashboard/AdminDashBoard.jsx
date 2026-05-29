@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import {
-  platformService,
   userService,
   adminService,
   commentService,
@@ -44,51 +43,92 @@ export default function AdminDashBoard() {
 // Overview
 
 function OverviewTab() {
-  const [activity, setActivity] = useState(null);
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    platformService
-      .getActivity()
-      .then((res) => setActivity(res))
-      .catch(() => setError("Failed to load platform data"))
+    adminService
+      .getDashboard()
+      .then((res) => setData(res))
+      .catch(() => setError("Failed to load dashboard data"))
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <div className={styles.loading}>Loading stats...</div>;
   if (error) return <div className={styles.errorBox}>{error}</div>;
 
+  const {activity, incidents, recentIncidents, newProfilesLastWeek } = data;
+
   return (
     <div className={styles.tabContent}>
       <div className={styles.statsRow}>
         <StatCard label="Ongoing Games" value={activity.ongoingGames} />
+        <StatCard label="Available Games" value={activity.activeGames} />
+        <StatCard label="Played Games (7 days)" value={activity.playedGamesWeek}></StatCard>
         <StatCard
           label="Active Users (7 days)"
           value={activity.activeUsersWeek}
         />
-        <StatCard
-          label="Recent Games"
-          value={activity.recentGames?.length ?? 0}
-          sub="last 10 finished"
-        />
+        <StatCard label="New Profiles (7 Days)" value={newProfilesLastWeek}/>
+        <StatCard label="IP-Change Incidents" value={incidents["ip-change"]}/>
+        <StatCard label="Rate-Limit Incidents" value={incidents["rate-limit"]}/>
       </div>
 
       <div className={styles.section}>
+        <h2>Recent Security Incidents</h2>
+        {recentIncidents.length === 0 ? (
+          <p className={styles.dim}>No Incidents</p>
+        ) : (
+          <table className={styles.table}>
+          
+            <thead>
+              <tr>
+                <th>Type</th><th>User</th><th>IP</th><th>User Agent</th><th>Path</th><th>Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              {recentIncidents.map((inc) => (
+                <tr key={inc._id}>
+                  <td>
+                    <span className={inc.type === "ip-change" ? styles.badgePending : styles.badgeBanned}>
+                      {inc.type}
+                    </span>
+                  </td>
+                  <td className={styles.dim}>{inc.userId ?? "anon"}</td>
+                  <td className={styles.mono}>{inc.ip ?? "—"}</td>
+                  <td className={styles.dim} title={inc.userAgent}>
+                    {inc.userAgent?.length > 40 ? inc.userAgent.slice(0, 40) + "..." : (inc.userAgent ?? "-")}
+                  </td>
+                  <td className={styles.mono}>{inc.path ?? "-"}</td>
+                  <td className={styles.dim}>{new Date(inc.createdAt).toLocaleString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+       <div className={styles.section}>
         <h2>Recent Finished Games</h2>
         {activity.recentGames?.length === 0 ? (
           <p className={styles.dim}>No finished games yet</p>
         ) : (
           <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Game / Tournament ID</th>
+                <th>Best of</th>
+                <th>Winner</th>
+                <th>Finished</th>
+              </tr>
+            </thead>
             <tbody>
               {activity.recentGames?.map((game) => (
                 <tr key={game.gameId}>
                   <td className={styles.mono}>{game.gameId}</td>
                   <td>{game.rules?.bestof}</td>
-                  <td>{game.winnerId ?? "—"}</td>
-                  <td className={styles.dim}>
-                    {new Date(game.updatedAt).toLocaleString()}
-                  </td>
+                  <td>{game.winnerName ?? "—"}</td>
+                  <td className={styles.dim}>{new Date(game.updatedAt).toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>
@@ -494,7 +534,7 @@ function GamesTab() {
                     </td>
                     <td>{g.rules?.bestof}</td>
                     <td>{g.players?.length ?? 0}</td>
-                    <td className={styles.dim}>{g.winnerId ?? "—"}</td>
+                    <td className={styles.dim}>{g.winnerName ?? "—"}</td>
                     <td className={styles.dim}>
                       {new Date(g.createdAt).toLocaleString()}
                     </td>

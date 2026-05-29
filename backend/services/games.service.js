@@ -3,14 +3,32 @@ import { User } from "../models/users.js";
 import { Comment } from "../models/comments.js";
 import { updateElo } from "./elo.service.js";
 
+export async function attachUsernames(games) {
+    const userIds = [...new Set(
+        games.flatMap(g => [
+            ...g.players.map(p => p.userId),
+            ...(g.winnerId != null ? [g.winnerId] : [])
+        ])
+    )];
+    const users = await User.find({ userId: { $in: userIds }}, {userId: 1, username: 1});
+    const nameById = Object.fromEntries(users.map(u => [u.userId, u.username]));
+
+    return games.map(g => {
+        const obj = g.toObject ? g.toObject() : g;
+        obj.players = obj.players.map(p => ({ ...p, username: nameById[p.userId] ?? "Unknown"}));
+        obj.winnerName = obj.winnerId != null ? (nameById[obj.winnerId] ?? "Unknown") : null;
+        return obj;
+    });
+}
 
 //Pagination
 export async function getAllGames({ sort = "createdAt", limit = 10, page =1 }) {
     const skip = (page - 1) * limit;
-    return Game.find()
+    const games = await Game.find()
         .sort({ [sort]: -1 })
         .limit(Number(limit))
         .skip(Number(skip));
+    return attachUsernames(games);
 }
 
 export async function getGameById(gameId) {

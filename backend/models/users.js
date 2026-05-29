@@ -42,7 +42,7 @@ const userSchema = new mongoose.Schema({
         trim: true,
         maxLength: [MAX_PWD_LENGTH, `Who the hell can keep track of ${MAX_PWD_LENGTH} characters without having the browser save it`],
         minLength: [MIN_PWD_LENGTH, `Passwords can't be shorter than ${MIN_PWD_LENGTH} characters`],
-        match: [/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/, "Password must contain letters and numbers and be at least 8 characters long."]
+        match: [/^(?=.*[A-Za-z])(?=.*\d).{8,}$/, "Password must contain letters and numbers and be at least 8 characters long."]
     },
     elo:{
         type: Number,
@@ -149,8 +149,8 @@ const userSchema = new mongoose.Schema({
     preferences: {
         type: mongoose.Schema.Types.Mixed,
         default: {}
-    }
-});
+    }   
+}, {timestamps: true});
 
 userSchema.pre("validate", function(){
 	if(this.isNew) {

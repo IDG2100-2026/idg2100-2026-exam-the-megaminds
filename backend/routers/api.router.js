@@ -15,6 +15,8 @@ import matchmakingValidate from "../validators/matchmaking.validate.js";
 import { validate } from "../validators/validate.js";
 import { identifyUser, requireRegistered, requireAdmin, requireEmailVerified } from "../middleware/auth.js";
 import { handleAvatarUpload, handleTrophyUpload } from "../middleware/upload.js";
+import { rateLimit } from "../middleware/rateLimit.js";
+
 
 
 const apiRouter = express.Router();
@@ -23,6 +25,8 @@ apiRouter.use(express.json());
 
 // Attach user role to every request based on x-user-role header
 apiRouter.use(identifyUser);
+
+apiRouter.use(rateLimit);
 
 // Auth
 apiRouter.post("/login", userController.login);
@@ -105,6 +109,9 @@ apiRouter.get("/matchmaking/queue", requireAdmin, matchmakingController.getQueue
 
 // Platform activity (public)
 apiRouter.get("/platform/activity", platformController.getPlatformActivity);
+
+// Admin incident 
+apiRouter.get("/admin/dashboard", requireAdmin, adminController.getDashboard);
 
 // Admin actions on users
 apiRouter.patch("/users/:userId/ban", requireAdmin, userValidate.validateUserId(), validate, adminController.banUser);

@@ -1,0 +1,41 @@
+import SecurityIncident from "../models/securityIncident.js";
+
+const WINDOW_MS = 60 * 1000;
+const MAX_REQUESTS = 100;
+
+const hits = new Map();
+
+export async function rateLimit(req, res, next) {
+    const ip = req.ip;
+    const now = Date.now();
+    let entry = hits.get(ip);
+
+    if (!entry || now - entry.windowStart >= WINDOW_MS) {
+        entry = { count: 0, windowStart: now, flagged: false };
+        hits.set(ip, entry);
+    }
+    
+    entry.count++;
+
+    if (entry.count > MAX_REQUESTS) {
+        if (!entry.flagged) {
+            entry.flagged = true;
+            await SecurityIncident.create({
+                type: "rate-limit",
+                userId: req.userId ?? null,
+                ip,
+                userAgent: req.get("user-agent"),
+                path: req.originalUrl,
+            });
+        }
+        return res.status(429).json({ success: false, message: "Too many requests"});
+    }
+
+    next();
+}
+
+// Test Script to see if rate limit incident logging works 
+// for (let i = 1; i <= 105; i++) {
+//   const r = await fetch('http://localhost:8476/api/platform/activity', { credentials: 'include' });
+//   if (i % 20 === 0 || r.status === 429) console.log(i, r.status);
+// }
