@@ -49,6 +49,11 @@ export function clearAuthCookies(res){
     res.clearCookie("accessToken");
     res.clearCookie("refreshToken");
 }
+
+export function clearAccessCookie(res){
+    res.clearCookie("accessToken");
+}
+
 // In-memory store for short-lived WebSocket tokens: token → { userId, expiresAt }
 const wsTokenStore = new Map();
 

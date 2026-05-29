@@ -1,5 +1,6 @@
 import { User } from '../models/users.js';
-import { verifyAccessToken, clearAuthCookies } from "./jwt.js";
+import { verifyAccessToken, clearAccessCookie } from "./jwt.js";
+
 import SecurityIncident from "../models/securityIncident.js";
 
 // Attaches userId + role to every request.
@@ -35,9 +36,9 @@ export async function identifyUser(req, res, next) {
             ip: req.ip,                    // who is calling now
             tokenIp: decoded.ip,           // who the token was issued to
             userAgent: req.get("user-agent"),
-            path: req.originalUrl,
+            path: req.originalUrl
         });
-        clearAuthCookies(res);             // force a clean refresh on the next request
+        clearAccessCookie(res);             // force a clean refresh on the next request
         return res.status(401).json({ success: false, code: "IP_MISMATCH", message: "Access token IP mismatch" });
     }
 
