@@ -1,49 +1,56 @@
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import {hashToken} from "../utils/hash.js";
 
-// In-memory store for short-lived WebSocket tokens: token → { userId, expiresAt }
-const wsTokenStore = new Map();
+const {
+    ACCESS_TOKEN_SECRET,
+    ACCESS_TOKEN_EXPIRES_IN = "15m",
+    REFRESH_TOKEN_TTL_DAYS = "7",
+} = process.env;
 
-const { JWT_SECRET, JWT_EXPIRES_IN } = process.env;
+const REFRESH_MAX_AGE_MS = Number(REFRESH_TOKEN_TTL_DAYS) * 24 * 60 * 60 * 1000;
+const ACCESS_MAX_AGE_MS = 15 * 60 * 1000;
 
-// Creates a signed JWT containing the userId and role
-export function signToken(userId, role) {
-    return jwt.sign({ userId, role }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+export function signAccessToken(userId, role, ip){
+    return jwt.sign({ userId, role, ip}, ACCESS_TOKEN_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRES_IN});
 }
 
-// Reads the JWT from the httpOnly cookie and attaches userId + role to the request.
-// Never blocks — missing or invalid token just means anonymous.
-export function verifyToken(req, res, next) {
-    const token = req.cookies?.token;
-
-    if (!token) {
-        req.userRole = "anonymous";
-        req.userId = null;
-        return next();
-    }
-
-    try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        req.userRole = decoded.role;
-        req.userId = decoded.userId;
-        next();
-    } catch {
-        // Token expired or tampered with — treat as anonymous
-        req.userRole = "anonymous";
-        req.userId = null;
-        next();
-    }
+export function verifyAccessToken(token){
+    return jwt.verify(token, ACCESS_TOKEN_SECRET);
 }
 
-// Sets the JWT as an httpOnly cookie so JS cannot read it
-export function setTokenCookie(res, token) {
-    res.cookie("token", token, {
+export function setAccessCookie(res, token){
+    res.cookie("accessToken", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days in ms
+        maxAge: ACCESS_MAX_AGE_MS
     });
 }
+
+export function generateRefreshToken() {
+    return crypto.randomBytes(40).toString("hex");
+}
+
+export function refreshExpiryDate(){
+    return new Date(Date.now() + REFRESH_MAX_AGE_MS);
+}
+
+export function setRefreshCookie(res, rawToken){
+    res.cookie("refreshToken", rawToken,{
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: REFRESH_MAX_AGE_MS
+    });
+}
+
+export function clearAuthCookies(res){
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+}
+// In-memory store for short-lived WebSocket tokens: token → { userId, expiresAt }
+const wsTokenStore = new Map();
 
 // Generates a one time token for WebSocket aut, valid for 10 seconds
 export function generateWsToken(userId){
@@ -60,3 +67,5 @@ export function consumeWsToken(token) {
     if (Date.now() > entry.expiresAt) return null;
     return entry.userId;
 }
+
+export {hashToken}; 

@@ -1,8 +1,51 @@
 import { User } from '../models/users.js';
-import { verifyToken } from "./jwt.js";
+import { verifyAccessToken, clearAuthCookies } from "./jwt.js";
+import SecurityIncident from "../models/securityIncident.js";
 
-// Attaches userId and role to every request — never blocks
-export { verifyToken as identifyUser };
+// Attaches userId + role to every request.
+//  - no token / expired / tampered  -> anonymous, never blocks
+//  - valid token but issued to a different IP -> log incident, clear cookie, 401
+//    (the frontend then silently hits /refresh, which re-stamps the new IP)
+export async function identifyUser(req, res, next) {
+    const token = req.cookies?.accessToken;
+
+    // 1. No token at all — just an anonymous visitor.
+    if (!token) {
+        req.userRole = "anonymous";
+        req.userId = null;
+        return next();
+    }
+
+    // 2. Token present — is the signature valid and not expired?
+    let decoded;
+    try {
+        decoded = verifyAccessToken(token);
+    } catch {
+        // expired or tampered -> treat as anonymous; a protected guard will 401 and trigger a refresh
+        req.userRole = "anonymous";
+        req.userId = null;
+        return next();
+    }
+
+    // 3. Valid token, but the IP it was minted for no longer matches the caller.
+    if (decoded.ip && decoded.ip !== req.ip) {
+        await SecurityIncident.create({
+            type: "ip-change",
+            userId: decoded.userId,
+            ip: req.ip,                    // who is calling now
+            tokenIp: decoded.ip,           // who the token was issued to
+            userAgent: req.get("user-agent"),
+            path: req.originalUrl,
+        });
+        clearAuthCookies(res);             // force a clean refresh on the next request
+        return res.status(401).json({ success: false, code: "IP_MISMATCH", message: "Access token IP mismatch" });
+    }
+
+    // Token valid and IP matches — the request is authenticated.
+    req.userId = decoded.userId;
+    req.userRole = decoded.role;
+    next();
+}
 
 // Guard: only registered users and admins may proceed
 export function requireRegistered(req, res, next) {

@@ -11,3 +11,7 @@ export function hashPwd(pwd) {
 export default function checkPwd(pwd, existingHash) {
     return hashPwd(pwd) === existingHash;
 }
+
+export function hashToken(token){
+    return crypto.createHash("sha256").update(token + salt).digest("hex");
+}

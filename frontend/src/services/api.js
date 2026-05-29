@@ -1,32 +1,39 @@
 const API_URL = import.meta.env.VITE_API_URL;
 
-// Central fetch wrapper — all requests go through here.
-// credentials: 'include' ensures the httpOnly JWT cookie is sent on every request.
-// Throws on non-2xx responses, formatting validation errors when available.
-const apiCall = async (method, endpoint, body = null) => {
-    const options = {
-        method,
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-    };
+// These must never trigger the refresh-retry loop
+const AUTH_FREE = ['/api/login', '/api/refresh', '/api/logout'];
+
+// Single-flight: many parallel 401s share ONE /refresh call
+let refreshPromise = null;
+const doRefresh = () => {
+    if (!refreshPromise) {
+        refreshPromise = fetch(`${API_URL}/api/refresh`, { method: 'POST', credentials: 'include' })
+            .then(r => r.ok)
+            .finally(() => { refreshPromise = null; });
+    }
+    return refreshPromise;
+};
+
+const apiCall = async (method, endpoint, body = null, _retried = false) => {
+    const options = { method, credentials: 'include', headers: { 'Content-Type': 'application/json' } };
     if (body) options.body = JSON.stringify(body);
 
     const response = await fetch(`${API_URL}${endpoint}`, options);
-    const data = await response.json();
 
+    // One silent refresh + one replay on 401
+    if (response.status === 401 && !_retried && !AUTH_FREE.includes(endpoint)) {
+        if (await doRefresh()) return apiCall(method, endpoint, body, true);
+    }
+
+    const data = await response.json();
     if (!response.ok) {
-        // express-validator errors: { errors: [{ msg, path, ... }] }
-        if (data.errors && Array.isArray(data.errors)) {
-            throw new Error(data.errors.map(e => e.msg).join(', '));
-        }
-        if (data.details && Array.isArray(data.details)) {
-            const errorMessages = data.details.map(e => `${e.field}: ${e.message}`).join(', ');
-            throw new Error(errorMessages);
-        }
+        if (data.errors && Array.isArray(data.errors)) throw new Error(data.errors.map(e => e.msg).join(', '));
+        if (data.details && Array.isArray(data.details)) throw new Error(data.details.map(e => `${e.field}: ${e.message}`).join(', '));
         throw new Error(data.message || data.error || 'API Error');
     }
     return data;
 };
+
 
 // Auth & user management
 // login/logout/getMe rely on the httpOnly cookie set by the backend — no token handling needed here
