@@ -2,10 +2,12 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { useAppContext } from "@/context/AppContext";
 import { gameService } from "@/services/api";
-import { enrichGames } from "@/utils/enrichPlayers";
+import { enrichGames, enrichPlayers } from "@/utils/enrichPlayers";
 import placeholderPic from "@/assets/profile-pic-placeholder.svg";
 import LobbyGameCard from "@/components/LobbyGameCard/LobbyGameCard";
 import styles from "./LobbyPage.module.css";
+
+const PAGE_SIZE = 10;
 
 export default function LobbyPage() {
     const navigate = useNavigate();
@@ -28,14 +30,20 @@ export default function LobbyPage() {
 
     const [sortBy, setSortBy] = useState("newest");
 
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
+
     // Fetch games on mount and when user changes
     useEffect(() => {
         const fetchGames = async () => {
             try {
                 setLoading(true);
-                const data = await gameService.getAllGames(1, 100);
+                const data = await gameService.getAllGames(1, PAGE_SIZE);
 
                 const allGames = data || [];
+                setHasMore(allGames.length === PAGE_SIZE),
+                setPage(1);
 
                 // Show only joinable games: pending games waiting for an opponent
                 const pending = allGames.filter(game =>
@@ -137,6 +145,26 @@ export default function LobbyPage() {
 
     const handleViewGame = (gameId) => {
         navigate(`/game/${gameId}`);
+    };
+
+    const handleLoadMore = async () => {
+        const nextPage = page + 1;
+        setLoadingMore(true);
+        try {
+            const data = await gameService.getAllGames(nextPage, PAGE_SIZE);
+            const newGames = data || [];
+            setHasMore(newGames.length === PAGE_SIZE);
+            setPage(nextPage);
+            const pending = newGames.filter(game =>
+                game.status === 'pending' && game.players.length < game.rules.numPlayers
+            );
+            const endriched = await enrichGames(pending);
+            setGames(prev => [...prev, ...endriched]);
+        } catch {
+            // ignore
+        } finally {
+            setLoadingMore(false);
+        }
     };
 
     if (loading) {
@@ -289,6 +317,12 @@ export default function LobbyPage() {
                         />
                     ))}
                 </div>
+            )}
+
+            {hasMore && (
+                <button className={styles.loadMoreBtn} onClick={handleLoadMore} disabled={loadingMore}>
+                    {loadingMore ? 'Loading...' : 'Load more games'}
+                </button>
             )}
         </div>
     );
