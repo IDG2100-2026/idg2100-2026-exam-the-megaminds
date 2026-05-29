@@ -78,6 +78,7 @@ export async function awardWinner(req, res) {
 
 export async function startTournament(req, res) {
     const tournament = await tournamentService.startTournament(req.params.tournamentId);
+    broadcastToTournament(req.params.tournamentId, { type: "round-change", currentRound: tournament.currentRound});
     res.status(200).json({ success: true, data: tournament });
 }
 

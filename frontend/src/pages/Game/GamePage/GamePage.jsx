@@ -37,6 +37,10 @@ export default function GamePage() {
             loadComments();
             return;
         }
+        if (lastMessage?.type === 'game-over' && game?.tournamentId) {
+            setTimeout(() => navigate(`/tournament/${game.tournamentId}`), 4000);
+            return;
+        }
         if (lastMessage?.type !== 'state') return;
         const wsPlayerCount = lastMessage.state?.players?.length ?? 0;
         if (wsPlayerCount > (game?.players?.length ?? 0)) {

@@ -3,7 +3,7 @@ import { Comment } from "../models/comments.js";
 import { User } from "../models/users.js";
 import { Game } from "../models/games.js";
 import { TOURNAMENT_ROUND_LOBBY_SECONDS } from "../configs/constants.js";
-import gamesService, { createGame } from "./games.service.js";
+import gameService, { createGame } from "./games.service.js";
 
 export async function getAllTournaments({ sort = "startDate", limit = 10, page = 1, status, sortOrder = "asc" }) {
     const skip = (Number(page) - 1) * Number(limit);
@@ -143,7 +143,7 @@ async function createRound(tournament, players, roundNumber) {
             gameId,
             rules: tournament.format,
             players: [{ userId: shuffled[i], score: 0 }, { userId: shuffled[i + 1], score: 0 }],
-            status: "pending",
+            status: "in-progress",
             tournamentId: tournamentId
         });
         roundGameIds.push(gameId);
