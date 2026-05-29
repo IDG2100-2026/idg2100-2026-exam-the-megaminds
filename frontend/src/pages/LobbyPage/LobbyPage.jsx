@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { useAppContext } from "@/context/AppContext";
 import { gameService } from "@/services/api";
-import { enrichGames, enrichPlayers } from "@/utils/enrichPlayers";
+import { enrichGames } from "@/utils/enrichPlayers";
 import placeholderPic from "@/assets/profile-pic-placeholder.svg";
 import LobbyGameCard from "@/components/LobbyGameCard/LobbyGameCard";
 import styles from "./LobbyPage.module.css";

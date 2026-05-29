@@ -327,7 +327,11 @@ export default function ProfilePage() {
                     <div className={styles.trophiesGrid}>
                         {profile.trophies.map((trophy, idx) => (
                             <div key={idx} className={styles.trophy}>
-                                <span className={styles.trophyIcon}>🏅</span>
+                                {trophy.imageUrl
+                                    ? <img src={trophy.imageUrl} alt={trophy.title} className={styles.trophyImg} />
+                                    : <span className={styles.trophyIcon}>🏅</span>
+                                }
+
                                 <p className={styles.trophyTitle}>{trophy.title}</p>
                                 <p className={styles.trophyDate}>{new Date(trophy.awardedAt).toLocaleDateString()}</p>
                             </div>

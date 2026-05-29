@@ -38,10 +38,10 @@ function TournamentDetailContent({ tournamentid }) {
     const { lastMessage } = useTournamentSocketContext();
 
     useEffect(() => {
-        if (lastMessage?.type === "round-change" && lastMessage.currentRound !== tournament?.currentRound) {
+        if (['round-change', 'participant-change', 'tournament-updated'].includes(lastMessage?.type)) {
             refresh();
         }
-    }, [lastMessage, tournament?.currentRound, refresh]);
+    }, [lastMessage, refresh]);
 
     if (loading) return <p className={styles.detail__status}>Loading Tournament...</p>;
     if (error) return <p className={styles.detail__status}>Error: {error}</p>;

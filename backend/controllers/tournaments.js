@@ -33,12 +33,14 @@ export async function deleteTournament(req, res) {
 export async function joinTournament(req, res) {
     const tournament = await tournamentService.joinTournament(req.params.tournamentId, req.validData);
     if (!tournament) return res.status(404).json({ message: "Tournament not found" });
+    broadcastToTournament(req.params.tournamentId, { type: 'participant-change' });
     res.status(200).json({ success: true, data: tournament });
 }
 
 export async function leaveTournament(req, res) {
     const tournament = await tournamentService.leaveTournament(req.params.tournamentId, req.params.userId);
     if(!tournament) return res.status(404).json({message: "Tournament not found"});
+    broadcastToTournament(req.params.tournamentId, { type: 'participant-change' });
     res.status(200).json({ success: true, data: tournament });
 }
 
@@ -72,7 +74,7 @@ export async function uploadTrophyImage(req, res) {
 
 export async function awardWinner(req, res) {
     const tournament = await tournamentService.awardWinner(req.params.tournamentId, req.validData.winnerId);
-    broadcastToTournament(req.params.tournamentId, {type: "round-change", currentRound: tournament.currentRound });
+    broadcastToTournament(req.params.tournamentId, { type: 'tournament-updated' });
     res.status(200).json({ success: true, data: tournament });
 }
 
