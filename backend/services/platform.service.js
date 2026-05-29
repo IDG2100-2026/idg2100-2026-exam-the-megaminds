@@ -9,6 +9,9 @@ export async function getPlatformActivity() {
     // Count games currently being played
     const ongoingGames = await Game.countDocuments({ status: "in-progress" });
 
+    const availibleGames = await Game.countDocuments({ status: "pending"});
+
+    const playedGamesWeek = await Game.countDocuments({ status: "finished", createdAt: { $gte: oneWeekAgo } });
     // Use MongoDB aggregation to count distinct active users in the last week — much more efficient than fetching all and processing in JS
     const activeUsersAgg = await Game.aggregate([
         { $match: { createdAt: { $gte: oneWeekAgo } } },
@@ -27,6 +30,8 @@ export async function getPlatformActivity() {
 
     return {
         ongoingGames,
+        availibleGames,
+        playedGamesWeek,
         activeUsersWeek,
         recentGames
     };

@@ -110,6 +110,9 @@ apiRouter.get("/matchmaking/queue", requireAdmin, matchmakingController.getQueue
 // Platform activity (public)
 apiRouter.get("/platform/activity", platformController.getPlatformActivity);
 
+// Admin incident 
+apiRouter.get("/admin/dashboard", requireAdmin, adminController.getDashboard);
+
 // Admin actions on users
 apiRouter.patch("/users/:userId/ban", requireAdmin, userValidate.validateUserId(), validate, adminController.banUser);
 apiRouter.patch("/users/:userId/unban", requireAdmin, userValidate.validateUserId(), validate, adminController.unbanUser);

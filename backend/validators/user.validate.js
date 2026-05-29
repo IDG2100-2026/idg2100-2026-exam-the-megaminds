@@ -58,7 +58,7 @@ export function validateUserCreate(){
             .isLength({ min: MIN_PWD_LENGTH, max: MAX_PWD_LENGTH })
             .withMessage(`Password must be between ${MIN_PWD_LENGTH} and ${MAX_PWD_LENGTH} characters`)
             .bail()
-            .matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/)
+            .matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d].{8,}$/)
             .withMessage("Password must contain both letters and numbers"),
         body("age")
             .isInt({ min: MIN_USER_AGE })
@@ -93,7 +93,7 @@ export function validateUserUpdate(){
             .isLength({ min: MIN_PWD_LENGTH, max: MAX_PWD_LENGTH })
             .withMessage(`Password must be between ${MIN_PWD_LENGTH} and ${MAX_PWD_LENGTH} characters`)
             .bail()
-            .matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/)
+            .matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d].{8,}$/)
             .withMessage("Password must contain both letters and numbers"),
         body("age")
             .optional()

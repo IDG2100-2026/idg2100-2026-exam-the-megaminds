@@ -245,6 +245,8 @@ export const adminService = {
 
     getAllComments: (page = 1, limit = 20, search = "") => 
         apiCall('GET', `/api/comments?page=${page}&limit=${limit}&order=desc${search ? `&search=${encodeURIComponent(search)}`: ""}`),
-
+    
+    getDashboard: () =>
+        apiCall('GET', '/api/admin/dashboard').then(res => res.data),
     }
 
