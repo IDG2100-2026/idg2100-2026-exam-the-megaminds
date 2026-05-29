@@ -232,6 +232,9 @@
 .status_pending { background: rgba(180,140,0,0.2); color: #c8a000; }
 .status_finished { background: rgba(120,120,120,0.2); color: #aaa; }
 
+[data-theme="light"] .status_pending { background: #fef9c3; color: #713f12; }
+[data-theme="light"] .status_finished { background: #e5e7eb; color: #1f2937; }
+
 /* === Responsive === */
 
 @media (max-width: 768px) {

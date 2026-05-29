@@ -22,9 +22,11 @@ export async function attachUsernames(games) {
 }
 
 //Pagination
-export async function getAllGames({ sort = "createdAt", limit = 10, page =1 }) {
+export async function getAllGames({ sort = "createdAt", limit = 10, page = 1, status }) {
     const skip = (page - 1) * limit;
-    const games = await Game.find()
+    const query = {};
+    if (status) query.status = { $in: status.split(',') };
+    const games = await Game.find(query)
         .sort({ [sort]: -1 })
         .limit(Number(limit))
         .skip(Number(skip));

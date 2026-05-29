@@ -4,6 +4,7 @@ import { useAppContext } from "@/context/AppContext";
 import { useUserName } from "@/hooks/useUsername";
 import { platformService, gameService } from "@/services/api";
 import TournamentPreview from "@/components/TournamentPreview/TournamentPreview";
+import { variantName } from "@/utils/gameVariant";
 import styles from "./HomePage.module.css";
 
 export default function HomePage() {
@@ -80,7 +81,7 @@ function GamesPreview() {
                 {games.map((g) => (
                     <Link key={g.gameId} to={`/game/${g.gameId}`} className={styles.gameCard}>
                         <div className={styles.gameCard__header}>
-                            <h3 className={styles.gameCard__title}>Game #{g.gameId?.slice(-6)}</h3>
+                            <h3 className={styles.gameCard__title}>{variantName(g.rules)} · Bo{g.rules?.bestof}</h3>
                             <span className={`${styles.statusBadge} ${styles.status_pending}`}>Open</span>
                         </div>
                         <dl className={styles.gameCard__meta}>
@@ -115,10 +116,7 @@ function RecentGames() {
 
     return (
         <section className={styles.home__section}>
-            <div className={styles.home__sectionHeader}>
-                <h2 className={styles.home__sectionTitle}>Recent Finished Games</h2>
-                <Link to="/lobby" className={styles.home__seeAll}>See all →</Link>
-            </div>
+            <h2 className={styles.home__sectionTitle}>Recent Finished Games</h2>
             <div className={styles.gamesGrid}>
                 {games.map((g) => (
                     <WinnerGameCard key={g.gameId} game={g} />
@@ -133,7 +131,7 @@ function WinnerGameCard({ game }) {
     return (
         <Link to={`/game/${game.gameId}`} className={styles.gameCard}>
             <div className={styles.gameCard__header}>
-                <h3 className={styles.gameCard__title}>Game #{game.gameId?.slice(-6)}</h3>
+                <h3 className={styles.gameCard__title}>{variantName(game.rules)} · Bo{game.rules?.bestof}</h3>
                 <span className={`${styles.statusBadge} ${styles.status_finished}`}>Finished</span>
             </div>
             <dl className={styles.gameCard__meta}>

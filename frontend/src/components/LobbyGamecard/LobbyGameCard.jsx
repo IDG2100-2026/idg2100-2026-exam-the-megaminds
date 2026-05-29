@@ -1,4 +1,5 @@
 import placeholderPic from "@/assets/profile-pic-placeholder.svg";
+import { variantName } from "@/utils/gameVariant";
 import styles from "./LobbyGameCard.module.css";
 
 export default function LobbyGameCard({ game, user, joiningId, onViewGame, onJoinGame }) {
@@ -18,7 +19,7 @@ export default function LobbyGameCard({ game, user, joiningId, onViewGame, onJoi
             <div className={styles.rulesDisplay}>
                 <span className={styles.ruleBadge}>Best of {game.rules.bestof}</span>
                 <span className={styles.ruleBadge}>{game.rules.straightallowed ? "Straights" : "No Straights"}</span>
-                <span className={styles.ruleBadge}>{game.rules.roundTime}s</span>
+                <span className={styles.ruleBadge}>{variantName(game.rules)}</span>
             </div>
 
             <div className={styles.playersDisplay}>

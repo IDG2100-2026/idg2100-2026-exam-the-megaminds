@@ -332,18 +332,22 @@
 
 .win {
     background: rgba(72, 187, 120, 0.15);
-    color: #2f855a;
+    color: #276749;
 }
 
 .loss {
     background: rgba(229, 62, 62, 0.12);
-    color: #c53030;
+    color: #9b1c1c;
 }
 
 .ongoing {
     background: rgba(237, 137, 54, 0.15);
-    color: #c05621;
+    color: #9a3412;
 }
+
+[data-theme="light"] .win { background: #dcfce7; color: #14532d; }
+[data-theme="light"] .loss { background: #fee2e2; color: #7f1d1d; }
+[data-theme="light"] .ongoing { background: #ffedd5; color: #7c2d12; }
 
 .gameId {
     color: var(--theme-text-muted);

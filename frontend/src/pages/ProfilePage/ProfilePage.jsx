@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router';
 import { useAppContext } from '@/context/AppContext';
 import { userService, leaderboardService } from '@/services/api';
 import placeholderAvatar from '@/assets/profile-pic-placeholder.svg';
+import { variantName } from '@/utils/gameVariant';
 import styles from './ProfilePage.module.css';
 
 const GAMES_PER_PAGE = 5;
@@ -362,9 +363,8 @@ export default function ProfilePage() {
                                 onKeyDown={e => e.key === 'Enter' && navigate(`/game/${game.gameId}`)}
                             >
                                 <span className={`${styles.resultBadge} ${resultClass}`}>{resultLabel}</span>
-                                <span className={styles.gameId}>#{game.gameId?.slice(-6) ?? '------'}</span>
                                 <span className={styles.gameMeta}>
-                                    Best of {game.rules?.bestof} · {game.rules?.roundTime}s
+                                    {variantName(game.rules)} · Bo{game.rules?.bestof}
                                 </span>
                                 <span className={styles.gameDate}>
                                     {new Date(game.createdAt).toLocaleDateString()}

@@ -39,15 +39,14 @@ export default function LobbyPage() {
         const fetchGames = async () => {
             try {
                 setLoading(true);
-                const data = await gameService.getAllGames(1, PAGE_SIZE);
+                const data = await gameService.getAllGames(1, PAGE_SIZE, 'pending');
 
                 const allGames = data || [];
-                setHasMore(allGames.length === PAGE_SIZE),
+                setHasMore(allGames.length === PAGE_SIZE);
                 setPage(1);
 
-                // Show only joinable games: pending games waiting for an opponent
                 const pending = allGames.filter(game =>
-                    game.status === 'pending' && game.players.length < game.rules.numPlayers
+                    game.players.length < game.rules.numPlayers
                 );
                 const enriched = await enrichGames(pending);
                 setGames(enriched);
@@ -151,12 +150,12 @@ export default function LobbyPage() {
         const nextPage = page + 1;
         setLoadingMore(true);
         try {
-            const data = await gameService.getAllGames(nextPage, PAGE_SIZE);
+            const data = await gameService.getAllGames(nextPage, PAGE_SIZE, 'pending');
             const newGames = data || [];
             setHasMore(newGames.length === PAGE_SIZE);
             setPage(nextPage);
             const pending = newGames.filter(game =>
-                game.status === 'pending' && game.players.length < game.rules.numPlayers
+                game.players.length < game.rules.numPlayers
             );
             const endriched = await enrichGames(pending);
             setGames(prev => [...prev, ...endriched]);

@@ -97,8 +97,8 @@ export const userService = {
 
 // Game CRUD and state transitions
 export const gameService = {
-    getAllGames: (page = 1, limit = 20) =>
-        apiCall('GET', `/api/games?page=${page}&limit=${limit}`).then(res => res.data),
+    getAllGames: (page = 1, limit = 20, status) =>
+        apiCall('GET', `/api/games?page=${page}&limit=${limit}${status ? `&status=${status}` : ''}`).then(res => res.data),
 
     getGame: (gameId) =>
         apiCall('GET', `/api/games/${gameId}`),
