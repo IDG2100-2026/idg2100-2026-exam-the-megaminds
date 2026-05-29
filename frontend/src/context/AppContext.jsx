@@ -25,7 +25,7 @@ export function AppProvider({ children }) {
     const [soundEnabled, setSoundEnabled] = useLocalStorage('soundEnabled', true);
     const [profilePic, setProfilePic] = useLocalStorage('profilePic', true);
     const [displayNames, setDisplayNames] = useLocalStorage('displayNames', true);
-    const [lobbyCount, setLobbyCount] = useLocalStorage('lobbyCount', 5);
+    const [lobbyCount, setLobbyCount] = useLocalStorage('lobbyCount', 10);
     const [lobbyMusic, setLobbyMusic] = useLocalStorage('lobbyMusic', true);
 
     const theme = { mode: themeMode, boardColor, soundEnabled, profilePic, displayNames, lobbyCount, lobbyMusic };
@@ -76,6 +76,9 @@ export function AppProvider({ children }) {
         try {
             const loggedInUser = await userService.login(username, pwd);
             setUser(loggedInUser);
+            if (loggedInUser?.preferences && Object.keys(loggedInUser.preferences).length > 0) {
+                setTheme(loggedInUser.preferences);
+            }
             return loggedInUser;
         } finally {
             setIsLoading(false);

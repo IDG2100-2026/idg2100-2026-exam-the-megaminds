@@ -14,6 +14,7 @@ import TournamentStandings from "@/components/TournamentStandings/TournamentStan
 import { usePlayerGameRedirect } from "@/hooks/usePlayerGameRedirect";
 import { useEffect } from "react";
 import { TournamentSocketProvider, useTournamentSocketContext } from "@/context/TournamentSocketContext";
+import TournamentBracket from "@/components/TournamentBracket/TournamentBracket";
 import AwardWinner from "@/components/AwardWinner/AwardWinner";
 import styles from "./TournamentDetail.module.css";
 
@@ -37,10 +38,10 @@ function TournamentDetailContent({ tournamentid }) {
     const { lastMessage } = useTournamentSocketContext();
 
     useEffect(() => {
-        if (lastMessage?.type === "round-change" && lastMessage.currentRound !== tournament?.currentRound) {
+        if (['round-change', 'participant-change', 'tournament-updated'].includes(lastMessage?.type)) {
             refresh();
         }
-    }, [lastMessage, tournament?.currentRound, refresh]);
+    }, [lastMessage, refresh]);
 
     if (loading) return <p className={styles.detail__status}>Loading Tournament...</p>;
     if (error) return <p className={styles.detail__status}>Error: {error}</p>;
@@ -72,6 +73,12 @@ function TournamentDetailContent({ tournamentid }) {
                 <section className={styles.detail__section}>
                     <h2 className={styles.detail__heading}>Standings</h2>
                     <TournamentStandings key={`round-${tournament.currentRound}`} tournamentId={tournament.tournamentId} />
+                </section>
+            )}
+            {(status === "in-progress" || status === "finished") && (
+                <section className={styles.detail__section}>
+                    <h2 className={styles.detail__heading}>Bracket</h2>
+                    <TournamentBracket key={`round-${tournament.currentRound}`} tournament={tournament} />
                 </section>
             )}
             {status === "in-progress" && nextRoundStartsAt && new Date(nextRoundStartsAt) > new Date() && (

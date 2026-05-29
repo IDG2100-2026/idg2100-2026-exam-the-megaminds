@@ -2,6 +2,8 @@ import { WebSocketServer } from "ws";
 import { consumeWsToken } from "../middleware/jwt.js";
 import { ensureEngine, rollDice, doneRolling, revealRound, startRound, getEngine, removeEngine, getState } from "../services/gameEngine.service.js";
 import { recordGameResult, getGameById } from "../services/games.service.js";
+import { advanceTournament } from "../services/tournaments.service.js";
+
 
 // gameId -> Set of sockets in that game
 const rooms = new Map();
@@ -117,6 +119,18 @@ export function initGameSocket(server) {
                         
                         removeEngine(gameId);
 
+                        try {
+                            const finishedGame = await getGameById(gameId);
+                            if (finishedGame?.tournamentId) {
+                                const updated = await advanceTournament(finishedGame.tournamentId).catch(() => null);
+                                if (updated) {
+                                    broadcastToTournament(finishedGame.tournamentId, { type: 'round-change', currentRound: updated.currentRound });
+                                }
+                            }
+                        } catch {
+                            // not all tournament games finished yet - normal
+                        }
+
                         setTimeout(() => broadcastToGame(gameId, {
                             type: "game-over",
                             winnerIds: reveal.gameWinnerIds,
@@ -131,6 +145,11 @@ export function initGameSocket(server) {
                         }, 3000);
                     }
                 }
+                return;
+            }
+            
+            if (msg.type === 'comment-added') {
+                broadcastToGame(socket.gameId, { type: 'comment-added'});
                 return;
             }
 

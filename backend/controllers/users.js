@@ -25,7 +25,7 @@ export async function login(req, res) {
     setAccessCookie(res, signAccessToken(user.userId, role, req.ip));
     setRefreshCookie(res, await issueRefreshSession(user.userId, req.get("user-agent")));
 
-    res.json({ success: true, user: { userId: user.userId, username: user.username, elo: user.elo, role } });
+    res.json({ success: true, user: { userId: user.userId, username: user.username, elo: user.elo, role, profilePicture: user.profilePicture || null, preferences: user.preferences || {} } });
 }
 export async function refresh(req, res){
     const rotated = await rotateRefreshSession(req.cookies?.refreshToken, req.get("user-agent"));
@@ -71,7 +71,7 @@ export async function getMe(req, res) {
         return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    res.json({ success: true, user: { userId: user.userId, username: user.username, elo: user.elo, role: user.isAdmin ? "admin" : "registered", profilePicture: user.profilePicture || null } });
+    res.json({ success: true, user: { userId: user.userId, username: user.username, elo: user.elo, role: user.isAdmin ? "admin" : "registered", profilePicture: user.profilePicture || null, preferences: user.preferences || {} } });
 }
 
 export async function getAllUsers(req, res) {

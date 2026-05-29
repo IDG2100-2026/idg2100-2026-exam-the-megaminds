@@ -33,6 +33,7 @@ export default function AppRoutes() {
                 <Route path="/tournament" element={<TournamentList/>} />
                 <Route path="/tournament/:tournamentid" element={<TournamentDetail/>} />
                 <Route path="/profile" element={<ProfilePage/>} />
+                <Route path="/profile/:userId" element={<ProfilePage />} />
                 <Route path="/leaderboard" element={<LeaderboardPage />} />
                 <Route path="/terms" element={<TermsPage />} />
                 <Route path="/privacy" element={<PrivacyPage />} />

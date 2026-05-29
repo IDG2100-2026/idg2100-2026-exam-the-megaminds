@@ -455,6 +455,14 @@
     font-size: 1.75rem;
 }
 
+.trophyImg {
+    width: 56px;
+    height: 56px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--theme-accent-dark);
+}
+
 .trophyTitle {
     font-size: 0.85rem;
     font-weight: 600;

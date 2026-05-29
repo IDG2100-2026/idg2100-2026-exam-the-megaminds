@@ -36,6 +36,204 @@
     flex-direction: column;
 }
 
+.home__cta {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.btnPrimary {
+    background: var(--theme-accent);
+    color: white;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    text-decoration: none;
+    transition: opacity 0.2s;
+}
+
+.btnPrimary:hover { opacity: 0.85; }
+
+.btnSecondary {
+    border: 1px solid var(--theme-accent);
+    color: var(--theme-accent);
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.btnSecondary:hover {
+    background: var(--theme-accent);
+    color: white;
+}
+
+.home__sectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.home__sectionTitle {
+    margin: 0 0 16px 0;
+    font-size: 1.2rem;
+    color: var(--theme-accent-light);
+}
+
+.home__seeAll {
+    color: var(--theme-accent);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* === Activity stats === */
+
+.statsRow {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.statCard {
+    flex: 1;
+    min-width: 140px;
+    background: var(--theme-primary);
+    border: 1px solid var(--theme-accent-dark);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.statValue {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--theme-accent);
+}
+
+.statLabel {
+    font-size: 13px;
+    color: var(--theme-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* === Game cards grid === */
+
+.gamesGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.gameCard {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 18px 20px;
+    border-radius: 14px;
+    background: var(--theme-primary);
+    border: 1px solid var(--theme-accent-dark);
+    color: var(--theme-text);
+    text-decoration: none;
+    transition: border-color 0.2s;
+}
+
+.gameCard:visited {
+    color: var(--theme-text);
+}
+
+.gameCard:hover {
+    border-color: var(--theme-accent);
+}
+
+.gameCard__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.gameCard__title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--theme-accent-light);
+}
+
+/* === Meta definition list (Players, Buy-in, Winner) === */
+
+.gameCard__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin: 0;
+}
+
+.gameCard__meta div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.gameCard__meta dt {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--theme-text-secondary);
+}
+
+.gameCard__meta dd {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--theme-text);
+}
+
+/* === Rule pills === */
+
+.gameCard__rules {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.pill {
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    background: var(--theme-primary-light);
+    color: var(--theme-accent-light);
+    border: 1px solid var(--theme-accent-dark);
+}
+
+/* === Status badges === */
+
+.statusBadge {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+.status_pending { background: rgba(180,140,0,0.2); color: #c8a000; }
+.status_finished { background: rgba(120,120,120,0.2); color: #aaa; }
+
+/* === Responsive === */
+
 @media (max-width: 768px) {
     .home {
         gap: 32px;
@@ -48,5 +246,15 @@
 
     .home__title {
         font-size: 1.8rem;
+    }
+
+    .gamesGrid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .gamesGrid {
+        grid-template-columns: 1fr;
     }
 }

@@ -33,6 +33,14 @@ export default function GamePage() {
     }, [gameid]);
 
         useEffect(() => {
+        if (lastMessage?.type === 'comment-added') {
+            loadComments();
+            return;
+        }
+        if (lastMessage?.type === 'game-over' && game?.tournamentId) {
+            setTimeout(() => navigate(`/tournament/${game.tournamentId}`), 4000);
+            return;
+        }
         if (lastMessage?.type !== 'state') return;
         const wsPlayerCount = lastMessage.state?.players?.length ?? 0;
         if (wsPlayerCount > (game?.players?.length ?? 0)) {
@@ -51,6 +59,7 @@ export default function GamePage() {
             await commentService.addGameComment(gameid, commentText.trim());
             setCommentText('');
             loadComments();
+            send({ type: 'comment-added' });4
         } catch {
             // silent
         } finally {

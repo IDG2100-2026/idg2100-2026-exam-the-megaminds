@@ -13,6 +13,9 @@ import { fileURLToPath } from 'url';
 // getting mongoose to connect to mongoDB
 await connectDB();
 
+import { scheduleWeeklyPoints } from './jobs/weeklyPoints.js';
+scheduleWeeklyPoints();
+
 // create an express app
 const diceApp = express();
 

@@ -27,7 +27,7 @@ export default function TournamentCard({ tournament, variant = "list" }) {
                 </div>
             </dl>
 
-            {variant === "list" && format && (
+            {format && (
                 <ul className={styles.card__rules}>
                     <li className={styles.pill}>Bo{format.bestof}</li>
                     {format.straightallowed && <li className={styles.pill}>Straights allowed</li>}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router';
+import { useParams, useNavigate } from 'react-router';
 import { useAppContext } from '@/context/AppContext';
 import { userService, leaderboardService } from '@/services/api';
 import placeholderAvatar from '@/assets/profile-pic-placeholder.svg';
@@ -9,7 +9,10 @@ const GAMES_PER_PAGE = 5;
 
 export default function ProfilePage() {
     const navigate = useNavigate();
+    const { userId: paramUserId } = useParams();
     const { user, isInitialized, refreshUser } = useAppContext();
+    const profileUserId = paramUserId ? Number(paramUserId) : user?.userId;
+    const isOwnProfile = user?.userId === profileUserId;
 
     const [profile, setProfile] = useState(null);
     const [loadingProfile, setLoadingProfile] = useState(true);
@@ -26,7 +29,7 @@ export default function ProfilePage() {
     const [games, setGames] = useState([]);
     const [gamesPage, setGamesPage] = useState(1);
     const [hasMoreGames, setHasMoreGames] = useState(true);
-    const [loadingGames, setLoadingGames] = useState(false);
+    const [loadingGames, setLoadingGames] = useState(true);
 
     useEffect(() => {
         if (isInitialized && !user) navigate("/login");
@@ -36,9 +39,9 @@ export default function ProfilePage() {
         if (!user) return;
         const load = async () => {
             try {
-                const data = await userService.getUser(user.userId);
+                const data = await userService.getUser(profileUserId);
                 setProfile(data);
-                setEditForm({ email: data.email || "", aboutMe: data.aboutMe || "", pwd: "", confirm: "" });
+                if (isOwnProfile) setEditForm({ email: data.email || "", aboutMe: data.aboutMe || "", pwd: "", confirm: "" });
             } catch {
                 // failed to load
             } finally {
@@ -46,24 +49,11 @@ export default function ProfilePage() {
             }
         };
         load();
-    }, [user]);
-
-    useEffect(() => {
-        if (!user) return;
-        loadGames(1, true);
-        leaderboardService.getLeaderboard(1, 100)
-            .then(res => {
-                const list = Array.isArray(res.data) ? res.data : [];
-                const idx = list.findIndex(u => u.userId === user.userId);
-                if (idx >= 0) setRank(idx + 1);
-            })
-            .catch(() => {});
-    }, [user]);
+    }, [user, paramUserId, profileUserId, isOwnProfile]);
 
     const loadGames = async (page, reset = false) => {
-        setLoadingGames(true);
         try {
-            const data = await userService.getUserGames(user.userId, page, GAMES_PER_PAGE);
+            const data = await userService.getUserGames(profileUserId, page, GAMES_PER_PAGE);
             const list = Array.isArray(data) ? data : [];
             setGames(prev => reset ? list : [...prev, ...list]);
             setHasMoreGames(list.length === GAMES_PER_PAGE);
@@ -75,7 +65,31 @@ export default function ProfilePage() {
         }
     };
 
-    const handleLoadMore = () => loadGames(gamesPage + 1);
+    const handleLoadMore = () => { setLoadingGames(true); loadGames(gamesPage + 1); };
+
+    useEffect(() => {
+        if (!user) return;
+        (async () => {
+            try {
+                const data = await userService.getUserGames(profileUserId, 1, GAMES_PER_PAGE);
+                const list = Array.isArray(data) ? data : [];
+                setGames(list);
+                setHasMoreGames(list.length === GAMES_PER_PAGE);
+                setGamesPage(1);
+            } catch {
+                // ignore
+            } finally {
+                setLoadingGames(false);
+            }
+        })();
+        leaderboardService.getLeaderboard(1, 100)
+            .then(res => {
+                const list = Array.isArray(res.data) ? res.data : [];
+                const idx = list.findIndex(u => u.userId === profileUserId);
+                if (idx >= 0) setRank(idx + 1);
+            })
+            .catch(() => {});
+    }, [user, paramUserId, profileUserId]);
 
     const handleAvatarChange = (e) => {
         const file = e.target.files[0];
@@ -140,13 +154,13 @@ export default function ProfilePage() {
                     <h1 className={styles.username}>{profile.username}</h1>
                     {isAdmin && <span className={styles.adminBadge}>Admin</span>}
                     {rank && <p className={styles.rankBadge}>Rank #{rank} on Leaderboard</p>}
-                    {(user?.userId === profile.userId || isAdmin) && (
+                    {isOwnProfile && (
                         <p className={styles.email}>{profile.email}</p>
                     )}
                     {profile.aboutMe && !editMode && (
                         <p className={styles.aboutMe}>{profile.aboutMe}</p>
                     )}
-                    {!editMode && (
+                    {!editMode && isOwnProfile && (
                         <button className={styles.editBtn} onClick={() => setEditMode(true)}>
                             Edit Profile
                         </button>
@@ -155,7 +169,7 @@ export default function ProfilePage() {
             </section>
 
             {/* Edit profile form */}
-            {editMode && (
+            {editMode && isOwnProfile && (
                 <section className={styles.section}>
                     <h2 className={styles.sectionTitle}>Edit Profile</h2>
                     <form className={styles.form} onSubmit={handleEditSave} noValidate>
@@ -313,7 +327,11 @@ export default function ProfilePage() {
                     <div className={styles.trophiesGrid}>
                         {profile.trophies.map((trophy, idx) => (
                             <div key={idx} className={styles.trophy}>
-                                <span className={styles.trophyIcon}>🏅</span>
+                                {trophy.imageUrl
+                                    ? <img src={trophy.imageUrl} alt={trophy.title} className={styles.trophyImg} />
+                                    : <span className={styles.trophyIcon}>🏅</span>
+                                }
+
                                 <p className={styles.trophyTitle}>{trophy.title}</p>
                                 <p className={styles.trophyDate}>{new Date(trophy.awardedAt).toLocaleDateString()}</p>
                             </div>
@@ -331,7 +349,7 @@ export default function ProfilePage() {
                 <ul className={styles.gamesList}>
                     {games.map((game) => {
                         const isFinished = game.status === 'finished';
-                        const isWinner = game.winnerId === user.userId;
+                        const isWinner = game.winnerId === profileUserId;
                         const resultClass = !isFinished ? styles.ongoing : isWinner ? styles.win : styles.loss;
                         const resultLabel = !isFinished ? game.status : isWinner ? 'Win' : 'Loss';
                         return (

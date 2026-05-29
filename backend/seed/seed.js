@@ -160,6 +160,52 @@ async function seed() {
             players: [{ userId: u4.userId, score: 1 }, { userId: u6.userId, score: 2 }],
             status: "in-progress",
             tournamentId: "tournament-002"
+        },
+        // Winter Dice Championship (tournament-003) — fully played 8-player bracket
+        // Round 1 (4 games)
+        {
+            gameId: "t-tournament-003-r1-0",
+            rules: { bestof: 7, straightallowed: true, roundTime: 90 },
+            players: [{ userId: u1.userId, score: 4 }, { userId: u2.userId, score: 1 }],
+            winnerId: u1.userId, status: "finished", tournamentId: "tournament-003"
+        },
+        {
+            gameId: "t-tournament-003-r1-1",
+            rules: { bestof: 7, straightallowed: true, roundTime: 90 },
+            players: [{ userId: u3.userId, score: 4 }, { userId: u4.userId, score: 2 }],
+            winnerId: u3.userId, status: "finished", tournamentId: "tournament-003"
+        },
+        {
+            gameId: "t-tournament-003-r1-2",
+            rules: { bestof: 7, straightallowed: true, roundTime: 90 },
+            players: [{ userId: u5.userId, score: 0 }, { userId: u6.userId, score: 4 }],
+            winnerId: u6.userId, status: "finished", tournamentId: "tournament-003"
+        },
+        {
+            gameId: "t-tournament-003-r1-3",
+            rules: { bestof: 7, straightallowed: true, roundTime: 90 },
+            players: [{ userId: u7.userId, score: 4 }, { userId: u8.userId, score: 2 }],
+            winnerId: u7.userId, status: "finished", tournamentId: "tournament-003"
+        },
+        // Round 2 (2 games) — round-1 winners re-paired
+        {
+            gameId: "t-tournament-003-r2-0",
+            rules: { bestof: 7, straightallowed: true, roundTime: 90 },
+            players: [{ userId: u1.userId, score: 4 }, { userId: u3.userId, score: 2 }],
+            winnerId: u1.userId, status: "finished", tournamentId: "tournament-003"
+        },
+        {
+            gameId: "t-tournament-003-r2-1",
+            rules: { bestof: 7, straightallowed: true, roundTime: 90 },
+            players: [{ userId: u6.userId, score: 3 }, { userId: u7.userId, score: 4 }],
+            winnerId: u7.userId, status: "finished", tournamentId: "tournament-003"
+        },
+        // Round 3 (final)
+        {
+            gameId: "t-tournament-003-r3-0",
+            rules: { bestof: 7, straightallowed: true, roundTime: 90 },
+            players: [{ userId: u1.userId, score: 4 }, { userId: u7.userId, score: 1 }],
+            winnerId: u1.userId, status: "finished", tournamentId: "tournament-003"
         }
     ]);
     console.log("Created games.");
@@ -214,6 +260,33 @@ async function seed() {
                 { roundNumber: 1, games: ["t-tournament-002-r1-0", "t-tournament-002-r1-1"], byeUserId: null }
             ],
             trophy: { title: "Nordic Masters Trophy" },
+            createdBy: u1.userId
+        },
+        {
+            tournamentId: "tournament-003",
+            title: "Winter Dice Championship",
+            description: "A completed 8-player single-elimination championship — every round played out to a champion.",
+            format: { bestof: 7, straightallowed: true, roundTime: 90 },
+            minPlayers: 8,
+            maxPlayers: 8,
+            startDate: new Date("2026-05-20"),
+            status: "finished",
+            participants: [u1.userId, u2.userId, u3.userId, u4.userId, u5.userId, u6.userId, u7.userId, u8.userId],
+            buyIn: 0,
+            eloRange: { min: null, max: null },
+            games: [
+                "t-tournament-003-r1-0", "t-tournament-003-r1-1", "t-tournament-003-r1-2", "t-tournament-003-r1-3",
+                "t-tournament-003-r2-0", "t-tournament-003-r2-1",
+                "t-tournament-003-r3-0"
+            ],
+            currentRound: 3,
+            rounds: [
+                { roundNumber: 1, games: ["t-tournament-003-r1-0", "t-tournament-003-r1-1", "t-tournament-003-r1-2", "t-tournament-003-r1-3"], byeUserId: null },
+                { roundNumber: 2, games: ["t-tournament-003-r2-0", "t-tournament-003-r2-1"], byeUserId: null },
+                { roundNumber: 3, games: ["t-tournament-003-r3-0"], byeUserId: null }
+            ],
+            trophy: { title: "Winter Championship Cup" },
+            winnerId: u1.userId,
             createdBy: u1.userId
         }
     ]);
