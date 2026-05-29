@@ -1,10 +1,11 @@
 import { Game } from "../models/games.js";
-import { User } from "../models/users.js";
 
 // Returns a snapshot of current platform activity
  
 export async function getPlatformActivity() {
     const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    const gamePlayedWeek = await Game.countDocuments({ status: "finished", updatedAt: { $gte: oneWeekAgo } });
 
     // Count games currently being played
     const ongoingGames = await Game.countDocuments({ status: "in-progress" });
@@ -28,6 +29,7 @@ export async function getPlatformActivity() {
     return {
         ongoingGames,
         activeUsersWeek,
+        gamePlayedWeek,
         recentGames
     };
 }

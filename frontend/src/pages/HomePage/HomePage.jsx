@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { useAppContext } from "@/context/AppContext";
+import { useUserName } from "@/hooks/useUsername";
 import { platformService, gameService } from "@/services/api";
 import TournamentPreview from "@/components/TournamentPreview/TournamentPreview";
 import styles from "./HomePage.module.css";
@@ -47,24 +49,24 @@ function ActivityStats() {
             <div className={styles.statsRow}>
                 <StatCard label="Games in Progress" value={activity?.ongoingGames ?? "—"} />
                 <StatCard label="Active Players (7 days)" value={activity?.activeUsersWeek ?? "—"} />
-                <StatCard label="Recent Finished Games" value={activity?.recentGames?.length ?? "—"} />
+                <StatCard label="Games Played (7 days)" value={activity?.gamesPlayedWeek ?? "—"} />
             </div>
         </section>
     );
 }
 
 function GamesPreview() {
+    const { lobbyCount } = useAppContext();
     const [games, setGames] = useState([]);
-    const navigate = useNavigate();
 
     useEffect(() => {
         gameService.getAllGames(1, 20).then((data) => {
             const pending = Array.isArray(data)
-                ? data.filter(g => g?.gameId && g.status === "pending").slice(0, 4)
+                ? data.filter(g => g?.gameId && g.status === "pending").slice(0, lobbyCount)
                 : [];
             setGames(pending);
         }).catch(() => {});
-    }, []);
+    }, [lobbyCount]);
 
     if (games.length === 0) return null;
 
@@ -76,25 +78,21 @@ function GamesPreview() {
             </div>
             <div className={styles.gamesGrid}>
                 {games.map((g) => (
-                    <div key={g.gameId} className={styles.gameCard}>
-                        <div className={styles.gameCardTop}>
-                            <span className={`${styles.statusBadge} ${styles.status_pending}`}>
-                                Waiting for player
-                            </span>
-                            <span className={styles.gameCardId}>{g.gameId}</span>
+                    <Link key={g.gameId} to={`/game/${g.gameId}`} className={styles.gameCard}>
+                        <div className={styles.gameCard__header}>
+                            <h3 className={styles.gameCard__title}>Game #{g.gameId?.slice(-6)}</h3>
+                            <span className={`${styles.statusBadge} ${styles.status_pending}`}>Open</span>
                         </div>
-                        <div className={styles.gameCardRules}>
-                            <span>Best of {g.rules?.bestof}</span>
-                            <span>{g.rules?.straightallowed ? "Straights ✓" : "No Straights"}</span>
-                            <span>{g.rules?.roundTime}s timer</span>
-                        </div>
-                        <div className={styles.gameCardFooter}>
-                            <span>{g.players?.length ?? 0} / 2 players</span>
-                            <button className={styles.viewBtn} onClick={() => navigate(`/game/${g.gameId}`)}>
-                                Join →
-                            </button>
-                        </div>
-                    </div>
+                        <dl className={styles.gameCard__meta}>
+                            <div><dt>Players</dt><dd>{g.players?.length ?? 0} / 2</dd></div>
+                            <div><dt>Buy-in</dt><dd>{g.rules?.buyIn} pts</dd></div>
+                        </dl>
+                        <ul className={styles.gameCard__rules}>
+                            <li className={styles.pill}>Bo{g.rules?.bestof}</li>
+                            {g.rules?.straightallowed && <li className={styles.pill}>Straights</li>}
+                            <li className={styles.pill}>{g.rules?.roundTime}s</li>
+                        </ul>
+                    </Link>
                 ))}
             </div>
         </section>
@@ -103,7 +101,6 @@ function GamesPreview() {
 
 function RecentGames() {
     const [games, setGames] = useState([]);
-    const navigate = useNavigate();
 
     useEffect(() => {
         gameService.getAllGames(1, 20).then((data) => {
@@ -124,33 +121,33 @@ function RecentGames() {
             </div>
             <div className={styles.gamesGrid}>
                 {games.map((g) => (
-                    <div key={g.gameId} className={styles.gameCard}>
-                        <div className={styles.gameCardTop}>
-                            <span className={`${styles.statusBadge} ${styles.status_finished}`}>
-                                Finished
-                            </span>
-                            <span className={styles.gameCardId}>{g.gameId}</span>
-                        </div>
-                        <div className={styles.gameCardRules}>
-                            <span>Best of {g.rules?.bestof}</span>
-                            <span>{g.rules?.straightallowed ? "Straights ✓" : "No Straights"}</span>
-                            <span>{g.rules?.roundTime}s timer</span>
-                        </div>
-                        <div className={styles.gameCardFooter}>
-                            <span>Winner: {g.winnerId ?? "—"}</span>
-                            <button className={styles.viewBtn} onClick={() => navigate(`/game/${g.gameId}`)}>
-                                View →
-                            </button>
-                        </div>
-                    </div>
+                    <WinnerGameCard key={g.gameId} game={g} />
                 ))}
             </div>
         </section>
     );
 }
 
-
-
+function WinnerGameCard({ game }) {
+    const winnerName = useUserName(game.winnerId);
+    return (
+        <Link to={`/game/${game.gameId}`} className={styles.gameCard}>
+            <div className={styles.gameCard__header}>
+                <h3 className={styles.gameCard__title}>Game #{game.gameId?.slice(-6)}</h3>
+                <span className={`${styles.statusBadge} ${styles.status_finished}`}>Finished</span>
+            </div>
+            <dl className={styles.gameCard__meta}>
+                <div><dt>Winner</dt><dd>{winnerName}</dd></div>
+                <div><dt>Players</dt><dd>{game.players?.length ?? 0}</dd></div>
+            </dl>
+            <ul className={styles.gameCard__rules}>
+                <li className={styles.pill}>Bo{game.rules?.bestof}</li>
+                {game.rules?.straightallowed && <li className={styles.pill}>Straights</li>}
+                <li className={styles.pill}>{game.rules?.roundTime}s</li>
+            </ul>
+        </Link>
+    );
+}
 
 function StatCard({ label, value }) {
     return (

@@ -55,8 +55,8 @@ export default function SettingsPanel() {
                 <span className={styles.label}>Lobby Preview - {lobbyCount} games</span>
                 <input
                     type='range'
-                    min={3}
-                    max={20}
+                    min={1}
+                    max={10}
                     step={1}
                     value={lobbyCount}
                     onChange={e => setLobbyCount(Number(e.target.value))}
