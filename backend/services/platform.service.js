@@ -1,5 +1,6 @@
 import { Game } from "../models/games.js";
 import { User } from "../models/users.js";
+import { attachUsernames } from "./games.service.js";
 
 // Returns a snapshot of current platform activity
  
@@ -23,10 +24,12 @@ export async function getPlatformActivity() {
     const activeUsersWeek = activeUsersAgg.length > 0 ? activeUsersAgg[0].count : 0;
 
     // Last 10 finished games with relevant fields only
-    const recentGames = await Game.find({ status: "finished" })
-        .sort({ updatedAt: -1 })
-        .limit(10)
-        .select("gameId players winnerId rules status updatedAt");
+    const recentGames = await attachUsernames(
+        await Game.find({ status: "finished" })
+            .sort({ updatedAt: -1 })
+            .limit(10)
+            .select("gameId players winnerId rules status updatedAt")
+    );
 
     return {
         ongoingGames,

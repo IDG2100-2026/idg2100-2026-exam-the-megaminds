@@ -64,6 +64,8 @@ function OverviewTab() {
     <div className={styles.tabContent}>
       <div className={styles.statsRow}>
         <StatCard label="Ongoing Games" value={activity.ongoingGames} />
+        <StatCard label="Available Games" value={activity.activeGames} />
+        <StatCard label="Played Games (7 days)" value={activity.playedGamesWeek}></StatCard>
         <StatCard
           label="Active Users (7 days)"
           value={activity.activeUsersWeek}
@@ -112,12 +114,20 @@ function OverviewTab() {
           <p className={styles.dim}>No finished games yet</p>
         ) : (
           <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Game / Tournament ID</th>
+                <th>Best of</th>
+                <th>Winner</th>
+                <th>Finished</th>
+              </tr>
+            </thead>
             <tbody>
               {activity.recentGames?.map((game) => (
                 <tr key={game.gameId}>
                   <td className={styles.mono}>{game.gameId}</td>
                   <td>{game.rules?.bestof}</td>
-                  <td>{game.winnerId ?? "—"}</td>
+                  <td>{game.winnerName ?? "—"}</td>
                   <td className={styles.dim}>{new Date(game.updatedAt).toLocaleString()}</td>
                 </tr>
               ))}
@@ -524,7 +534,7 @@ function GamesTab() {
                     </td>
                     <td>{g.rules?.bestof}</td>
                     <td>{g.players?.length ?? 0}</td>
-                    <td className={styles.dim}>{g.winnerId ?? "—"}</td>
+                    <td className={styles.dim}>{g.winnerName ?? "—"}</td>
                     <td className={styles.dim}>
                       {new Date(g.createdAt).toLocaleString()}
                     </td>
