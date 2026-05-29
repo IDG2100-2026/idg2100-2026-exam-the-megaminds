@@ -220,7 +220,7 @@ export const leaderboardService = {
 // Platform-wide stats for the admin dashboard and homepage preview
 export const platformService = {
     getActivity: () =>
-        apiCall('GET', '/api/platform/activity'),
+        apiCall('GET', '/api/platform/activity').then(res => res.data),
 };
 
 // Admin-only actions
