@@ -44,6 +44,21 @@
     background: rgba(92, 184, 86, 0.12);
 }
 
+/* Logout is a <button>, not a NavLink — strip the native button look so it
+   matches the links, with a green tint so it stands out a little. */
+button.adminLink {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--theme-accent-light);
+}
+
+button.adminLink:hover {
+    color: var(--theme-text);
+    background: rgba(92, 184, 86, 0.18);
+}
+
 @media (max-width: 600px) {
     .adminBanner {
         padding: 10px 16px;

@@ -1,12 +1,10 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useAppContext } from "@/context/AppContext";
-import Header from "@/components/Header/Header";
-import Footer from "@/components/Footer/Footer";
 import styles from "./AdminLayout.module.css";
 
 export default function AdminLayout() {
-    const { user, isInitialized } = useAppContext();
+    const { user, isInitialized, logout } = useAppContext();
     const navigate = useNavigate()
 
 
@@ -23,16 +21,21 @@ export default function AdminLayout() {
 
     return (
         <>
-            <Header />
             <div className={styles.adminBanner}>
-                <span className={styles.adminBadge}>Admin Mode</span>
+                <span className={styles.adminBadge}>Admin</span>
                 <nav className={styles.adminNav}>
                     <NavLink to="/admin" end className={linkClass}>Dashboard</NavLink>
                     <NavLink to="/admin/tournament/new" className={linkClass}>New Tournament</NavLink>
+                    <NavLink to="/" className={linkClass}>Back to Website</NavLink>
+                    <button
+                    className={styles.adminLink}
+                    onClick={() =>{
+                        logout();
+                        navigate("/");
+                    }}>Logout</button>
                     </nav>
                 </div>
                 <Outlet />
-                <Footer />
                 </>
     );
 }
