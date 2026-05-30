@@ -76,6 +76,113 @@
 
 .leaveBtn:hover { background: var(--theme-error); color: #fff; }
 
+/* Finished-game result panel */
+.result {
+    background: var(--theme-background-alt);
+    border: 1px solid var(--theme-accent-dark);
+    border-radius: 12px;
+    padding: 2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.resultHeader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    text-align: center;
+}
+
+.resultBadge {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--theme-text-secondary);
+    background: var(--theme-background);
+    border: 1px solid var(--theme-accent-dark);
+    border-radius: 999px;
+    padding: 0.2rem 0.75rem;
+}
+
+.resultTitle {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--theme-accent-light);
+}
+
+.resultSubtitle {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--theme-text-secondary);
+}
+
+.scoreList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.scoreRow {
+    display: grid;
+    grid-template-columns: 2rem 1fr auto;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--theme-background);
+    border: 1px solid var(--theme-accent-dark);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+}
+
+.scoreRowWinner {
+    border-color: var(--theme-accent);
+    background: color-mix(in srgb, var(--theme-accent) 12%, var(--theme-background));
+}
+
+.scoreRank {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--theme-text-secondary);
+    text-align: center;
+}
+
+.scoreName {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: var(--theme-text);
+    word-break: break-word;
+}
+
+.crown {
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+.scoreValue {
+    font-family: var(--mono);
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--theme-accent-light);
+    min-width: 1.5rem;
+    text-align: right;
+}
+
+.resultPot {
+    margin: 0;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--theme-success);
+    font-weight: 600;
+}
+
 /* Sidebar */
 .sidebar {
     background: var(--theme-background-alt);

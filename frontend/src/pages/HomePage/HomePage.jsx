@@ -41,7 +41,7 @@ function ActivityStats() {
     const [activity, setActivity] = useState(null);
 
     useEffect(() => {
-        platformService.getActivity().then(setActivity).catch(() => {});
+        platformService.getActivity().then(setActivity).catch(() => { });
     }, []);
 
     return (
@@ -63,10 +63,15 @@ function GamesPreview() {
     useEffect(() => {
         gameService.getAllGames(1, 20).then((data) => {
             const pending = Array.isArray(data)
-                ? data.filter(g => g?.gameId && g.status === "pending").slice(0, lobbyCount)
+                ? data.filter(g => 
+                    g?.gameId && 
+                    g.status === "pending" &&
+                !g.tourmentId &&
+            (g.players?.length ?? 0) < (g.rules?.numPlayers ?? 2)
+            ).slice(0, lobbyCount)
                 : [];
             setGames(pending);
-        }).catch(() => {});
+        }).catch(() => { });
     }, [lobbyCount]);
 
     if (games.length === 0) return null;
@@ -85,7 +90,7 @@ function GamesPreview() {
                             <span className={`${styles.statusBadge} ${styles.status_pending}`}>Open</span>
                         </div>
                         <dl className={styles.gameCard__meta}>
-                            <div><dt>Players</dt><dd>{g.players?.length ?? 0} / 2</dd></div>
+                            <div><dt>Players</dt><dd>{g.players?.length ?? 0} / {g.rules?.numPlayers ?? 2}</dd></div>
                             <div><dt>Buy-in</dt><dd>{g.rules?.buyIn} pts</dd></div>
                         </dl>
                         <ul className={styles.gameCard__rules}>
@@ -109,7 +114,7 @@ function RecentGames() {
                 ? data.filter(g => g?.gameId && g.status === "finished").slice(0, 6)
                 : [];
             setGames(finished);
-        }).catch(() => {});
+        }).catch(() => { });
     }, []);
 
     if (games.length === 0) return null;

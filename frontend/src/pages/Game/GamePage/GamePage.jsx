@@ -37,8 +37,9 @@ export default function GamePage() {
             loadComments();
             return;
         }
-        if (lastMessage?.type === 'game-over' && game?.tournamentId) {
-            setTimeout(() => navigate(`/tournament/${game.tournamentId}`), 4000);
+        if (lastMessage?.type === 'game-over') {
+            const target = game?.tournamentId ? `/tournament/${game.tournamentId}` : '/lobby';
+            setTimeout(() => navigate(target), 4000);
             return;
         }
         if (lastMessage?.type !== 'state') return;
@@ -98,12 +99,14 @@ export default function GamePage() {
 
             <div className={styles.content}>
                 <div className={styles.boardSection}>
-                    <GameBoard game={game} send={send} lastMessage={lastMessage} />
-                    {game && game.status !== 'finished' && (
-                        <button className={styles.leaveBtn} onClick={handleLeave}>
-                            Leave Game
-                        </button>
-                    )}
+                    {game?.status === 'finished'
+                    ? <GameResult game={game}/>
+                    : <GameBoard game={game} send={send} lastMessage={lastMessage} />}
+                {game && game.status !== 'finished' && (
+                    <button className={styles.leaveBtn} onClick={handleLeave}>
+                        Leave Game
+                    </button>
+                )}
                 </div>
 
                 <aside className={styles.sidebar}>
@@ -147,6 +150,42 @@ export default function GamePage() {
                     )}
                 </aside>
             </div>
+        </div>
+    );
+}
+function GameResult({game}){
+    const players = [...(game.players ?? [])].sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+    const winner = players.find(p => p.userId === game.winnerId);
+
+    return (
+        <div className={styles.result}>
+            <div className={styles.resultHeader}>
+                <span className={styles.resultBadge}>Finished</span>
+                <h2 className={styles.resultTitle}>
+                    {winner ? `${winner.username ?? 'Player'} wins!` : 'Game Over' }
+                </h2>
+                <p className={styles.resultSubtitle}>Best of {game.rules?.bestof}</p>
+            </div>
+            <ol className={styles.scoreList}>
+                {players.map((p, i)=>{
+                    const isWinner = p.userId === game.winnerId;
+                    return (
+                        <li key={p.userId} className={`${styles.scoreRow} ${isWinner ? styles.scoreRowWinner : ''}`}>
+                            <span className={styles.scoreRank}>{i + 1}</span>
+                            <span className={styles.scoreName}>
+                                {isWinner && <span className={styles.crown}>🏆</span>}
+                                {p.username ?? 'Player'}
+                            </span>
+                            <span className={styles.scoreValue}>{p.score ?? 0}</span>
+                        </li>
+                    );
+                })}
+            </ol>
+            {game.rules?.buyIn > 0 && (
+                <p className={styles.resultPot}>
+                    Winner Takes {game.rules.buyIn * (game.players?.length ?? 0)}
+                </p>
+            )}
         </div>
     );
 }
