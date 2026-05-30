@@ -1,6 +1,6 @@
 import { WebSocketServer } from "ws";
 import { consumeWsToken } from "../middleware/jwt.js";
-import { ensureEngine, rollDice, doneRolling, revealRound, startRound, getEngine, removeEngine, getState } from "../services/gameEngine.service.js";
+import { ensureEngine, rollDice, doneRolling, revealRound, startRound, getEngine, removeEngine, getState, placeBet, foldBet } from "../services/gameEngine.service.js";
 import { recordGameResult, getGameById } from "../services/games.service.js";
 import { advanceTournament } from "../services/tournaments.service.js";
 
@@ -29,6 +29,55 @@ function broadcastState(gameId) {
 }
 export function initGameSocket(server) {
     const wss = new WebSocketServer({ server });
+
+    async function handleReveal(gameId) {
+        const reveal = revealRound(gameId);
+        if (reveal.error) return;
+        broadcastState(gameId);
+        broadcastToGame(gameId, {
+            type: "round-result",
+            winnerIds: reveal.winnerIds,
+            handnames: reveal.handNames,
+            scores: reveal.scores,
+            isGameOver: reveal.isGameOver
+        });
+
+        if (reveal.isGameOver) {
+            const engine = getEngine(gameId);
+            const players = engine
+                ? engine.players.map(p => ({ userId: p.userId, score: p.score, stack: p.stack }))
+                : reveal.scores;
+            const roundTime = engine?.rules?.roundTime;
+
+            recordGameResult(gameId, { players, roundTime })
+                .catch(err => console.error('Settlement failed:', err));
+
+            removeEngine(gameId);
+
+            try {
+                const finishedGame = await getGameById(gameId);
+                if (finishedGame?.tournamentId) {
+                    const updated = await advanceTournament(finishedGame.tournamentId).catch(() => null);
+                    if (updated) {
+                        broadcastToTournament(finishedGame.tournamentId, { type: 'round-change', currentRound: updated.currentRound });
+                    }
+                }
+            } catch { /* not all tournament games are finished */ }
+
+            setTimeout(() => broadcastToGame(gameId, {
+                type: "game-over",
+                winnerIds: reveal.gameWinnerIds,
+                scores:reveal.scores
+            }), 3000);
+        } else {
+            setTimeout(() => {
+                const engine = getEngine(gameId);
+                if (!engine) return;
+                startRound(engine);
+                broadcastState(gameId);
+            }, 3000);
+        }
+    }
 
     wss.on("connection", (socket) => {
         socket.authenticated = false;
@@ -95,55 +144,27 @@ export function initGameSocket(server) {
                 broadcastState(socket.gameId);
 
                 if (result.roundComplete) {
-                    const reveal = revealRound(socket.gameId);
-                    if (reveal.error) return;
                     broadcastState(socket.gameId);
-                    broadcastToGame(socket.gameId, {
-                        type: "round-result",
-                        winnerIds: reveal.winnerIds,
-                        handNames: reveal.handNames,
-                        scores: reveal.scores,
-                        isGameOver: reveal.isGameOver
-                    });
+                }
+                return;
+            }
 
-                    if (reveal.isGameOver) {
-                        const gameId = socket.gameId;
-                        const engine = getEngine(gameId);
-                        const players = engine
-                            ? engine.players.map(p => ({ userId: p.userId, score: p.score }))
-                            : reveal.scores;
-                        const roundTime = engine?.rules?.roundTime;
+            if (msg.type === "bet") {
+                const result = placeBet(socket.gameId, socket.userId, msg.amount ?? 0);
+                if (result.error) return socket.send(JSON.stringify({ type: "error", message: result.error }));
+                broadcastState(socket.gameId);
+                if (result.bettingComplete) {
+                    await handleReveal(socket.gameId);
+                }
+                return;
+            }
 
-                        recordGameResult(gameId, { players, roundTime })
-                            .catch(err => console.error('Settlement failed:', err));
-                        
-                        removeEngine(gameId);
-
-                        try {
-                            const finishedGame = await getGameById(gameId);
-                            if (finishedGame?.tournamentId) {
-                                const updated = await advanceTournament(finishedGame.tournamentId).catch(() => null);
-                                if (updated) {
-                                    broadcastToTournament(finishedGame.tournamentId, { type: 'round-change', currentRound: updated.currentRound });
-                                }
-                            }
-                        } catch {
-                            // not all tournament games finished yet - normal
-                        }
-
-                        setTimeout(() => broadcastToGame(gameId, {
-                            type: "game-over",
-                            winnerIds: reveal.gameWinnerIds,
-                            scores: reveal.scores
-                        }), 3000);
-                    } else {
-                        setTimeout(() => {
-                            const engine = getEngine(socket.gameId);
-                            if (!engine) return;
-                            startRound(engine);
-                            broadcastState(socket.gameId);
-                        }, 3000);
-                    }
+            if (msg.type === "fold") {
+                const result = foldBet(socket.gameId, socket.userId);
+                if (result.error) return socket.send(JSON.stringify({ type: "error", message: result.error }));
+                broadcastState(socket.gameId);
+                if (result.bettingComplete) {
+                    await handleReveal(socket.gameId);
                 }
                 return;
             }

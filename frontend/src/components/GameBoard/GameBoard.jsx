@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import { useSound } from '@/hooks/useSound.js';
 import './dice-poker-board.js';
@@ -10,6 +10,14 @@ export default function GameBoard({ game, send, lastMessage }) {
     const boardRef = useRef(null);
     const { user } = useAppContext();
     const { play } = useSound();
+    const [gameState, setGameState] = useState(null);
+    const [prevLastMessage, setPrevLastMessage] = useState(null);
+    if (lastMessage !== prevLastMessage) {
+        setPrevLastMessage(lastMessage);
+        if (lastMessage?.type === 'state') setGameState(lastMessage.state);
+    }
+    const [betAmount, setBetAmount] = useState(0);
+    const [betError, setBetError] = useState('');
     const lastStateRef = useRef(null);
 
     // Intents up: player action => WebSocket
@@ -21,14 +29,17 @@ export default function GameBoard({ game, send, lastMessage }) {
             play('roll');
             send({ type: 'roll', held: e.detail.held ?? [] });
         };
-        const onDone = () => send({ type: 'done-rolling' });
+        const onDone = () => { play('click'); send({ type: 'done-rolling' }); };
+        const onHold = () => play('hold');
 
         board.addEventListener('request-roll', onRoll);
         board.addEventListener('request-done', onDone);
+        board.addEventListener('request-hold', onHold);
 
         return() => {
             board.removeEventListener('request-roll', onRoll);
             board.removeEventListener('request-done', onDone);
+            board.removeEventListener('request-hold', onHold);
         };
     }, [send, play]);
 
@@ -60,12 +71,29 @@ export default function GameBoard({ game, send, lastMessage }) {
         }
     }, [game?.players?.length]);
 
+    const myPlayer = gameState?.players?.find( p => String(p.userId) === String(user?.userId));
+    const isMyBettingTurn = gameState?.phase === 'betting' && String(gameState?.toAct) === String(user?.userId);
+    const toCall = (gameState?.highestBet ?? 0) - (myPlayer?.currentBet ?? 0);
+
+    const handleBet = () => {
+        if (betAmount < toCall) { setBetError(`Must bet at least ${toCall}`); return; }
+        setBetError('');
+        send({ type: 'bet', amount: betAmount });
+        setBetAmount(0);
+    };
+
+    const handleFold = () => {
+        setBetError('')
+        send({ type: 'fold' });
+    };
+    
 
     if (!game) return <p>Loading game board...</p>;
 
     const { bestof, roundTime, straightallowed, numPlayers } = game.rules ?? {};
 
     return (
+        <>
         <dice-poker-board
             ref={boardRef}
             bestof={bestof}
@@ -87,5 +115,57 @@ export default function GameBoard({ game, send, lastMessage }) {
                 );
             })}
         </dice-poker-board>
+        {gameState?.phase === 'betting' && (
+            <div className="betting-panel">
+                <div className="betting-info">
+                    <span>Pot: <strong>{gameState.pot} pts</strong></span>
+                    <span>Highest bet: <strong>{gameState.highestBet} pts</strong></span>
+                    {myPlayer && <span>Your stack: <strong>{myPlayer.stack} pts</strong></span>}
+                    {myPlayer && <span>Your bet: <strong>{myPlayer.currentBet} pts</strong></span>}
+                </div>
+
+                {myPlayer?.folded && <p className="betting-folded">You folded this round.</p>}
+
+                {isMyBettingTurn && !myPlayer?.folded && (
+                    <div className="betting-actions">
+                        <p className="betting-prompt">
+                            {toCall === 0 ? 'Check or bet:' : `Call ${toCall} pts or raise:`}
+                        </p>
+                        <div className="betting-controls">
+                            <input
+                                type="number"
+                                className="betting-input"
+                                value={betAmount}
+                                min={toCall}
+                                max={myPlayer?.stack ?? 0}
+                                onChange={e => setBetAmount(Number(e.target.value))}
+                            />
+                            <button className="betting-btn betting-btn--primary" onClick={handleBet}>
+                                {toCall === 0 && betAmount === 0 ? 'Check' : betAmount === toCall ? 'Call' : 'Bet / Raise'}
+                            </button>
+                            <button className="betting-btn betting-btn--danger" onClick={handleFold}>
+                                Fold
+                            </button>
+                        </div>
+                        {betError && <p className="betting-error">{betError}</p>}
+                    </div>
+                )}
+
+                {!isMyBettingTurn && !myPlayer?.folded && (
+                    <p className="betting-waiting">
+                        Waiting for {gameState.players?.find(p => p.userId === gameState.toAct)?.username ?? 'opponent'}…
+                    </p>
+                )}
+
+                <div className="betting-players">
+                    {gameState.players?.map(p => (
+                        <span key={p.userId} className={`betting-player-tag ${p.folded ? 'folded' : ''} ${p.userId === gameState.toAct ? 'active' : ''}`}>
+                            {p.username}: {p.stack} pts {p.folded ? '(folded)' : `(bet ${p.currentBet})`}
+                        </span>
+                    ))}
+                </div>
+            </div>
+        )}
+        </>
     );
 }

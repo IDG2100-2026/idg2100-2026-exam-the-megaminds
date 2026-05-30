@@ -8,7 +8,7 @@ const DICE_FACES = ["A", "K", "Q", "J", "8", "7"];   // must match dice-poker-di
 const rollFace = () => DICE_FACES[Math.floor(Math.random() * DICE_FACES.length)];
 
 
-function freshPlayer(p) {
+function freshPlayer(p, buyIn = 0) {
     return {
         userId: p.userId,
         username: p.username ?? "Player",
@@ -16,7 +16,8 @@ function freshPlayer(p) {
         held: [false, false, false, false, false],
         rollsLeft: 3,
         score: 0,              
-        stack: 0,              
+        stack: buyIn,
+        currentBet: 0,              
         folded: false,
         done: false,
         connected: true
@@ -28,6 +29,7 @@ export async function ensureEngine(gameId) {
 
     const game = await getGameById(gameId);
     if (!game) return null;
+    const buyIn = game.rules?.buyIn ?? 0;
 
     const engine = {
         gameId,
@@ -35,9 +37,10 @@ export async function ensureEngine(gameId) {
         status: game.status === "finished" ? "finished" : "waiting",
         currentRound: 1,
         phase: "rolling",      // rolling -> betting -> reveal (later steps)
-        players: game.players.map(freshPlayer),
+        players: game.players.map(p => freshPlayer(p, buyIn)),
         pot: 0,
         highestBet: 0,
+        bettingQueue: [],
         toAct: null,
         revealed: false
     };
@@ -50,12 +53,16 @@ export function startRound(engine){
     engine.status = "playing";
     engine.phase = "rolling";
     engine.revealed = false;
+    engine.pot = 0;
+    engine.highestBet = 0;
+    engine.bettingQueue = [];
     engine.players.forEach(p => {
         p.faces = [null, null, null, null, null];
         p.held = [false, false, false, false, false];
         p.rollsLeft = 3;
         p.done = false;
         p.folded = false;
+        p.currentBet = 0;
     });
     engine.toAct = engine.players[0]?.userId ?? null;
 }
@@ -96,8 +103,68 @@ export function doneRolling(gameId, userId){
         return { roundComplete: false };
     }
     e.toAct = null;
-    e.phase = "reveal";          // step 4 fills in reveal + scoring
+    e.phase = "betting";
+    e.highestBet = 0;
+    e.bettingQueue = e.players.filter(p => !p.folded).map(p => p.userId);
+    e.toAct = e.bettingQueue[0] ?? null;
     return { roundComplete: true };
+}
+
+function advanceBetting(engine) {
+    const active = engine.players.filter(p => !p.folded);
+    if (active.length <= 1) {
+        if (active.length === 1) { active[0].stack += engine.pot; engine.pot = 0; }
+        engine.phase = "reveal";
+        engine.toAct = null;
+        return { bettingComplete: true };
+    }
+    if (engine.bettingQueue.length === 0) {
+        engine.phase = "reveal";
+        engine.toAct = null;
+        return { bettingComplete: true };
+    }
+    engine.toAct = engine.bettingQueue[0];
+    return { bettingComplete: false };
+}
+
+export function placeBet(gameId, userId, amount) {
+    const e = engines.get(gameId);
+    if (!e) return { error: "Game not found" };
+    if (e.phase !== "betting") return { error: "Not the betting phase" };
+    if (e.toAct !== userId) return { error: "Not your turn" };
+    const player = e.players.find(p => p.userId === userId);
+    if (!player || player.folded) return { error: "Not in this game" };
+    const toCall = e.highestBet - player.currentBet;
+    if (amount < toCall) return { error: `Must bet at least ${toCall}` };
+    if (amount > player.stack) return { error: "Not enough points in stack" };
+    const isRaise = amount > toCall;
+    player.stack -= amount;
+    e.pot += amount;
+    player.currentBet += amount;
+    if (player.currentBet > e.highestBet) e.highestBet = player.currentBet;
+    e.bettingQueue.shift();
+    if(isRaise) {
+        const others = e.players
+            .filter(p => !p.folded && p.userId !== userId)
+            .map(p => p.userId)
+            .filter(uid => !e.bettingQueue.includes(uid));
+        e.bettingQueue.push(...others);
+    }
+    e.bettingQueue = e.bettingQueue.filter(uid => !e.players.find(p => p.userId === uid)?.folded);
+    return advanceBetting(e);
+}
+
+export function foldBet(gameId, userId) {
+    const e = engines.get(gameId);
+    if (!e) return { error: "Game not found" };
+    if (e.phase !== "betting") return { error: "Not the betting Phase" };
+    if (e.toAct !== userId) return { error: "Not your turn" };
+    const player = e.players.find(p => p.userId === userId);
+    if (!player) return { error: "Not on this game" };
+    player.folded = true;
+    e.bettingQueue.shift();
+    e.bettingQueue = e.bettingQueue.filter(uid => uid !== userId);
+    return advanceBetting(e);
 }
 
 export function revealRound(gameId) {
@@ -117,6 +184,13 @@ export function revealRound(gameId) {
         const p = e.players.find(p => p.userId === uid);
         if (p) p.score += 1;
     });
+
+    const share = Math.floor(e.pot / winnerIds.length);
+    winnerIds.forEach((uid, i) => {
+        const p = e.players.find(p => p.userId === uid);
+        if (p) p.stack += share + (i === 0 ? e.pot % winnerIds.length : 0);
+    });
+    e.pot = 0;
 
     const winThreshold = Math.floor(e.rules.bestof / 2) + 1;
     const isGameOver = e.players.some(p => p.score >= winThreshold) || e.currentRound >= e.rules.bestof;
@@ -170,6 +244,7 @@ export function getState(gameId, viewerId) {
                 score: p.score,
                 stack: p.stack,
                 folded: p.folded,
+                currentBet: p.currentBet,
                 done: p.done,
                 rollsLeft: p.rollsLeft,
                 connected: p.connected,
@@ -180,4 +255,4 @@ export function getState(gameId, viewerId) {
     };
 }
 
-export default { ensureEngine, startRound, rollDice, doneRolling, revealRound, getEngine, removeEngine, getState };
+export default { ensureEngine, startRound, rollDice, doneRolling, revealRound, placeBet, foldBet, getEngine, removeEngine, getState };

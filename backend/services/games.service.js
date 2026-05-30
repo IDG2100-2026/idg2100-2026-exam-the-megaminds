@@ -86,9 +86,10 @@ export async function recordGameResult(gameId, { players, roundTime }) {
     await updateElo(players, roundTime);
 
     // Transfer buy-in points: losers lose buyIn, winner gains buyIn per loser
-    const buyIn = result?.rules?.buyIn ?? 0;
-    if (buyIn > 0) {
-        await User.findOneAndUpdate({ userId: winner.userId }, { $inc: { points: buyIn * players.length} });
+    for (const player of players) {
+        if ((player.stack ?? 0) > 0) {
+            await User.findOneAndUpdate({ userId: player.userId }, { $inc: { points: player.stack } });
+        }
     }
 
     return result;
