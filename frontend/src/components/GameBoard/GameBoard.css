@@ -40,3 +40,134 @@ dice-poker-player[active] {
     box-shadow: 0 0 0 3px gold, 0 0 24px rgba(255, 215, 0, 0.25);
     border-radius: 20px;
 }
+
+/* Betting panel */
+.betting-panel {
+    margin-top: 1rem;
+    padding: 1.25rem 1.5rem;
+    background: var(--theme-primary);
+    border: 1px solid var(--theme-accent-dark);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+}
+
+.betting-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    font-size: 0.9rem;
+    color: var(--theme-text-secondary);
+}
+
+.betting-info strong {
+    color: var(--theme-accent-light);
+}
+
+.betting-prompt {
+    font-size: 0.85rem;
+    color: var(--theme-text-secondary);
+    margin: 0;
+}
+
+.betting-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.betting-controls {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.betting-input {
+    width: 90px;
+    padding: 0.45rem 0.6rem;
+    background: var(--theme-background);
+    border: 1px solid var(--theme-accent-dark);
+    border-radius: 6px;
+    color: var(--theme-text);
+    font-size: 0.875rem;
+}
+
+.betting-input:focus {
+    outline: none;
+    border-color: var(--theme-accent);
+}
+
+.betting-btn {
+    padding: 0.45rem 1rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+
+.betting-btn--primary {
+    background: var(--theme-accent);
+    color: #fff;
+}
+
+.betting-btn--primary:hover { opacity: 0.85; }
+
+.betting-btn--danger {
+    background: transparent;
+    border: 1px solid #e53e3e;
+    color: #e53e3e;
+}
+
+.betting-btn--danger:hover {
+    background: rgba(229, 62, 62, 0.1);
+}
+
+.betting-error {
+    font-size: 0.8rem;
+    color: #e53e3e;
+    margin: 0;
+}
+
+.betting-waiting {
+    font-size: 0.875rem;
+    color: var(--theme-text-secondary);
+    font-style: italic;
+    margin: 0;
+}
+
+.betting-folded {
+    font-size: 0.875rem;
+    color: var(--theme-text-secondary);
+    font-style: italic;
+    margin: 0;
+}
+
+.betting-players {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.betting-player-tag {
+    font-size: 0.78rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    background: var(--theme-background);
+    border: 1px solid var(--theme-accent-dark);
+    color: var(--theme-text-secondary);
+}
+
+.betting-player-tag.active {
+    border-color: var(--theme-accent);
+    color: var(--theme-accent-light);
+    font-weight: 600;
+}
+
+.betting-player-tag.folded {
+    opacity: 0.45;
+    text-decoration: line-through;
+}

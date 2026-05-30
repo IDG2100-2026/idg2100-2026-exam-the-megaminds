@@ -55,6 +55,7 @@ class DicePokerPlayer extends HTMLElement {
     this.holdButton.addEventListener('click', () => {
       this._holdMode = !this._holdMode;
       this.holdButton.textContent = this._holdMode ? 'Holding' : 'Hold';
+      this.dispatchEvent(new CustomEvent('request-hold', { bubbles: true, composed: true }));
     });
 
 
