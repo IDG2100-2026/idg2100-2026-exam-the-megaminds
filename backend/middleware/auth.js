@@ -58,6 +58,11 @@ export function requireRegistered(req, res, next) {
 
 // Guard: only admins may proceed
 export function requireAdmin(req, res, next) {
+    // Anonymous = no/expired/cleared token -> 401 so the client silently refreshes and retries.
+    // A genuinely logged-in non-admin -> 403 (truly forbidden, refreshing won't help).
+    if (req.userRole === "anonymous") {
+        return res.status(401).json({ success: false, message: "You must be logged in to perform this action" });
+    }
     if (req.userRole !== "admin") {
         return res.status(403).json({ success: false, message: "Admin access required" });
     }

@@ -30,7 +30,7 @@ export async function login(req, res) {
 export async function refresh(req, res){
     const rotated = await rotateRefreshSession(req.cookies?.refreshToken, req.get("user-agent"));
     if (!rotated){
-        clearAuthCookies(res);
+        // Don't clear cookies on a lost rotation race - it would wipe the session a parallel tab just set.
         return res.status(401).json({ success: false, message: "Session expired, please login again"});
     }
 

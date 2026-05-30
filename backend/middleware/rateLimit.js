@@ -3,9 +3,17 @@ import SecurityIncident from "../models/securityIncident.js";
 const WINDOW_MS = 60 * 1000;
 const MAX_REQUESTS = 100;
 
+// Auth endpoints must never be metered: a 429 here would block the silent
+// token refresh, locking users out until the window resets.
+const AUTH_FREE = ["/login", "/refresh", "/logout"];
+
 const hits = new Map();
 
 export async function rateLimit(req, res, next) {
+    // Only meter mutating traffic. Read-heavy pages (tournament detail fans out to
+    // many GETs) and the auth endpoints shouldn't trip the abuse detector.
+    if (req.method === "GET" || AUTH_FREE.includes(req.path)) return next();
+
     const ip = req.ip;
     const now = Date.now();
     let entry = hits.get(ip);
