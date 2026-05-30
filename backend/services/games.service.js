@@ -62,14 +62,19 @@ export async function updateGame(gameId, status) {
     );
 }
 
-export async function recordGameResult(gameId, { players, roundTime }) {
-    // Determine winner from highest score
+export async function recordGameResult(gameId, { players, roundTime, winnerId }) {
+    // Use the winner the engine resolved (top score, tie-broken by chip stack);
+    // fall back to highest score if it wasn't supplied.
     const maxScore = Math.max(...players.map(p => p.score));
-    const winner = players.find(p => p.score === maxScore);
+    const winner = (winnerId != null && players.find(p => p.userId === winnerId))
+        || players.find(p => p.score === maxScore);
 
-    // Build arrayFilters and score updates for each player
-    const scoreUpdates = Object.fromEntries(
-        players.map((p, i) => [`players.$[p${i}].score`, p.score])
+    // Build arrayFilters and per-player score + final chip stack updates
+    const fieldUpdates = Object.fromEntries(
+        players.flatMap((p, i) => [
+            [`players.$[p${i}].score`, p.score],
+            [`players.$[p${i}].stack`, p.stack ?? 0]
+        ])
     );
     const arrayFilters = players.map((p, i) => ({ [`p${i}.userId`]: p.userId }));
 
@@ -78,7 +83,7 @@ export async function recordGameResult(gameId, { players, roundTime }) {
         {
             winnerId: winner.userId,
             status: "finished",
-            ...scoreUpdates
+            ...fieldUpdates
         },
         { returnDocument: "after", arrayFilters }
     );
@@ -142,6 +147,21 @@ export async function createGameComment(gameId, { userId, text }) {
     return Comment.create({ gameId: gameId, userId, text });
 }
 
+export async function refundPoints(userId, amount) {
+    if (amount > 0) {
+        await User.findOneAndUpdate({ userId }, { $inc: { points: amount } });
+    }
+}
+
+export async function revertGameToPending(gameId, leaverId) {
+    return Game.findOneAndUpdate(
+        { gameId },
+        { status: "pending", winnerId: null, $pull: { players: { userId: leaverId } } },
+        { returnDocument: "after" }
+    );
+}
+
+
 export default {
     getAllGames,
     getGameById,
@@ -151,5 +171,7 @@ export default {
     recordGameResult,
     updateGame,
     deleteGame,
-    joinGame
+    joinGame,
+    revertGameToPending,
+    refundPoints
 };

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { useAppContext } from "@/context/AppContext";
-import { gameService } from "@/services/api";
+import { gameService, userService } from "@/services/api";
 import { enrichGames } from "@/utils/enrichPlayers";
 import placeholderPic from "@/assets/profile-pic-placeholder.svg";
 import LobbyGameCard from "@/components/LobbyGameCard/LobbyGameCard";
@@ -51,14 +51,16 @@ export default function LobbyPage() {
                 const enriched = await enrichGames(pending);
                 setGames(enriched);
 
-                // Get user's current active games
+                // The user's current games (pending + in-progress). Fetch from the
+                // per-user endpoint so in-progress games are included — the available
+                // list above is pending-only.
                 if (user) {
-                    const active = allGames.filter(game =>
-                        game.players.some(p => p.userId === user.userId) &&
-                        game.status !== 'finished'
-                    );
+                    const mine = await userService.getUserGames(user.userId, 1, 50);
+                    const active = (mine || []).filter(game => game.status !== 'finished');
                     const enrichedActive = await enrichGames(active);
                     setUserGames(enrichedActive);
+                } else {
+                    setUserGames([]);
                 }
             } catch (err) {
                 setError('Failed to load games');

@@ -1,7 +1,7 @@
 import { WebSocketServer } from "ws";
 import { consumeWsToken } from "../middleware/jwt.js";
-import { ensureEngine, rollDice, doneRolling, revealRound, startRound, getEngine, removeEngine, getState, placeBet, foldBet } from "../services/gameEngine.service.js";
-import { recordGameResult, getGameById } from "../services/games.service.js";
+import { ensureEngine, rollDice, doneRolling, revealRound, startRound, getEngine, removeEngine, getState, placeBet, foldBet, leaveGame } from "../services/gameEngine.service.js";
+import { recordGameResult, getGameById, refundPoints, revertGameToPending } from "../services/games.service.js";
 import { advanceTournament } from "../services/tournaments.service.js";
 
 
@@ -16,7 +16,7 @@ export function broadcastToGame(gameId, message) {
     });
 }
 
-export function broadcastToTournament(tournamentId, message){
+export function broadcastToTournament(tournamentId, message) {
     tournamentRooms.get(tournamentId)?.forEach(socket => {
         socket.send(JSON.stringify(message));
     });
@@ -24,7 +24,7 @@ export function broadcastToTournament(tournamentId, message){
 
 function broadcastState(gameId) {
     rooms.get(gameId)?.forEach(socket => {
-        socket.send(JSON.stringify({type: "state", state: getState(gameId, socket.userId) }));
+        socket.send(JSON.stringify({ type: "state", state: getState(gameId, socket.userId) }));
     });
 }
 export function initGameSocket(server) {
@@ -49,7 +49,7 @@ export function initGameSocket(server) {
                 : reveal.scores;
             const roundTime = engine?.rules?.roundTime;
 
-            recordGameResult(gameId, { players, roundTime })
+            recordGameResult(gameId, { players, roundTime, winnerId: reveal.gameWinnerIds?.[0] })
                 .catch(err => console.error('Settlement failed:', err));
 
             removeEngine(gameId);
@@ -67,7 +67,7 @@ export function initGameSocket(server) {
             setTimeout(() => broadcastToGame(gameId, {
                 type: "game-over",
                 winnerIds: reveal.gameWinnerIds,
-                scores:reveal.scores
+                scores: reveal.scores
             }), 3000);
         } else {
             setTimeout(() => {
@@ -89,13 +89,13 @@ export function initGameSocket(server) {
             if (msg.type === "auth") {
                 const userId = consumeWsToken(msg.wsToken);
                 if (!userId) {
-                    socket.send(JSON.stringify({ type: "auth-failed"}));
+                    socket.send(JSON.stringify({ type: "auth-failed" }));
                     socket.close();
                     return;
                 }
                 socket.userId = userId;
                 socket.authenticated = true;
-                socket.send(JSON.stringify({type : "auth-success" }));
+                socket.send(JSON.stringify({ type: "auth-success" }));
                 return;
             }
 
@@ -122,7 +122,7 @@ export function initGameSocket(server) {
                 broadcastState(gameId);
 
             }
-            
+
             if (msg.type === "join-tournament") {
                 const { tournamentId } = msg;
                 if (!tournamentRooms.has(tournamentId)) tournamentRooms.set(tournamentId, new Set());
@@ -130,7 +130,7 @@ export function initGameSocket(server) {
                 socket.tournamentId = tournamentId;
                 socket.send(JSON.stringify({ type: "joined-tournament", tournamentId }));
             }
-            
+
             if (msg.type === "roll") {
                 const result = rollDice(socket.gameId, socket.userId, msg.held ?? []);
                 if (result.error) return socket.send(JSON.stringify({ type: "error", message: result.error }));
@@ -168,9 +168,50 @@ export function initGameSocket(server) {
                 }
                 return;
             }
-            
+
+            if (msg.type === "leave-game") {
+                const result = leaveGame(socket.gameId, socket.userId);
+                if (result.error) return socket.send(JSON.stringify({ type: "error", message: result.error }));
+
+                if (result.refund > 0) {
+                    refundPoints(result.leaverId, result.refund).catch(err => console.error("Refund failed:", err));
+                }
+
+                if (result.outcome === "revert") {
+                    await revertGameToPending(socket.gameId, result.leaverId).catch(err => console.error(err));
+                    removeEngine(socket.gameId);
+                    await ensureEngine(socket.gameId);   // rebuild a fresh "waiting" engine for the players left behind
+                    broadcastState(socket.gameId);
+                    return;
+                }
+
+                broadcastState(socket.gameId);
+
+                if (result.outcome === "game-over") {
+                    const roundTime = getEngine(socket.gameId)?.rules?.roundTime;
+                    recordGameResult(socket.gameId, { players: result.players, roundTime, winnerId: result.winnerId })
+                        .catch(err => console.error("Settlement failed:", err));
+                    removeEngine(socket.gameId);
+                    try {
+                        const finishedGame = await getGameById(socket.gameId);
+                        if (finishedGame?.tournamentId) {
+                            const updated = await advanceTournament(finishedGame.tournamentId).catch(() => null);
+                            if (updated) broadcastToTournament(finishedGame.tournamentId, { type: "round-change", currentRound: updated.currentRound });
+                        }
+                    } catch { /* not all tournament games finished */ }
+                    broadcastToGame(socket.gameId, {
+                        type: "game-over",
+                        winnerIds: result.gameWinnerIds,
+                        scores: result.players.map(p => ({ userId: p.userId, score: p.score }))
+                    });
+                } else if (result.outcome === "continue" && result.bettingComplete) {
+                    await handleReveal(socket.gameId);
+                }
+                return;
+            }
+
             if (msg.type === 'comment-added') {
-                broadcastToGame(socket.gameId, { type: 'comment-added'});
+                broadcastToGame(socket.gameId, { type: 'comment-added' });
                 return;
             }
 
@@ -180,13 +221,13 @@ export function initGameSocket(server) {
             // Remove socket from its room on dosconnect
             if (socket.gameId) {
                 rooms.get(socket.gameId)?.delete(socket);
-                if (rooms.get(socket.gameId)?.size === 0){
+                if (rooms.get(socket.gameId)?.size === 0) {
                     rooms.delete(socket.gameId);
                 }
             }
-            if (socket.tournamentId){
+            if (socket.tournamentId) {
                 tournamentRooms.get(socket.tournamentId)?.delete(socket);
-                if (tournamentRooms.get(socket.tournamentId)?.size === 0){
+                if (tournamentRooms.get(socket.tournamentId)?.size === 0) {
                     tournamentRooms.delete(socket.tournamentId);
                 }
             }

@@ -34,6 +34,10 @@ const gameSchema = new mongoose.Schema({
             score: {
                 type: Number,
                 default: 0
+            },
+            stack: {
+                type: Number,
+                default: 0    // final chip stack when the game is recorded
             }
         }
     ],

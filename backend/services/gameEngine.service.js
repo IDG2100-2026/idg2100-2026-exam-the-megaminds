@@ -17,8 +17,9 @@ function freshPlayer(p, buyIn = 0) {
         rollsLeft: 3,
         score: 0,              
         stack: buyIn,
-        currentBet: 0,              
+        currentBet: 0,
         folded: false,
+        left: false,           // permanently left the game (forfeit), unlike a per-round fold
         done: false,
         connected: true
     };
@@ -167,6 +168,66 @@ export function foldBet(gameId, userId) {
     return advanceBetting(e);
 }
 
+export function leaveGame(gameId, userId){
+    const e = engines.get(gameId);
+    if (!e) return { error: "Game not found"};
+    const player = e.players.find(p => p.userId === userId);
+    if (!player) return { error: "You are not in this game"};
+
+    const buyIn = e.rules?.buyIn ?? 0;
+
+    if (e.currentRound === 1 && e.pot === 0) {
+        player.left = true;
+        return { outcome: "revert", leaverId: userId, refund: buyIn};
+    }
+
+    const refund = player.stack;
+    player.stack = 0;
+    player.left = true;
+    player.folded = true;
+    player.done = true;
+    player.connected = false;
+    e.bettingQueue = (e.bettingQueue ?? []).filter(uid => uid !== userId);
+
+    const remaining = e.players.filter(p => !p.left);
+
+    if (remaining.length <= 1){
+        const winner = remaining[0];
+        if (winner) winner.stack += e.pot;
+         e.pot = 0;
+        e.phase = "finished";
+        e.status = "finished";
+        e.toAct = null;
+        e.gameWinnerIds = winner ? [winner.userId] : [];
+        return {
+            outcome: "game-over",
+            leaverId: userId,
+            refund,
+            winnerId: winner?.userId,
+            gameWinnerIds: e.gameWinnerIds,
+            players: e.players.map(p => ({ userId: p.userId, score: p.score, stack: p.stack }))
+        };
+    }
+
+    let bettingComplete = false;
+    if (e.toAct === userId){
+        if (e.phase === "betting"){
+            bettingComplete = advanceBetting(e).bettingComplete;
+        } else if (e.phase === "rolling") {
+            const next = e.players.find(p => !p.done && !p.folded);
+            if (next){
+                e.toAct = next.userId;
+            } else{
+                e.phase = "betting";
+                e.highestBet = 0;
+                e.bettingQueue = e.players.filter(p => !p.folded).map(p => p.userId);
+                e.toAct = e.bettingQueue[0] ?? null;
+            }
+        }
+    }
+    return { outcome: "continue", leaverId: userId, refund, bettingComplete };
+}
+
 export function revealRound(gameId) {
     const e = engines.get(gameId);
     if (!e) return { error: "Game not found" };
@@ -197,8 +258,15 @@ export function revealRound(gameId) {
 
     if (isGameOver) {
         e.phase = "finished";
-        const maxScore = Math.max(...e.players.map(p => p.score));
-        e.gameWinnerIds = e.players.filter(p => p.score === maxScore).map(p => p.userId);
+        // Players who left the game forfeit and can't win on score.
+        const pool = e.players.filter(p => !p.left);
+        const contenders = pool.length ? pool : e.players;
+        const maxScore = Math.max(...contenders.map(p => p.score));
+        const topByScore = contenders.filter(p => p.score === maxScore);
+        // Tie on rounds won -> break by chip stack, leaving a single winner.
+        const maxStack = Math.max(...topByScore.map(p => p.stack));
+        const winner = topByScore.find(p => p.stack === maxStack);
+        e.gameWinnerIds = winner ? [winner.userId] : [];
     } else {
         e.currentRound += 1;
     }
@@ -255,4 +323,4 @@ export function getState(gameId, viewerId) {
     };
 }
 
-export default { ensureEngine, startRound, rollDice, doneRolling, revealRound, placeBet, foldBet, getEngine, removeEngine, getState };
+export default { ensureEngine, startRound, rollDice, doneRolling, revealRound, placeBet, foldBet, getEngine, removeEngine, getState, leaveGame };

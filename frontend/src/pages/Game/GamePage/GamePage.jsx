@@ -1,10 +1,11 @@
-import { useParams, useNavigate } from 'react-router';
+import { useParams, useNavigate, Link } from 'react-router';
 import { useEffect, useState } from 'react';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { useAppContext } from '@/context/AppContext';
-import { gameService, commentService } from '@/services/api';
+import { userService, gameService, commentService } from '@/services/api';
 import GameBoard from '@/components/GameBoard/GameBoard';
 import styles from './GamePage.module.css';
+import { enrichGames } from '@/utils/enrichPlayers';
 
 export default function GamePage() {
     const { gameid } = useParams();
@@ -16,7 +17,26 @@ export default function GamePage() {
     const [commentText, setCommentText] = useState('');
     const [commentLoading, setCommentLoading] = useState(false);
     const { lastMessage, connected, send } = useWebSocket(gameid);
+    const [joining, setJoining] = useState(false);
+    const [joinError, setJoinError] = useState('');
 
+    const isInGame = !!user && game?.players?.some(p => p.userId === user.userId);
+    const hasRoom = (game?.players?.length ?? 0) < (game?.rules?.numPlayers ?? 2);
+    const joinable = game?.status === 'pending' && hasRoom;
+    const canJoin = !!user && joinable && !isInGame;
+
+    
+    const handleJoin = async () => {
+        setJoining(true);
+        setJoinError('');
+        try {
+            await gameService.joinGame(gameid);
+            window.location.reload();
+        } catch (err){
+            setJoinError(err.message || 'Failed to join game');
+            setJoining(false);
+        }
+    };
     const loadComments = () => {
         commentService.getGameComments(gameid)
             .then(res => setComments(Array.isArray(res.data) ? res.data : []))
@@ -60,7 +80,7 @@ export default function GamePage() {
             await commentService.addGameComment(gameid, commentText.trim());
             setCommentText('');
             loadComments();
-            send({ type: 'comment-added' });4
+            send({ type: 'comment-added' });
         } catch {
             // silent
         } finally {
@@ -68,10 +88,13 @@ export default function GamePage() {
         }
     };
 
-    const handleLeave = () => {
-        if (window.confirm('Leave this game? The game will continue and your dice will be auto-rolled.')) {
-            navigate('/lobby');
-        }
+       const handleLeave = () => {
+        const msg = isInGame
+            ? 'Leave this game? If betting has started you forfeit your current bet and get the rest of your chips back.'
+            : 'Stop watching this game?';
+        if (!window.confirm(msg)) return;
+        if (isInGame) send({ type: 'leave-game' });
+        setTimeout(() => navigate('/lobby'), 200);   // let the WS frame flush before the socket closes
     };
 
     if (notFound) {
@@ -96,17 +119,36 @@ export default function GamePage() {
                 )}
                 {game && <span className={styles.gameId}>Game #{game.gameId?.slice(-6)}</span>}
             </div>
-
+            
             <div className={styles.content}>
                 <div className={styles.boardSection}>
+                    {canJoin && (
+                        <div className={styles.joinBar}>
+                            <div className={styles.joinInfo}>
+                                <span className={styles.joinTitle}>This game needs players</span>
+                                <span className={styles.joinMeta}>
+                                    {game.players?.length ?? 0}/{game.rules?.numPlayers} · {game.rules?.buyIn} pts buy-in
+                                    {game.rules?.minElo != null && ` · min Elo ${game.rules.minElo}`}
+                                    {game.rules?.maxElo != null && ` · max Elo ${game.rules.maxElo}`}
+                                </span>
+                            </div>
+                            <button className={styles.joinBtn} onClick={handleJoin} disabled={joining}>
+                                {joining ? 'Joining…' : 'Join game'}
+                            </button>
+                        </div>
+                    )}
+                    {joinError && <p className={styles.joinError}>{joinError}</p>}
+                    {!user && joinable && (
+                        <p className={styles.joinPrompt}><Link to="/login">Log in</Link> to join this game.</p>
+                    )}
                     {game?.status === 'finished'
                     ? <GameResult game={game}/>
                     : <GameBoard game={game} send={send} lastMessage={lastMessage} />}
-                {game && game.status !== 'finished' && (
-                    <button className={styles.leaveBtn} onClick={handleLeave}>
-                        Leave Game
-                    </button>
-                )}
+                    {game && game.status !== 'finished' && (
+                        <button className={styles.leaveBtn} onClick={handleLeave}>
+                            Leave Game
+                        </button>
+                    )}
                 </div>
 
                 <aside className={styles.sidebar}>
@@ -153,8 +195,12 @@ export default function GamePage() {
         </div>
     );
 }
-function GameResult({game}){
-    const players = [...(game.players ?? [])].sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+function GameResult({ game }) {
+    const buyIn = game.rules?.buyIn ?? 0;
+    // Rank the same way the winner is decided: most rounds won, then most chips.
+    const players = [...(game.players ?? [])].sort(
+        (a, b) => (b.score ?? 0) - (a.score ?? 0) || (b.stack ?? 0) - (a.stack ?? 0)
+    );
     const winner = players.find(p => p.userId === game.winnerId);
 
     return (
@@ -162,13 +208,17 @@ function GameResult({game}){
             <div className={styles.resultHeader}>
                 <span className={styles.resultBadge}>Finished</span>
                 <h2 className={styles.resultTitle}>
-                    {winner ? `${winner.username ?? 'Player'} wins!` : 'Game Over' }
+                    {winner ? `${winner.username ?? 'Player'} wins!` : 'Game Over'}
                 </h2>
                 <p className={styles.resultSubtitle}>Best of {game.rules?.bestof}</p>
             </div>
             <ol className={styles.scoreList}>
-                {players.map((p, i)=>{
+                {players.map((p, i) => {
                     const isWinner = p.userId === game.winnerId;
+                    const wins = p.score ?? 0;
+                    const chips = p.stack ?? 0;
+                    const delta = chips - buyIn;
+                    const deltaClass = delta > 0 ? styles.deltaUp : delta < 0 ? styles.deltaDown : styles.deltaZero;
                     return (
                         <li key={p.userId} className={`${styles.scoreRow} ${isWinner ? styles.scoreRowWinner : ''}`}>
                             <span className={styles.scoreRank}>{i + 1}</span>
@@ -176,14 +226,22 @@ function GameResult({game}){
                                 {isWinner && <span className={styles.crown}>🏆</span>}
                                 {p.username ?? 'Player'}
                             </span>
-                            <span className={styles.scoreValue}>{p.score ?? 0}</span>
+                            <span className={styles.scoreWins}>{wins} {wins === 1 ? 'win' : 'wins'}</span>
+                            <span className={styles.scoreChips}>
+                                {chips} chips
+                                {buyIn > 0 && (
+                                    <span className={`${styles.delta} ${deltaClass}`}>
+                                        {delta > 0 ? `+${delta}` : delta}
+                                    </span>
+                                )}
+                            </span>
                         </li>
                     );
                 })}
             </ol>
-            {game.rules?.buyIn > 0 && (
+            {buyIn > 0 && (
                 <p className={styles.resultPot}>
-                    Winner Takes {game.rules.buyIn * (game.players?.length ?? 0)}
+                    Buy-in {buyIn} chips · pot {buyIn * (game.players?.length ?? 0)}
                 </p>
             )}
         </div>
