@@ -60,6 +60,18 @@
     color: #fff !important;
 }
 
+.tab:focus,
+.tab:focus-visible {
+    outline: none;
+}
+
+.activeTab:focus,
+.activeTab:focus-visible {
+    outline: none;
+    background: var(--theme-accent);
+    color: #fff;
+}
+
 /* Tab content */
 .tabContent {
     display: flex;
@@ -295,8 +307,16 @@
 .pageInfo { color: var(--theme-text-secondary); font-size: 0.8rem; }
 
 @media (max-width: 768px) {
-    .statsRow { grid-template-columns: 1fr; }
+    .statsRow { grid-template-columns: 1fr 1fr; }
     .container { padding: 1rem 0.75rem 3rem; }
     .searchInput { width: 100%; }
-    .table th, .table td { padding: 0.5rem 0.75rem; }
+    .table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .table th, .table td { padding: 0.5rem 0.65rem; white-space: nowrap; }
+    .tabs { flex-wrap: wrap; }
+    .tab { flex: none; width: calc(50% - 0.25rem); }
+}
+
+@media (max-width: 480px) {
+    .statsRow { grid-template-columns: 1fr; }
+    .tab { width: 100%; }
 }

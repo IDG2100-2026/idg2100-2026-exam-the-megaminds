@@ -1,4 +1,4 @@
-import {NavLink, Link} from "react-router-dom";
+import {NavLink, Link, useNavigate} from "react-router-dom";
 import House from "../../assets/drhouse-circle.png";
 import {useState, useRef, useEffect} from "react"
 import styles from './Header.module.css';
@@ -7,7 +7,8 @@ import { useAppContext } from "@/context/AppContext";
 import SettingsPanel from './SettingsPanel';
 
 export default function Header() {
-    const { user } = useAppContext();
+    const { user, logout } = useAppContext();
+    const navigate = useNavigate();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
     const settingsRef = useRef(null);
@@ -44,7 +45,7 @@ export default function Header() {
                 <NavLink to="/tournament" className={navLinkClass}>Tournament</NavLink>
                 <NavLink to="/leaderboard" className={navLinkClass}>Leaderboard</NavLink>
                 <NavLink to="/about" className={navLinkClass}>About</NavLink>
-                {user?.isAdmin && (
+                {user?.role === "admin" && (
                     <NavLink to="/admin" className={navLinkClass}>Admin</NavLink>
                 )}
             </nav>
@@ -79,10 +80,15 @@ export default function Header() {
                     <NavLink to="/" className={navLinkClass} onClick={handleNavClick}>Home</NavLink>
                     <NavLink to="/lobby" className={navLinkClass} onClick={handleNavClick}>Lobby</NavLink>
                     <NavLink to="/leaderboard" className={navLinkClass} onClick={handleNavClick}>Leaderboard</NavLink>
-                    <NavLink to="/tournament" className={navLinkClass}>Tournament</NavLink>
+                    <NavLink to="/tournament" className={navLinkClass} onClick={handleNavClick}>Tournament</NavLink>
                     <NavLink to="/about" className={navLinkClass} onClick={handleNavClick}>About</NavLink>
-                    {user?.isAdmin && (
+                    {user?.role === "admin" && (
                         <NavLink to="/admin" className={navLinkClass} onClick={handleNavClick}>Admin</NavLink>
+                    )}
+                    {user && (
+                        <button className={styles.mobileLogout} onClick={() => { logout(); setMobileMenuOpen(false); navigate('/'); }}>
+                            Logout
+                        </button>
                     )}
                 </nav>
             )}

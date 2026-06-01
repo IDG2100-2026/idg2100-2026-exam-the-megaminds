@@ -1,5 +1,4 @@
 import { Game } from "../models/games.js";
-import { User } from "../models/users.js";
 import { attachUsernames } from "./games.service.js";
 
 // Returns a snapshot of current platform activity

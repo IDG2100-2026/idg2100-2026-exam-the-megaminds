@@ -19,6 +19,7 @@ export default function GameBoard({ game, send, lastMessage }) {
     const [betAmount, setBetAmount] = useState(0);
     const [betError, setBetError] = useState('');
     const lastStateRef = useRef(null);
+    const betTimerRef = useRef(null);
 
     // Intents up: player action => WebSocket
     useEffect(() => {
@@ -74,6 +75,23 @@ export default function GameBoard({ game, send, lastMessage }) {
     const myPlayer = gameState?.players?.find( p => String(p.userId) === String(user?.userId));
     const isMyBettingTurn = gameState?.phase === 'betting' && String(gameState?.toAct) === String(user?.userId);
     const toCall = (gameState?.highestBet ?? 0) - (myPlayer?.currentBet ?? 0);
+
+    useEffect(() => {
+        (async () => {
+            if (isMyBettingTurn) setBetAmount(toCall);
+        })();
+    }, [isMyBettingTurn, gameState?.toAct, toCall]);
+
+    useEffect(() => {
+        clearTimeout(betTimerRef.current);
+        if (isMyBettingTurn && !myPlayer?.folded) {
+            const ms = (gameState?.rules?.roundTime ?? 30) * 1000;
+            betTimerRef.current = setTimeout(() => {
+                send({ type: 'bet', amount: toCall });
+            }, ms);
+        }
+        return () => clearTimeout(betTimerRef.current);
+    }, [isMyBettingTurn, gameState?.toAct, gameState?.rules?.roundTime, myPlayer?.folded, toCall, send]);
 
     const handleBet = () => {
         if (betAmount < toCall) { setBetError(`Must bet at least ${toCall}`); return; }

@@ -54,6 +54,19 @@
 
 @media (max-width: 900px) {
     .content { grid-template-columns: 1fr; }
+    .scoreRow { grid-template-columns: 1.5rem 1fr auto; }
+    .scoreWins { display: none; }
+}
+
+@media (max-width: 600px) {
+    .page { padding: 1rem 0.75rem 3rem; }
+    .statusBar { font-size: 0.8rem; gap: 0.35rem; }
+    .metaInfo { margin-left: 0; }
+    .resultTitle { font-size: 1.35rem; }
+    .joinBar { flex-direction: column; align-items: stretch; }
+    .joinBtn { width: 100%; text-align: center; }
+    .scoreRow { grid-template-columns: 1.5rem 1fr auto; gap: 0.5rem 0.5rem; padding: 0.6rem 0.75rem; }
+    .scoreValue { font-size: 1rem; }
 }
 
 .boardSection {

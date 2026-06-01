@@ -2,10 +2,9 @@ import { useParams, useNavigate, Link } from 'react-router';
 import { useEffect, useState } from 'react';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { useAppContext } from '@/context/AppContext';
-import { userService, gameService, commentService } from '@/services/api';
+import { gameService, commentService } from '@/services/api';
 import GameBoard from '@/components/GameBoard/GameBoard';
 import styles from './GamePage.module.css';
-import { enrichGames } from '@/utils/enrichPlayers';
 
 export default function GamePage() {
     const { gameid } = useParams();

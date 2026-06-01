@@ -127,3 +127,12 @@
     opacity: 0.5;
     cursor: not-allowed;
 }
+
+@media (max-width: 600px) {
+    .page { padding: 1rem 0.75rem 3rem; }
+    .title { font-size: 1.4rem; }
+    .options { gap: 0.35rem; }
+    .option { padding: 0.4rem 0.75rem; font-size: 0.85rem; }
+    .eloRow { flex-wrap: wrap; }
+    .eloInput { width: 100%; }
+}

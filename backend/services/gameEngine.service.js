@@ -58,6 +58,7 @@ export function startRound(engine){
     engine.highestBet = 0;
     engine.bettingQueue = [];
     engine.players.forEach(p => {
+        if (p.left) return;
         p.faces = [null, null, null, null, null];
         p.held = [false, false, false, false, false];
         p.rollsLeft = 3;
@@ -65,7 +66,7 @@ export function startRound(engine){
         p.folded = false;
         p.currentBet = 0;
     });
-    engine.toAct = engine.players[0]?.userId ?? null;
+    engine.toAct = engine.players.find(p => !p.left)?.userId ?? null;
 }
 
 export function rollDice(gameId, userId, heldIndices = []){
@@ -98,7 +99,7 @@ export function doneRolling(gameId, userId){
 
     player.done = true;
 
-    const next = e.players.find(p => !p.done);
+    const next = e.players.find(p => !p.done && !p.left);
     if (next) {
         e.toAct = next.userId;
         return { roundComplete: false };
@@ -106,7 +107,7 @@ export function doneRolling(gameId, userId){
     e.toAct = null;
     e.phase = "betting";
     e.highestBet = 0;
-    e.bettingQueue = e.players.filter(p => !p.folded).map(p => p.userId);
+    e.bettingQueue = e.players.filter(p => !p.folded && !p.left).map(p => p.userId);
     e.toAct = e.bettingQueue[0] ?? null;
     return { roundComplete: true };
 }
@@ -181,7 +182,7 @@ export function leaveGame(gameId, userId){
         return { outcome: "revert", leaverId: userId, refund: buyIn};
     }
 
-    const refund = player.stack;
+    const refund = 0;
     player.stack = 0;
     player.left = true;
     player.folded = true;

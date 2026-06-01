@@ -37,7 +37,7 @@ export function initGameSocket(server) {
         broadcastToGame(gameId, {
             type: "round-result",
             winnerIds: reveal.winnerIds,
-            handnames: reveal.handNames,
+            handNames: reveal.handNames,
             scores: reveal.scores,
             isGameOver: reveal.isGameOver
         });
