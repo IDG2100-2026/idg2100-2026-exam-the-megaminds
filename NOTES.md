@@ -28,5 +28,4 @@ npm run dev
 
 ## unifnished part
 On the admin pages there is no pagination. 
-In the betting phase the auto-match bet function is not implemented yet, the game stalls if a player doesn't act during their betting turn.
 Tournament winner bonus points is not implemented yet. the player only receives what is in the pot upon winning a tournament. 
