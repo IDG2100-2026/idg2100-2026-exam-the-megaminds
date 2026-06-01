@@ -33,7 +33,7 @@ export async function rateLimit(req, res, next) {
                 userId: req.userId ?? null,
                 ip,
                 userAgent: req.get("user-agent"),
-                path: req.originalUrl,
+                path: req.originalUrl
             });
         }
         return res.status(429).json({ success: false, message: "Too many requests"});

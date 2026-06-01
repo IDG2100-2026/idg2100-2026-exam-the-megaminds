@@ -1,6 +1,6 @@
 import { ErrorLog } from "../models/errorLog.js";
 
-export async function errorHandler(err, req, res, next) {
+export async function errorHandler(err, req, res) {
     const status = err.status ?? 500;
 
     if (status === 500) {

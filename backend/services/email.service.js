@@ -16,7 +16,7 @@ export async function sendPasswordResetEmail(toEmail, token) {
         to: toEmail,
         subject: 'Reset your password – Spanish Poker Dice',
         html: `<p>Click <a href="${link}">here</a> to reset your password.</p>
-               <p>This link expires in 15 minutes. If you did not request this, ignore this email.</p>`,
+               <p>This link expires in 15 minutes. If you did not request this, ignore this email.</p>`
     });
 }
 
