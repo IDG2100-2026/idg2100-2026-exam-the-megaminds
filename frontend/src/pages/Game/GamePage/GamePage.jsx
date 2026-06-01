@@ -24,6 +24,7 @@ export default function GamePage() {
     const hasRoom = (game?.players?.length ?? 0) < (game?.rules?.numPlayers ?? 2);
     const joinable = game?.status === 'pending' && hasRoom;
     const canJoin = !!user && joinable && !isInGame;
+    const isSpectator = !!user && !isInGame && game?.status === 'in-progress';
 
     
     const handleJoin = async () => {
@@ -112,6 +113,7 @@ export default function GamePage() {
             <div className={styles.statusBar}>
                 <span className={`${styles.dot} ${connected ? styles.dotGreen : styles.dotRed}`} />
                 <span className={styles.statusText}>{connected ? 'Live' : 'Connecting...'}</span>
+                {isSpectator && <span className={styles.spectatorBadge}>Spectating</span>}
                 {game && (
                     <span className={styles.metaInfo}>
                         Best of {game.rules?.bestof} · {game.rules?.roundTime}s · {game.rules?.numPlayers}p · {game.rules?.buyIn} pts buy-in
@@ -143,10 +145,10 @@ export default function GamePage() {
                     )}
                     {game?.status === 'finished'
                     ? <GameResult game={game}/>
-                    : <GameBoard game={game} send={send} lastMessage={lastMessage} />}
+                    : <GameBoard game={game} send={send} lastMessage={lastMessage} isSpectator={isSpectator} />}
                     {game && game.status !== 'finished' && (
                         <button className={styles.leaveBtn} onClick={handleLeave}>
-                            Leave Game
+                            {isSpectator ? 'Stop Watching' : 'Leave Game'}
                         </button>
                     )}
                 </div>

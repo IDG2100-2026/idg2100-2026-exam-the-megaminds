@@ -6,7 +6,7 @@ import './dice-poker-die.js';
 import './dice-poker-player.js';
 import './GameBoard.css';
 
-export default function GameBoard({ game, send, lastMessage }) {
+export default function GameBoard({ game, send, lastMessage, isSpectator = false }) {
     const boardRef = useRef(null);
     const { user } = useAppContext();
     const { play } = useSound();
@@ -20,8 +20,9 @@ export default function GameBoard({ game, send, lastMessage }) {
     const [betError, setBetError] = useState('');
     const lastStateRef = useRef(null);
 
-    // Intents up: player action => WebSocket
+    // Intents up: player action => WebSocket (spectators have no controls)
     useEffect(() => {
+        if (isSpectator) return;
         const board = boardRef.current;
         if (!board) return;
 
@@ -41,7 +42,7 @@ export default function GameBoard({ game, send, lastMessage }) {
             board.removeEventListener('request-done', onDone);
             board.removeEventListener('request-hold', onHold);
         };
-    }, [send, play]);
+    }, [send, play, isSpectator]);
 
     // state down: WebSocker => board renderer
     useEffect(() => {
@@ -120,13 +121,13 @@ export default function GameBoard({ game, send, lastMessage }) {
                 <div className="betting-info">
                     <span>Pot: <strong>{gameState.pot} pts</strong></span>
                     <span>Highest bet: <strong>{gameState.highestBet} pts</strong></span>
-                    {myPlayer && <span>Your stack: <strong>{myPlayer.stack} pts</strong></span>}
-                    {myPlayer && <span>Your bet: <strong>{myPlayer.currentBet} pts</strong></span>}
+                    {!isSpectator && myPlayer && <span>Your stack: <strong>{myPlayer.stack} pts</strong></span>}
+                    {!isSpectator && myPlayer && <span>Your bet: <strong>{myPlayer.currentBet} pts</strong></span>}
                 </div>
 
-                {myPlayer?.folded && <p className="betting-folded">You folded this round.</p>}
+                {!isSpectator && myPlayer?.folded && <p className="betting-folded">You folded this round.</p>}
 
-                {isMyBettingTurn && !myPlayer?.folded && (
+                {!isSpectator && isMyBettingTurn && !myPlayer?.folded && (
                     <div className="betting-actions">
                         <p className="betting-prompt">
                             {toCall === 0 ? 'Check or bet:' : `Call ${toCall} pts or raise:`}
@@ -151,9 +152,15 @@ export default function GameBoard({ game, send, lastMessage }) {
                     </div>
                 )}
 
-                {!isMyBettingTurn && !myPlayer?.folded && (
+                {!isSpectator && !isMyBettingTurn && !myPlayer?.folded && (
                     <p className="betting-waiting">
                         Waiting for {gameState.players?.find(p => p.userId === gameState.toAct)?.username ?? 'opponent'}…
+                    </p>
+                )}
+
+                {isSpectator && (
+                    <p className="betting-waiting">
+                        {gameState.players?.find(p => p.userId === gameState.toAct)?.username ?? 'Player'} is deciding…
                     </p>
                 )}
 

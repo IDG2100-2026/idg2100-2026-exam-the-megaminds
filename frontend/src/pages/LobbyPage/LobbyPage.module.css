@@ -329,6 +329,86 @@
 .loadMoreBtn:hover { opacity: 0.85; }
 .loadMoreBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+/* Live games / spectate */
+.liveSection { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.liveSectionTitle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--theme-text);
+}
+
+.liveDot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--theme-success);
+    box-shadow: 0 0 6px var(--theme-success);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+.liveList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.liveCard {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--theme-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: 8px;
+}
+
+.liveCardPlayers {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    flex: 1;
+}
+
+.liveVs {
+    font-size: 0.75rem;
+    color: var(--theme-text-secondary);
+    font-weight: 400;
+}
+
+.liveCardMeta {
+    font-size: 0.8rem;
+    color: var(--theme-text-secondary);
+}
+
+.spectateBtn {
+    padding: 0.35rem 0.85rem;
+    background: transparent;
+    border: 1px solid var(--theme-accent);
+    color: var(--theme-accent);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s, color 0.15s;
+}
+
+.spectateBtn:hover {
+    background: var(--theme-accent);
+    color: var(--theme-bg);
+}
+
 @media (max-width: 768px) {
     .container { padding: 1rem 0.75rem 3rem; }
     .header { flex-direction: column; align-items: flex-start; gap: 1rem; }

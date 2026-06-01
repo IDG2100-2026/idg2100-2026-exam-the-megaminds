@@ -16,6 +16,7 @@ export function useTournamentSocket(tournamentId) {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/api/ws-token`, {
             credentials: "include",
         });
+        // Not logged in — skip WS entirely (no reconnect loop)
         if (!res.ok) return;
         const { wsToken } = await res.json();
 

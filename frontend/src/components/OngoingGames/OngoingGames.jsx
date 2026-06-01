@@ -50,9 +50,12 @@ function OngoingGameRow({ game }) {
                 <span className={styles.ongoing__players}>
                     {name1}<span className={styles.ongoing__vs}>vs</span>{name2}
                 </span>
-                <span className={`${styles.ongoing__status} ${live ? styles["ongoing__status--live"] : styles["ongoing__status--pending"]}`}>
-                    {live ? "Live" : game.status}
-                </span>
+                <div className={styles.ongoing__right}>
+                    <span className={`${styles.ongoing__status} ${live ? styles["ongoing__status--live"] : styles["ongoing__status--pending"]}`}>
+                        {live ? "Live" : game.status}
+                    </span>
+                    <span className={styles.ongoing__spectate}>Spectate →</span>
+                </div>
             </Link>
         </li>
     );

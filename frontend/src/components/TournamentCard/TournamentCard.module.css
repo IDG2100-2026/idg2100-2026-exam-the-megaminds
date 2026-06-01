@@ -96,6 +96,32 @@
     border: 1px solid var(--theme-accent-dark);
 }
 
+/* Watch live badge for in-progress tournaments */
+.watchBadge {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--theme-success);
+    margin-top: auto;
+}
+
+.watchDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--theme-success);
+    box-shadow: 0 0 5px var(--theme-success);
+    animation: watchPulse 1.5s ease-in-out infinite;
+    flex-shrink: 0;
+}
+
+@keyframes watchPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+}
+
 /* Compact variant for the homepage preview */
 .preview {
     padding: 14px 16px;
