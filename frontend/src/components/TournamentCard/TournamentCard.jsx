@@ -34,6 +34,12 @@ export default function TournamentCard({ tournament, variant = "list" }) {
                     <li className={styles.pill}>{format.roundTime}s rounds</li>
                 </ul>
             )}
+            {status === 'in-progress' && (
+                <span className={styles.watchBadge}>
+                    <span className={styles.watchDot} />
+                    Watch live →
+                </span>
+            )}
         </Link>
     );
 }

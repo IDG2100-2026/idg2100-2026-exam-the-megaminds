@@ -45,6 +45,17 @@
     color: var(--theme-text-secondary);
 }
 
+.spectatorBadge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    background: var(--theme-accent);
+    color: var(--theme-bg);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
 .content {
     display: grid;
     grid-template-columns: 1fr 300px;

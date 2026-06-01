@@ -14,6 +14,8 @@ export function useWebSocket(gameId) {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/api/ws-token`, {
             credentials: "include",
         });
+        // Not logged in — skip WS entirely (no reconnect loop)
+        if (!res.ok) return;
         const { wsToken } = await res.json();
 
         const ws = new WebSocket(WS_URL);
@@ -26,6 +28,10 @@ export function useWebSocket(gameId) {
 
         ws.onmessage = (event) => {
             const msg = JSON.parse(event.data);
+            if (msg.type === "auth-failed") {
+                ws.close();
+                return;
+            }
             if (msg.type === "auth-success" && gameId) {
                 // Join the game room right after auth succeeds
                 ws.send(JSON.stringify({ type: "join-game", gameId }));

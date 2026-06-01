@@ -15,6 +15,7 @@ export default function LobbyPage() {
 
     const [games, setGames] = useState([]);
     const [userGames, setUserGames] = useState([]);
+    const [liveGames, setLiveGames] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [joinMessage, setJoinMessage] = useState("");
@@ -50,6 +51,13 @@ export default function LobbyPage() {
                 );
                 const enriched = await enrichGames(pending);
                 setGames(enriched);
+
+                // In-progress games available to spectate
+                const liveData = await gameService.getAllGames(1, 10, 'in-progress');
+                const live = (liveData || []).filter(g =>
+                    !user || !g.players.some(p => p.userId === user?.userId)
+                );
+                setLiveGames(await enrichGames(live));
 
                 // The user's current games (pending + in-progress). Fetch from the
                 // per-user endpoint so in-progress games are included — the available
@@ -221,6 +229,39 @@ export default function LobbyPage() {
                                     </div>
                                     <button className={styles.viewGameBtn} onClick={() => handleViewGame(game.gameId)}>
                                         View
+                                    </button>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+
+            {/* Live games to spectate */}
+            {liveGames.length > 0 && (
+                <div className={styles.liveSection}>
+                    <h2 className={styles.liveSectionTitle}>
+                        <span className={styles.liveDot} />
+                        Live Games
+                    </h2>
+                    <div className={styles.liveList}>
+                        {liveGames.map(game => {
+                            const [p1, p2] = game.players ?? [];
+                            return (
+                                <div key={game.gameId} className={styles.liveCard}>
+                                    <div className={styles.liveCardPlayers}>
+                                        <span>{p1?.username ?? '?'}</span>
+                                        <span className={styles.liveVs}>vs</span>
+                                        <span>{p2?.username ?? '?'}</span>
+                                    </div>
+                                    <div className={styles.liveCardMeta}>
+                                        Best of {game.rules?.bestof} · {game.rules?.roundTime}s
+                                    </div>
+                                    <button
+                                        className={styles.spectateBtn}
+                                        onClick={() => navigate(`/game/${game.gameId}`)}
+                                    >
+                                        Spectate →
                                     </button>
                                 </div>
                             );

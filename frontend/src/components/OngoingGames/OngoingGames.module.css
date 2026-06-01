@@ -57,6 +57,19 @@
 .ongoing__status--live { color: var(--theme-success); }
 .ongoing__status--pending { color: var(--theme-text-secondary); }
 
+.ongoing__right {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    flex-shrink: 0;
+}
+
+.ongoing__spectate {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--theme-accent);
+}
+
 .ongoing__empty {
     margin: 0;
     color: var(--theme-text-secondary);
