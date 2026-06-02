@@ -54,23 +54,20 @@ export function clearAccessCookie(res){
     res.clearCookie("accessToken");
 }
 
-// In-memory store for short-lived WebSocket tokens: token → { userId, expiresAt }
 const wsTokenStore = new Map();
 
-// Generates a one time token for WebSocket aut, valid for 10 seconds
 export function generateWsToken(userId){
     const token = crypto.randomBytes(32).toString("hex");
     wsTokenStore.set(token, { userId, expiresAt: Date.now() + 10_000 });
     return token;
 }
 
-// Validates and consumes a wsToken - returns userId or null if invalid/expired
 export function consumeWsToken(token) {
     const entry = wsTokenStore.get(token);
     if (!entry) return null;
-    wsTokenStore.delete(token); // one-time use
+    wsTokenStore.delete(token);
     if (Date.now() > entry.expiresAt) return null;
     return entry.userId;
 }
 
-export {hashToken}; 
+export {hashToken};

@@ -10,10 +10,9 @@ const EMPTY = {
     maxPlayers: 8,
     startDate: "",
     buyIn: 0,
-    eloRange: { min: "", max: "" },   // "" = open on that side
+    eloRange: { min: "", max: "" },
     trophy: { title: "", imageUrl: "" },
 };
-
 
 export default function TournamentForm({ initialValues, onSubmit, submitLabel = "Create tournament" }) {
     const [values, setValues] = useState(() => {
@@ -31,7 +30,6 @@ export default function TournamentForm({ initialValues, onSubmit, submitLabel = 
     const [error, setError] = useState(null);
     const [uploadingTrophy, setUploadingTrophy] = useState(false);
 
-    // Upload the chosen image, then store the returned URL in trophy.imageUrl
     async function handleTrophyFile(e) {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -47,11 +45,9 @@ export default function TournamentForm({ initialValues, onSubmit, submitLabel = 
         }
     }
 
-    // Update a top-level field
     const set = (field) => (e) =>
         setValues((v) => ({ ...v, [field]: e.target.value }));
 
-    // Update a nested field inside `format` or `trophy`
     const setNested = (group, field, parse = (x) => x) => (e) =>
         setValues((v) => ({ ...v, [group]: { ...v[group], [field]: parse(e.target.value) } }));
 

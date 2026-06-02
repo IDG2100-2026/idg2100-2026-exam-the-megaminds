@@ -1,4 +1,3 @@
-// Handles request/response for comment routes — calls the service layer and sends back JSON
 import commentService from "../services/comments.service.js";
 
 export async function getAllComments(req, res) {

@@ -48,7 +48,7 @@ export default function AppRoutes() {
                 <Route path="/admin/tournament/new" element={<CreateTournamentPage/>} />
                 <Route path="/admin/tournament/:tournamentid/edit" element={<CreateTournamentPage/>} />
             </Route>
-            {/* This should always be the last route */ } 
+            { }
             <Route element={<MainLayout/>}>
                  <Route path="*" element={<NotFoundPage/>} />
             </Route>

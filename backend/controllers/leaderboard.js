@@ -1,4 +1,3 @@
-// Handles request/response for leaderboard routes — calls the service layer and sends back JSON
 import leaderboardService from "../services/leaderboard.service.js";
 
 export async function getLeaderboard(req, res) {

@@ -1,9 +1,7 @@
 const API_URL = import.meta.env.VITE_API_URL;
 
-// These must never trigger the refresh-retry loop
 const AUTH_FREE = ['/api/login', '/api/refresh', '/api/logout'];
 
-// Single-flight: many parallel 401s share ONE /refresh call
 let refreshPromise = null;
 const doRefresh = () => {
     if (!refreshPromise) {
@@ -20,7 +18,6 @@ const apiCall = async (method, endpoint, body = null, _retried = false) => {
 
     const response = await fetch(`${API_URL}${endpoint}`, options);
 
-    // One silent refresh + one replay on 401
     if (response.status === 401 && !_retried && !AUTH_FREE.includes(endpoint)) {
         if (await doRefresh()) return apiCall(method, endpoint, body, true);
     }
@@ -34,19 +31,14 @@ const apiCall = async (method, endpoint, body = null, _retried = false) => {
     return data;
 };
 
-
-// Auth & user management
-// login/logout/getMe rely on the httpOnly cookie set by the backend — no token handling needed here
 export const userService = {
-    // Returns the currently logged-in user based on the JWT cookie
+
     getMe: () =>
         apiCall('GET', '/api/users/me').then(res => res.user),
 
-    // Backend sets httpOnly cookie on success
     login: (username, pwd) =>
         apiCall('POST', '/api/login', { username, pwd }).then(res => res.user),
 
-    // Backend clears the cookie
     logout: () =>
         apiCall('POST', '/api/logout'),
 
@@ -61,7 +53,7 @@ export const userService = {
 
     forgotPassword: (email) =>
         apiCall('POST', '/api/forgot-password', { email }),
-    
+
     resetPassword: (code, pwd) =>
         apiCall('POST', '/api/reset-password', { code, pwd }),
     getUser: (userId) =>
@@ -80,7 +72,7 @@ export const userService = {
         apiCall('DELETE', `/api/users/${userId}`),
     getUserGames: (userId, page = 1, limit = 5) =>
         apiCall('GET', `/api/users/${userId}/games?page=${page}&limit=${limit}`).then(res => res.data),
-    
+
     uploadAvatar: async (userId, file) => {
         const formData = new FormData();
         formData.append('avatar', file);
@@ -95,7 +87,6 @@ export const userService = {
     },
 };
 
-// Game CRUD and state transitions
 export const gameService = {
     getAllGames: (page = 1, limit = 20, status) =>
         apiCall('GET', `/api/games?page=${page}&limit=${limit}${status ? `&status=${status}` : ''}`).then(res => res.data),
@@ -106,11 +97,9 @@ export const gameService = {
     createGame: (gameData) =>
         apiCall('POST', '/api/games', gameData),
 
-    // Updates game phase (e.g. waiting → in-progress → complete)
     updateGameStatus: (gameId, status) =>
         apiCall('PATCH', `/api/games/${gameId}/status`, { status }),
 
-    // Records final result and triggers ELO update
     recordResult: (gameId, resultData) =>
         apiCall('PATCH', `/api/games/${gameId}/result`, resultData),
 
@@ -118,7 +107,6 @@ export const gameService = {
         apiCall('POST', `/api/games/${gameId}/join`),
 };
 
-// Matchmaking queue — pairs registered or anonymous users into a game
 export const matchmakingService = {
     joinQueue: (queueData) =>
         apiCall('POST', '/api/matchmaking/queue', queueData),
@@ -130,10 +118,8 @@ export const matchmakingService = {
         apiCall('DELETE', `/api/matchmaking/queue/${userId}`),
 };
 
-// Tournament management (reading is public; mutations require auth)
 export const tournamentService = {
-    // Accepts { status, sort, sortOrder, page, limit }; empty/undefined values are dropped.
-    // status can be comma-separated, e.g. "pending,in-progress".
+
     getTournaments: (params = {}) => {
         const query = new URLSearchParams(
             Object.entries(params).filter(([, v]) => v !== undefined && v !== '')
@@ -153,11 +139,9 @@ export const tournamentService = {
     deleteTournament: (tournamentId) =>
         apiCall('DELETE', `/api/tournaments/${tournamentId}`),
 
-    // Backend route is /participants and expects userId in the body
     joinTournament: (tournamentId, userId) =>
         apiCall('POST', `/api/tournaments/${tournamentId}/participants`, { userId }),
 
-    // For leave, userId goes in the URL
     leaveTournament: (tournamentId, userId) =>
         apiCall('DELETE', `/api/tournaments/${tournamentId}/participants/${userId}`),
 
@@ -172,12 +156,10 @@ export const tournamentService = {
 
     getStandings: (tournamentId) =>
         apiCall('GET', `/api/tournaments/${tournamentId}/standings`),
-    
+
     getGames: (tournamentId) =>
         apiCall('GET', `/api/tournaments/${tournamentId}/games`),
 
-    // Uploads a trophy image and returns its URL (to store in trophy.imageUrl).
-    // Uses raw fetch + FormData so the browser sets the multipart Content-Type.
     uploadTrophyImage: async (file) => {
         const formData = new FormData();
         formData.append('image', file);
@@ -193,7 +175,6 @@ export const tournamentService = {
 
 };
 
-// Comments are scoped to either a game or a tournament
 export const commentService = {
     getGameComments: (gameId) =>
         apiCall('GET', `/api/games/${gameId}/comments`),
@@ -207,7 +188,6 @@ export const commentService = {
     addTournamentComment: (tournamentId, text) =>
         apiCall('POST', `/api/tournaments/${tournamentId}/comments`, { text }),
 
-    // Admin only
     deleteComment: (commentId) =>
         apiCall('DELETE', `/api/comments/${commentId}`),
 };
@@ -217,13 +197,11 @@ export const leaderboardService = {
         apiCall('GET', `/api/leaderboard?page=${page}&limit=${limit}`),
 };
 
-// Platform-wide stats for the admin dashboard and homepage preview
 export const platformService = {
     getActivity: () =>
         apiCall('GET', '/api/platform/activity').then(res => res.data),
 };
 
-// Admin-only actions
 export const adminService = {
     banUser: (userId) =>
         apiCall('PATCH', `/api/users/${userId}/ban`),
@@ -243,10 +221,9 @@ export const adminService = {
     deleteGame: (gameId) =>
         apiCall('DELETE', `/api/games/${gameId}`),
 
-    getAllComments: (page = 1, limit = 20, search = "") => 
+    getAllComments: (page = 1, limit = 20, search = "") =>
         apiCall('GET', `/api/comments?page=${page}&limit=${limit}&order=desc${search ? `&search=${encodeURIComponent(search)}`: ""}`),
-    
+
     getDashboard: () =>
         apiCall('GET', '/api/admin/dashboard').then(res => res.data),
     }
-

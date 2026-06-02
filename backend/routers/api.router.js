@@ -17,18 +17,14 @@ import { identifyUser, requireRegistered, requireAdmin, requireEmailVerified } f
 import { handleAvatarUpload, handleTrophyUpload } from "../middleware/upload.js";
 import { rateLimit } from "../middleware/rateLimit.js";
 
-
-
 const apiRouter = express.Router();
 
 apiRouter.use(express.json());
 
-// Attach user role to every request based on x-user-role header
 apiRouter.use(identifyUser);
 
 apiRouter.use(rateLimit);
 
-// Auth
 apiRouter.post("/login", userController.login);
 apiRouter.post("/refresh", userController.refresh);
 apiRouter.post("/logout", userController.logout);
@@ -38,11 +34,8 @@ apiRouter.post("/resend-verification", userController.resendVerification);
 apiRouter.post("/forgot-password", userController.forgotPassword);
 apiRouter.post("/reset-password", userController.resetPassword);
 
-// WebSocket token
 apiRouter.get("/ws-token", requireRegistered, userController.getWsToken);
 
-// Users
-// GET is public; POST is public (registration); PATCH/DELETE require being logged in
 apiRouter.get("/users", userController.getAllUsers);
 apiRouter.get("/users/:userId", userValidate.validateUserId(), validate, userController.getUserById);
 apiRouter.get("/users/:userId/games", userValidate.validateUserId(), validate, userController.getUserGames);
@@ -52,8 +45,6 @@ apiRouter.patch("/users/:userId", requireRegistered, userValidate.validateUserUp
 apiRouter.post("/users/:userId/avatar", requireRegistered, userValidate.validateUserId(), validate, handleAvatarUpload, userController.uploadUserAvatar);
 apiRouter.delete("/users/:userId", requireAdmin, userValidate.validateUserId(), validate, userController.deleteUser);
 
-// Games
-// Reading games is public; creating/deleting requires being registered
 apiRouter.get("/games", gameController.getAllGames);
 apiRouter.get("/games/:gameId", gameValidate.validateGameId(), validate, gameController.getGameById);
 apiRouter.get("/games/:gameId/comments", gameValidate.validateGameId(), validate, gameController.getGameComments);
@@ -66,8 +57,6 @@ apiRouter.delete("/games/:gameId", requireAdmin, gameValidate.validateGameId(), 
 apiRouter.patch("/games/:gameId/status", requireRegistered, gameValidate.validateGameStatusUpdate(), validate, gameController.updateGame);
 apiRouter.patch("/games/:gameId/result", requireRegistered, gameValidate.validateGameResult(), validate, gameController.recordGameResult);
 
-// Tournaments
-// Reading is public; joining requires registered; creating/deleting requires admin
 apiRouter.get("/tournaments", tournamentController.getAllTournaments);
 apiRouter.get("/tournaments/:tournamentId", tournamentValidate.validateTournamentId(), validate, tournamentController.getTournamentById);
 apiRouter.get("/tournaments/:tournamentId/comments", tournamentValidate.validateTournamentId(), validate, tournamentController.getTournamentComments);
@@ -75,52 +64,41 @@ apiRouter.get("/tournaments/:tournamentId/standings", tournamentValidate.validat
 apiRouter.get("/tournaments/:tournamentId/games", tournamentValidate.validateTournamentId(), validate, tournamentController.getTournamentGames);
 apiRouter.post("/tournaments/trophy-image", requireAdmin, handleTrophyUpload, tournamentController.uploadTrophyImage);
 
-
 apiRouter.post("/tournaments", requireAdmin, tournamentValidate.validateTournamentCreate(), validate, tournamentController.createTournament);
 apiRouter.post("/tournaments/:tournamentId/comments", requireRegistered, tournamentValidate.validateTournamentId(), commentValidate.validateCommentCreate(), validate, tournamentController.createTournamentComment);
 apiRouter.post("/tournaments/:tournamentId/participants", requireRegistered, requireEmailVerified, tournamentValidate.validateTournamentJoin(), validate, tournamentController.joinTournament);
 apiRouter.delete("/tournaments/:tournamentId/participants/:userId", requireRegistered, tournamentValidate.validateTournamentLeave(), validate, tournamentController.leaveTournament);
 apiRouter.patch("/tournaments/:tournamentId", requireAdmin, tournamentValidate.validateTournamentId(), tournamentValidate.validateTournamentUpdate(), validate, tournamentController.updateTournament);
 apiRouter.patch("/tournaments/:tournamentId/winner", requireAdmin, tournamentValidate.validateTournamentId(), tournamentValidate.validateTournamentWinner(), validate, tournamentController.awardWinner);
-// POST to rounds to start/advance tournament bracket
+
 apiRouter.post("/tournaments/:tournamentId/rounds", requireAdmin, tournamentValidate.validateTournamentId(), validate, tournamentController.startTournament);
 apiRouter.post("/tournaments/:tournamentId/rounds/next", requireAdmin, tournamentValidate.validateTournamentId(), validate, tournamentController.advanceTournament);
 apiRouter.delete("/tournaments/:tournamentId", requireAdmin, tournamentValidate.validateTournamentId(), validate, tournamentController.deleteTournament);
 
-// Comments
-// GET all is admin-only (moderation); GET single is public
 apiRouter.get("/comments", requireAdmin, commentController.getAllComments);
 apiRouter.get("/comments/:commentId", commentValidate.validateCommentId(), validate, commentController.getCommentById);
 apiRouter.patch("/comments/:commentId", requireRegistered, commentValidate.validateCommentId(), commentValidate.validateCommentUpdate(), validate, commentController.updateComment);
 apiRouter.delete("/comments/:commentId", requireAdmin, commentValidate.validateCommentId(), validate, commentController.deleteComment);
 
-// Leaderboard (public)
 apiRouter.get("/leaderboard", leaderboardController.getLeaderboard);
 
-// Matchmaking
-// join queue (creates a game immediately if a matching opponent is waiting)
 apiRouter.post("/matchmaking/queue", requireRegistered, requireEmailVerified, matchmakingValidate.validateQueueJoin(), validate, matchmakingController.joinQueue);
-// anonymous users can also be matched — no ELO, first-come first-served
+
 apiRouter.post("/matchmaking/queue/anonymous", matchmakingValidate.validateAnonQueueJoin(), validate, matchmakingController.joinAnonQueue);
-// leave queue before a match is found
+
 apiRouter.delete("/matchmaking/queue/:userId", requireRegistered, matchmakingController.leaveQueue);
-// view current queue (admin only)
+
 apiRouter.get("/matchmaking/queue", requireAdmin, matchmakingController.getQueue);
 
-// Platform activity (public)
 apiRouter.get("/platform/activity", platformController.getPlatformActivity);
 
-// Admin incident 
 apiRouter.get("/admin/dashboard", requireAdmin, adminController.getDashboard);
 
-// Admin actions on users
 apiRouter.patch("/users/:userId/ban", requireAdmin, userValidate.validateUserId(), validate, adminController.banUser);
 apiRouter.patch("/users/:userId/unban", requireAdmin, userValidate.validateUserId(), validate, adminController.unbanUser);
 apiRouter.patch("/users/:userId/role", requireAdmin, userValidate.validateUserId(), validate, adminController.setUserRole);
 
-// Error logging - POST is open so the error boundary can post without auth
 apiRouter.post("/errors", adminController.logError);
 apiRouter.get("/errors", requireAdmin, adminController.getErrorLogs);
-
 
 export default apiRouter;

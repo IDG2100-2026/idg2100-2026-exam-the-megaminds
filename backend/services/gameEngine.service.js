@@ -4,22 +4,21 @@ import { decideRound } from "./handEval.service.js";
 const engines = new Map();
 
 const FRESH_DICE = () => [null, null, null, null, null];
-const DICE_FACES = ["A", "K", "Q", "J", "8", "7"];   // must match dice-poker-die.js
+const DICE_FACES = ["A", "K", "Q", "J", "8", "7"];
 const rollFace = () => DICE_FACES[Math.floor(Math.random() * DICE_FACES.length)];
-
 
 function freshPlayer(p, buyIn = 0) {
     return {
         userId: p.userId,
         username: p.username ?? "Player",
-        faces: FRESH_DICE(),   // server secret; null = not rolled
+        faces: FRESH_DICE(),
         held: [false, false, false, false, false],
         rollsLeft: 3,
-        score: 0,              
+        score: 0,
         stack: buyIn,
         currentBet: 0,
         folded: false,
-        left: false,           // permanently left the game (forfeit), unlike a per-round fold
+        left: false,
         done: false,
         connected: true
     };
@@ -37,7 +36,7 @@ export async function ensureEngine(gameId) {
         rules: game.rules,
         status: game.status === "finished" ? "finished" : "waiting",
         currentRound: 1,
-        phase: "rolling",      // rolling -> betting -> reveal (later steps)
+        phase: "rolling",
         players: game.players.map(p => freshPlayer(p, buyIn)),
         pot: 0,
         highestBet: 0,
@@ -48,7 +47,7 @@ export async function ensureEngine(gameId) {
     engines.set(gameId, engine);
     if (game.status === "in-progress") startRound(engine);
     return engine;
-    
+
 }
 export function startRound(engine){
     engine.status = "playing";
@@ -259,12 +258,12 @@ export function revealRound(gameId) {
 
     if (isGameOver) {
         e.phase = "finished";
-        // Players who left the game forfeit and can't win on score.
+
         const pool = e.players.filter(p => !p.left);
         const contenders = pool.length ? pool : e.players;
         const maxScore = Math.max(...contenders.map(p => p.score));
         const topByScore = contenders.filter(p => p.score === maxScore);
-        // Tie on rounds won -> break by chip stack, leaving a single winner.
+
         const maxStack = Math.max(...topByScore.map(p => p.stack));
         const winner = topByScore.find(p => p.stack === maxStack);
         e.gameWinnerIds = winner ? [winner.userId] : [];
@@ -281,7 +280,6 @@ export function revealRound(gameId) {
     };
 
 }
-
 
 export function getEngine(gameId) {
     return engines.get(gameId) ?? null;

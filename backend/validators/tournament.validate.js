@@ -32,37 +32,34 @@ export function validateTournamentId(){
 
 export function validateTournamentCreate(){
     return [
-        // tournamentId is generated server-side (see model pre-validate hook) — not accepted from the client.
+
         body("title")
             .trim()
             .isLength({ min: MIN_TOURNAMENT_TITLE_LENGTH, max: MAX_TOURNAMENT_TITLE_LENGTH })
             .withMessage(`Tournament title must be between ${MIN_TOURNAMENT_TITLE_LENGTH} and ${MAX_TOURNAMENT_TITLE_LENGTH} characters`),
-        
+
         body("description")
             .trim()
             .isLength({ min: MIN_TOURNAMENT_DESC_LENGTH, max: MAX_TOURNAMENT_DESC_LENGTH })
             .withMessage(`Tournament description must be between ${MIN_TOURNAMENT_DESC_LENGTH} and ${MAX_TOURNAMENT_DESC_LENGTH} characters`),
-        
-        // Format validation
+
         body("format.bestof")
             .isIn(GAME_BESTOF_OPTIONS)
             .withMessage(`Tournament format 'bestof' must be one of: ${GAME_BESTOF_OPTIONS.join(", ")}`),
 
-        
         body("format.straightallowed")
             .isBoolean()
             .withMessage("Format 'straightallowed' must be a boolean"),
-        
+
         body("format.roundTime")
             .isInt({ min: 1 })
             .isIn(GAME_ROUND_TIME_OPTIONS)
             .withMessage(`Format 'roundTime' must be one of: ${GAME_ROUND_TIME_OPTIONS.join(", ")} seconds`),
-        
-        // Player constraints
+
         body("minPlayers")
             .isInt({ min: MIN_TOURNAMENT_PLAYERS, max: 1000 })
             .withMessage(`Minimum players must be at least ${MIN_TOURNAMENT_PLAYERS}`),
-            
+
         body("maxPlayers")
             .isInt({ min: MIN_TOURNAMENT_PLAYERS, max: 10000 })
             .withMessage(`Maximum players must be at least ${MIN_TOURNAMENT_PLAYERS}`),
@@ -89,22 +86,21 @@ export function validateTournamentCreate(){
                 }
                 return true;
             }),
-        // Start date validation
+
         body("startDate")
             .isISO8601()
             .withMessage("Start date must be a valid ISO 8601 date"),
-        
-        // Trophy info
+
         body("trophy.title")
             .trim()
             .isLength({ min: MIN_TROPHY_TITLE_LENGTH, max: MAX_TROPHY_TITLE_LENGTH })
             .withMessage(`Trophy title must be between ${MIN_TROPHY_TITLE_LENGTH} and ${MAX_TROPHY_TITLE_LENGTH} characters`),
-        
+
         body("trophy.imageUrl")
             .optional({ checkFalsy: true })
             .trim()
             .custom((val) => {
-                // Accept an uploaded image (relative /uploads/ path) or an external http(s) URL
+
                 if (val.startsWith("/uploads/")) return true;
                 if (/^https?:\/\/.+/i.test(val)) return true;
                 throw new Error("Trophy image must be an uploaded image or a valid http(s) URL");
@@ -234,17 +230,17 @@ export function validateTournamentUpdate(){
 
 export function validateTournamentQuery(){
     return [
-        // Optional pagination
+
         query("page")
             .optional()
             .isInt({ min: 1 })
             .withMessage("Page must be a positive integer"),
-        
+
         query("limit")
             .optional()
             .isInt({ min: MIN_PAGINATION_LIMIT, max: MAX_PAGINATION_LIMIT })
             .withMessage(`Limit must be between ${MIN_PAGINATION_LIMIT} and ${MAX_PAGINATION_LIMIT}`),
-        
+
         query("status")
         .optional()
         .custom(val => {
@@ -259,7 +255,7 @@ export function validateTournamentQuery(){
             .optional()
             .isIn(["startDate", "title", "createdAt"])
             .withMessage("Sort field must be one of: startDate, title, or createdAt"),
-        
+
         query("sortOrder")
             .optional()
             .isIn(["asc", "desc"])

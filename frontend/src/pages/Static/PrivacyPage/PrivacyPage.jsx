@@ -6,23 +6,23 @@ export default function PrivacyPage() {
             <div className={styles.content}>
                 <h1>Privacy Policy</h1>
                 <p><strong>Last updated: April 20, 2026</strong></p>
-                
+
                 <p>
                     This Privacy Policy describes Our policies and procedures on the collection, use and disclosure of Your information when You use the Service and tells You about Your privacy rights and how the law protects You.
                 </p>
-                
+
                 <p>
                     We use Your Personal Data to provide and improve the Service. By using the Service, You agree to the collection and use of information in accordance with this Privacy Policy. This Privacy Policy has been created with the help of the <a href="https://www.termsfeed.com/privacy-policy-generator/" target="_blank" rel="noopener noreferrer">TermsFeed Privacy Policy Generator</a>.
                 </p>
 
                 <section>
                     <h2>Interpretation and Definitions</h2>
-                    
+
                     <h3>Interpretation</h3>
                     <p>
                         The words whose initial letters are capitalized have meanings defined under the following conditions. The following definitions shall have the same meaning regardless of whether they appear in singular or in plural.
                     </p>
-                    
+
                     <h3>Definitions</h3>
                     <p>For the purposes of this Privacy Policy:</p>
                     <ul>
@@ -43,9 +43,9 @@ export default function PrivacyPage() {
 
                 <section>
                     <h2>Collecting and Using Your Personal Data</h2>
-                    
+
                     <h3>Types of Data Collected</h3>
-                    
+
                     <h4>Personal Data</h4>
                     <p>
                         While using Our Service, We may ask You to provide Us with certain personally identifiable information that can be used to contact or identify You. Personally identifiable information may include, but is not limited to:
@@ -205,7 +205,7 @@ export default function PrivacyPage() {
 
                 <section>
                     <h3>Disclosure of Your Personal Data</h3>
-                    
+
                     <h4>Business Transactions</h4>
                     <p>
                         If the Company is involved in a merger, acquisition or asset sale, Your Personal Data may be transferred. We will provide notice before Your Personal Data is transferred and becomes subject to a different Privacy Policy.

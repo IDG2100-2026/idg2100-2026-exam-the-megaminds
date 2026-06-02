@@ -6,7 +6,6 @@ import { fileURLToPath } from 'node:url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
@@ -18,12 +17,10 @@ export default defineConfig({
     },
   },
   server: {
-    // Pin to IPv4 — avoids the ~2s localhost IPv6 (::1) connection-fallback delay on Windows.
+
     host: '127.0.0.1',
     proxy: {
-      // Dev-only: forward /api calls to the backend so the browser sees same-origin (no CORS).
-      // 127.0.0.1 (not localhost) so the proxy hop doesn't pay the same IPv6 fallback cost.
-      // Production needs real CORS on the backend instead — see TOURNAMENT_PLAN.md.
+
       '/api': 'http://127.0.0.1:8476',
       '/uploads': 'http://127.0.0.1:8476',
     },

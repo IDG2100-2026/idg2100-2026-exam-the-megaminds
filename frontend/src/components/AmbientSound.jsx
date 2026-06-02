@@ -44,7 +44,6 @@ export default function AmbientSound() {
         };
     }, []);
 
-    // Respond to lobbyMusic toggle
     useEffect(() => {
         enabledRef.current = theme.lobbyMusic;
         const audio = audioRef.current;

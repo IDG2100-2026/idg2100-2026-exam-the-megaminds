@@ -7,10 +7,8 @@ export default function GreetingComponent() {
     const { user, isAnonymous, logout } = useAppContext();
     const navigate = useNavigate();
 
-    // Get profile picture URL
     const profilePicUrl = user?.profilePicture || ProfilePicPlaceholder;
 
-    // Registered User View
     if (user && !isAnonymous) {
         return (
             <div className={styles.greetingContainer}>
@@ -49,27 +47,25 @@ export default function GreetingComponent() {
         );
     }
 
-    // Anonymous User View
     if (isAnonymous) {
         return (
             <div className={styles.greetingContainer}>
                 <div className={styles.anynmousUser}>
                     <span className={styles.guestText}>PLaying as Guest</span>
-                    <button 
+                    <button
                         className={styles.logoutBtn}
                         onClick={() => {
                             logout();
                             navigate('/')
                         }}
                     >
-                        Exit 
+                        Exit
                     </button>
                 </div>
             </div>
         )
     }
 
-    // Not logged In View
     return (
         <div className={styles.greetingContainer}>
             <div className={styles.notLoggedIn}>

@@ -8,7 +8,6 @@ export function useTheme() {
 
     const currentTheme = getTheme(theme.mode);
 
-    // Toggles between dark and light mode, persists to backend if logged in
     const toggleTheme = useCallback(async () => {
         const newMode = theme.mode === 'dark' ? 'light' : 'dark';
         setTheme(prev => ({ ...prev, mode: newMode }));
@@ -77,7 +76,6 @@ export function useTheme() {
     };
 }
 
-// Applies theme colors as CSS custom properties on the document root
 export function applyThemeToDocument(theme) {
     const root = document.documentElement;
 

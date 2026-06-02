@@ -18,9 +18,6 @@ import TournamentBracket from "@/components/TournamentBracket/TournamentBracket"
 import AwardWinner from "@/components/AwardWinner/AwardWinner";
 import styles from "./TournamentDetail.module.css";
 
-
-// Thin wrapper: opens the single tournament socket for the whole page, then renders
-// the content inside it so the detail page and comments share one connection.
 export default function TournamentDetail() {
     const { tournamentid } = useParams();
     return (
@@ -109,7 +106,6 @@ function TournamentDetailContent({ tournamentid }) {
                     <OngoingGames key={`round-${tournament.currentRound}`} tournament={tournament} />
                 </section>
             )}
-
 
             <section className={styles.detail__section}>
                 <h2 className={styles.detail__heading}>Rules</h2>

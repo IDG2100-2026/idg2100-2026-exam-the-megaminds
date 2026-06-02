@@ -41,7 +41,7 @@ export function usePlayerGameRedirect(tournament, user) {
             })
             .catch(() => { /* stay on the tournament page if the lookup fails */ })
             .finally(() => { if (!cancelled) setChecking(false); });
-        
+
         return () => { cancelled = true; };
     }, [active, tournament?.tournamentId, tournament?.currentRound, tournament?.rounds, user?.userId, navigate]);
 

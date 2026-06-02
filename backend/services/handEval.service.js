@@ -1,7 +1,5 @@
-
 const FACE_VALUE = { A: 6, K: 5, Q: 4, J: 3, 8: 2, 7: 1 };
 
-// Higher rank wins. tiebreaker(context) returns an array compared left-to-right.
 const HAND_RULES = [
     { name: "Repóker", rank: 7,
         matches: ({ counts }) => counts[0] === 5,
@@ -42,7 +40,6 @@ export function evaluateHand(faces, includeStraight = false) {
     return { faces, values: sorted, rank: rule.rank, name: rule.name, tiebreaker: rule.tiebreaker(context) };
 }
 
-// >0 → A beats B, <0 → B beats A, 0 → exact tie
 export function compareHands(a, b) {
     if (a.rank !== b.rank) return a.rank - b.rank;
     for (let i = 0; i < a.tiebreaker.length; i++) {
@@ -51,7 +48,6 @@ export function compareHands(a, b) {
     return 0;
 }
 
-// players: [{ userId, faces }]. Returns every top hand so the pot can SPLIT on a draw.
 export function decideRound(players, includeStraight = false) {
     const hands = players.map(p => ({ userId: p.userId, ...evaluateHand(p.faces, includeStraight) }));
     let best = hands[0];

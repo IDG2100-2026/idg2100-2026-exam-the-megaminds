@@ -32,7 +32,6 @@ export default function TournamentComments({tournamentId}) {
         if (lastMessage?.type === "new-comment") addComment(lastMessage.comment);
     }, [lastMessage, addComment]);
 
-    // Resolve any userIds that havent been looked up
     useEffect(()=> {
       const missing = [...new Set(comments.map(c => c.userId))].filter(id => !(id in names));
       if (missing.length === 0) return;

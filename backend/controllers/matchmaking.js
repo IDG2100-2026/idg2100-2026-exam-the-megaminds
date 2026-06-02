@@ -1,4 +1,3 @@
-// Handles request/response for matchmaking routes — calls the service layer and sends back JSON
 import matchmakingService from "../services/matchmaking.service.js";
 
 export async function joinQueue(req, res) {
@@ -7,7 +6,6 @@ export async function joinQueue(req, res) {
     res.status(result.matched ? 201 : 200).json({ success: true, data: result });
 }
 
-// anonymous queue join — no userId required, no ELO matching
 export async function joinAnonQueue(req, res) {
     const result = await matchmakingService.joinAnonQueue(req.validData.rules);
     res.status(result.matched ? 201 : 200).json({ success: true, data: result });

@@ -66,10 +66,9 @@ export function validateUserCreate(){
     ];
 }
 
-// username can't change — only email, pwd, age, and banned status are updatable
 export function validateUserUpdate(){
     return [
-        // Username cannot be changed after registration
+
         body("username")
             .not().exists()
             .withMessage("Username cannot be changed after registration"),

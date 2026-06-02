@@ -113,7 +113,7 @@ const userSchema = new mongoose.Schema({
         required: true,
         min: [MIN_USER_AGE, `You must be at least ${MIN_USER_AGE} years old to register`]
     },
-    // Admins can ban users to prevent them from participating in games and matchmaking
+
     banned: {
         type: Boolean,
         default: false
@@ -149,7 +149,7 @@ const userSchema = new mongoose.Schema({
     preferences: {
         type: mongoose.Schema.Types.Mixed,
         default: {}
-    }   
+    }
 }, {timestamps: true});
 
 userSchema.pre("validate", function(){

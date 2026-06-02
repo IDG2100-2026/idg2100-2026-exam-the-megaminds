@@ -37,8 +37,8 @@ export default function Header() {
                     <p className={styles.header__logo_text}>The House™ of Dice</p>
                 </div>
             </Link>
-            
-            {/* Desktop Navigation */}
+
+            {}
             <nav className={styles.header__nav}>
                 <NavLink to="/" className={navLinkClass}>Home</NavLink>
                 <NavLink to="/lobby" className={navLinkClass}>Lobby</NavLink>
@@ -65,8 +65,8 @@ export default function Header() {
                 {settingsOpen && <SettingsPanel />}
             </div>
 
-            {/* Mobile Hamburger Menu */}
-            <button 
+            {}
+            <button
                 className={`${styles.hamburger} ${mobileMenuOpen ? styles.active : ''}`}
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 aria-label="Toggle menu"

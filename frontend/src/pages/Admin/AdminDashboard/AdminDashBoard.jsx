@@ -40,8 +40,6 @@ export default function AdminDashBoard() {
   );
 }
 
-// Overview
-
 function OverviewTab() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -81,7 +79,7 @@ function OverviewTab() {
           <p className={styles.dim}>No Incidents</p>
         ) : (
           <table className={styles.table}>
-          
+
             <thead>
               <tr>
                 <th>Type</th><th>User</th><th>IP</th><th>User Agent</th><th>Path</th><th>Time</th>
@@ -138,8 +136,6 @@ function OverviewTab() {
     </div>
   );
 }
-
-// Users
 
 function UsersTab() {
   const [users, setUsers] = useState([]);
@@ -346,8 +342,6 @@ function UsersTab() {
   );
 }
 
-// Error Logs
-
 function ErrorLogsTab() {
   const [logs, setLogs] = useState([]);
   const [total, setTotal] = useState(0);
@@ -444,8 +438,6 @@ function ErrorLogsTab() {
     </div>
   );
 }
-
-// Games
 
 function GamesTab() {
   const [games, setGames] = useState([]);
@@ -573,8 +565,6 @@ function GamesTab() {
     </div>
   );
 }
-
-// Comments
 
 function CommentsTab() {
   const [comments, setComments] = useState([]);
@@ -705,8 +695,6 @@ function CommentsTab() {
     </div>
   );
 }
-
-// Shared
 
 function StatCard({ label, value, sub }) {
   return (

@@ -21,7 +21,6 @@ export async function attachUsernames(games) {
     });
 }
 
-//Pagination
 export async function getAllGames({ sort = "createdAt", limit = 10, page = 1, status }) {
     const skip = (page - 1) * limit;
     const query = {};
@@ -63,13 +62,11 @@ export async function updateGame(gameId, status) {
 }
 
 export async function recordGameResult(gameId, { players, roundTime, winnerId }) {
-    // Use the winner the engine resolved (top score, tie-broken by chip stack);
-    // fall back to highest score if it wasn't supplied.
+
     const maxScore = Math.max(...players.map(p => p.score));
     const winner = (winnerId != null && players.find(p => p.userId === winnerId))
         || players.find(p => p.score === maxScore);
 
-    // Build arrayFilters and per-player score + final chip stack updates
     const fieldUpdates = Object.fromEntries(
         players.flatMap((p, i) => [
             [`players.$[p${i}].score`, p.score],
@@ -90,7 +87,6 @@ export async function recordGameResult(gameId, { players, roundTime, winnerId })
 
     await updateElo(players, roundTime);
 
-    // Transfer buy-in points: losers lose buyIn, winner gains buyIn per loser
     for (const player of players) {
         if ((player.stack ?? 0) > 0) {
             await User.findOneAndUpdate({ userId: player.userId }, { $inc: { points: player.stack } });
@@ -130,7 +126,6 @@ export async function deleteGame(gameId) {
     return Game.findOneAndDelete({ gameId: gameId });
 }
 
-//Pagination
 export async function getGameComments(gameId, { sort = "createdAt", limit = 10, page = 1 }) {
     const skip = (page - 1) * limit;
     const comments = await Comment.find({ gameId: gameId })
@@ -160,7 +155,6 @@ export async function revertGameToPending(gameId, leaverId) {
         { returnDocument: "after" }
     );
 }
-
 
 export default {
     getAllGames,

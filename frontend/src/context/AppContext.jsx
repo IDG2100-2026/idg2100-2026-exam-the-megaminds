@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
 import { createContext, useState, useContext, useEffect } from "react";
 import { DEFAULT_THEME, DEFAULT_BOARD_COLOR, getTheme, BOARD_COLORS, BOARD_COLORS_LIGHT } from "@/config/themes";
 import { applyThemeToDocument } from "@/hooks/useTheme";
@@ -41,7 +40,6 @@ export function AppProvider({ children }) {
         if (next.lobbyCount !== undefined) setLobbyCount(next.lobbyCount);
     };
 
-    // Apply theme to CSS variables whenever themeMode changes
     useEffect(() => {
         applyThemeToDocument(getTheme(themeMode));
     }, [themeMode]);
@@ -51,7 +49,6 @@ export function AppProvider({ children }) {
         document.documentElement.style.setProperty('--board-bg-color', colors[boardColor] || colors.green);
     }, [boardColor, themeMode]);
 
-    // On mount, check if the user is already logged in via cookie
     useEffect(() => {
         const initializeUser = async () => {
             try {

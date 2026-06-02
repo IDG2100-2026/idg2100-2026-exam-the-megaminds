@@ -4,8 +4,6 @@ import { ensureEngine, rollDice, doneRolling, revealRound, startRound, getEngine
 import { recordGameResult, getGameById, refundPoints, revertGameToPending } from "../services/games.service.js";
 import { advanceTournament } from "../services/tournaments.service.js";
 
-
-// gameId -> Set of sockets in that game
 const rooms = new Map();
 
 const tournamentRooms = new Map();
@@ -85,7 +83,6 @@ export function initGameSocket(server) {
         socket.on("message", async (data) => {
             const msg = JSON.parse(data);
 
-            // Step 1 - auth must happen first
             if (msg.type === "auth") {
                 const userId = consumeWsToken(msg.wsToken);
                 if (!userId) {
@@ -99,10 +96,8 @@ export function initGameSocket(server) {
                 return;
             }
 
-            // Ignore everything from unauthenticated sockets
             if (!socket.authenticated) return;
 
-            // Step 2 - join a game room
             if (msg.type === "join-game") {
                 const { gameId } = msg;
                 if (!rooms.has(gameId)) rooms.set(gameId, new Set());
@@ -134,7 +129,7 @@ export function initGameSocket(server) {
             if (msg.type === "roll") {
                 const result = rollDice(socket.gameId, socket.userId, msg.held ?? []);
                 if (result.error) return socket.send(JSON.stringify({ type: "error", message: result.error }));
-                broadcastState(socket.gameId);   // owner sees real faces, others stay hidden
+                broadcastState(socket.gameId);
                 return;
             }
 
@@ -180,7 +175,7 @@ export function initGameSocket(server) {
                 if (result.outcome === "revert") {
                     await revertGameToPending(socket.gameId, result.leaverId).catch(err => console.error(err));
                     removeEngine(socket.gameId);
-                    await ensureEngine(socket.gameId);   // rebuild a fresh "waiting" engine for the players left behind
+                    await ensureEngine(socket.gameId);
                     broadcastState(socket.gameId);
                     return;
                 }
@@ -218,7 +213,7 @@ export function initGameSocket(server) {
         });
 
         socket.on("close", () => {
-            // Remove socket from its room on dosconnect
+
             if (socket.gameId) {
                 rooms.get(socket.gameId)?.delete(socket);
                 if (rooms.get(socket.gameId)?.size === 0) {

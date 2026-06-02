@@ -28,7 +28,7 @@ export function useSound() {
             osc.start(ctx.currentTime);
             osc.stop(ctx.currentTime + cfg.dur);
         } catch {
-            // blocked by browser autoplay policy - silent fail
+
         }
     };
 

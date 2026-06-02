@@ -4,9 +4,9 @@ export async function getAllComments({ sort = "createdAt", order = "desc", limit
     const skip = (page - 1) * limit;
     const query = {};
     if (search) {
-        // Escape special characters so the search term is treated as plain text, not a regex pattern
+
         const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-        // $regex does a partial match; $options: "i" makes it case-insensitive
+
         query.text = { $regex: escaped, $options: "i" };
     }
     return Comment.find(query)

@@ -1,6 +1,5 @@
 import { User } from "../models/users.js";
 
-// ELO formula based on the standard chess rating system
 export function calculateElo(winnerElo, loserElo) {
     const K = 32;
     const expectedWinner = 1 / (1 + Math.pow(10, (loserElo - winnerElo) / 400));
@@ -11,27 +10,21 @@ export function calculateElo(winnerElo, loserElo) {
     };
 }
 
-// Maps roundTime (seconds) to the corresponding per-time-control Elo field
 function eloFieldForTime(roundTime) {
     if (roundTime === 10) return "eloBullet";
     if (roundTime === 30) return "eloBlitz";
     return "eloRapid";
 }
 
-// Multi-player pairwise Elo update.
-// players: [{ userId, score }]  (score = number of rounds won)
-// roundTime: 10 | 30 | 90
 export async function updateElo(players, roundTime) {
     const eloField = eloFieldForTime(roundTime);
 
-    // Load all player docs in one go
     const userIds = players.map(p => p.userId);
     const userDocs = await User.find({ userId: { $in: userIds } })
         .select(`userId elo ${eloField} wins losses totalGames winPercentage eloChangeLastWeek eloWeekStart winsLastMonth lossesLastMonth lastMonthReset`);
 
     const byId = Object.fromEntries(userDocs.map(u => [u.userId, u]));
 
-    // Accumulate pairwise deltas for each player
     const deltas = Object.fromEntries(userIds.map(id => [id, 0]));
     const wonPairwise = Object.fromEntries(userIds.map(id => [id, 0]));
     const lostPairwise = Object.fromEntries(userIds.map(id => [id, 0]));
@@ -60,11 +53,10 @@ export async function updateElo(players, roundTime) {
                 wonPairwise[b.userId]++;
                 lostPairwise[a.userId]++;
             }
-            // tie: no Elo change
+
         }
     }
 
-    // Determine overall winner (highest score) for win/loss stats
     const maxScore = Math.max(...players.map(p => p.score));
     const winnerId = players.find(p => p.score === maxScore)?.userId;
 
@@ -79,7 +71,7 @@ export async function updateElo(players, roundTime) {
         const delta = deltas[userId];
         const currentElo = u[eloField] ?? u.elo ?? 1000;
         const newElo = Math.max(0, currentElo + delta);
-        // Keep generic elo in sync (used for leaderboard)
+
         const newGenericElo = Math.max(0, (u.elo ?? 1000) + delta);
 
         const weekExpired = !u.eloWeekStart || u.eloWeekStart < oneWeekAgo;

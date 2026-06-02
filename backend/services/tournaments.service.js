@@ -26,7 +26,6 @@ export async function getAllTournaments({ sort = "startDate", limit = 10, page =
         .skip(Number(skip));
 }
 
-
 export async function getTournamentById(tournamentId) {
     return Tournament.findOne({ tournamentId: tournamentId });
 }
@@ -67,7 +66,7 @@ export async function joinTournament(tournamentId, { userId }) {
 
     return Tournament.findOneAndUpdate(
         { tournamentId },
-        // $addToSet adds the userId to the participants array, but only if it isn't already there
+
         { $addToSet: { participants: userId } },
         { returnDocument: "after" }
     );
@@ -92,7 +91,6 @@ export async function getTournamentComments(tournamentId, { sort = "createdAt", 
 export async function getTournamentGames(tournamentId) {
     return Game.find({ tournamentId });
 }
-
 
 export async function getStandings(tournamentId){
     const tournament = await Tournament.findOne({ tournamentId });
@@ -124,14 +122,13 @@ export async function createTournamentComment(tournamentId, { userId, text }) {
 }
 
 async function createRound(tournament, players, roundNumber) {
-    // Shuffle for random pairing
+
     const shuffled = [...players];
     for (let i = shuffled.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
 
-    // Odd player out gets free pass to the next round
     let byeUserId = null;
     if (shuffled.length % 2 !== 0) byeUserId = shuffled.pop();
 
@@ -160,7 +157,6 @@ async function createRound(tournament, players, roundNumber) {
     );
 }
 
-// Validates the tournament is ready to start, then delegates to createRound for round 1
 export async function startTournament(tournamentId) {
     const tournament = await Tournament.findOne({ tournamentId: tournamentId });
     if (!tournament) { const e = new Error("Tournament not found"); e.status = 404; throw e; }
@@ -173,7 +169,6 @@ export async function startTournament(tournamentId) {
     return createRound(tournament, tournament.participants, 1);
 }
 
-// Confirms all round games are done, collects winners, then delegates to createRound for the next round
 export async function advanceTournament(tournamentId) {
     const tournament = await Tournament.findOne({ tournamentId: tournamentId });
     if (!tournament) { const e = new Error("Tournament not found"); e.status = 404; throw e; }
@@ -187,11 +182,9 @@ export async function advanceTournament(tournamentId) {
         const e = new Error("Not all games in the current round are finished yet"); e.status = 400; throw e;
     }
 
-    // Collect winners; include the player who skipped this round
     const winners = roundGames.map(g => g.winnerId);
     if (currentRound.byeUserId) winners.push(currentRound.byeUserId);
 
-    // Only one player left - ready to finalise with PATCH /tournaments/:tournamentId/winner
     if (winners.length === 1) {
         const e = new Error(`One player remains (userId: ${winners[0]}) - use PATCH /tournaments/${tournamentId}/winner to finalise`);
         e.status = 400; throw e;
@@ -200,7 +193,6 @@ export async function advanceTournament(tournamentId) {
     return createRound(tournament, winners, tournament.currentRound + 1);
 }
 
-// records the winner and pushes the tournament trophy onto their profile
 export async function awardWinner(tournamentId, winnerId) {
     const tournament = await Tournament.findOne({ tournamentId: tournamentId });
     if (!tournament) { const e = new Error("Tournament not found"); e.status = 404; throw e; }
@@ -208,13 +200,11 @@ export async function awardWinner(tournamentId, winnerId) {
     const user = await User.findOne({ userId: winnerId }).select("-pwd");
     if (!user) { const e = new Error("Winner user not found"); e.status = 404; throw e; }
 
-    // push the trophy onto the winner's profile
     await User.findOneAndUpdate(
         { userId: winnerId },
         { $push: { trophies: { title: tournament.trophy.title, imageUrl: tournament.trophy.imageUrl, tournamentId: tournamentId } } }
     );
 
-    // mark tournament as finished with winnerId recorded
     return Tournament.findOneAndUpdate(
         { tournamentId: tournamentId },
         { status: "finished", winnerId: winnerId },

@@ -1,7 +1,5 @@
 import { useState, useCallback } from "react";
 
-// Like useState but saves to browser storage
-// Persists data so it survives page refresh
 export const useLocalStorage = (key, initialValue) => {
     const [storedValue, setStoredValue] = useState(() => {
         try {
@@ -12,7 +10,6 @@ export const useLocalStorage = (key, initialValue) => {
             return initialValue;
         }
     });
-
 
     const setValue = useCallback(
         (value) => {
@@ -33,7 +30,6 @@ export const useLocalStorage = (key, initialValue) => {
         [key]
     );
 
-    // Helper to reset to initial value or remove from storage
     const removeValue = useCallback(() => {
         try {
             window.localStorage.removeItem(key);

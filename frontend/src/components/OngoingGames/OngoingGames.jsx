@@ -18,7 +18,6 @@ export default function OngoingGames({ tournament }) {
         return () => { cancelled = true; };
     }, [tournament.tournamentId]);
 
-    // Only the current round's games are "ongoing"
     const currentRound = tournament.rounds?.find(r => r.roundNumber === tournament.currentRound);
     const roundGameIds = currentRound?.games ?? [];
     const roundGames = games.filter(g => roundGameIds.includes(g.gameId));

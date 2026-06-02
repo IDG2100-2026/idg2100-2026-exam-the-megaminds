@@ -44,7 +44,7 @@ export default function ProfilePage() {
                 setProfile(data);
                 if (isOwnProfile) setEditForm({ email: data.email || "", aboutMe: data.aboutMe || "", pwd: "", confirm: "" });
             } catch {
-                // failed to load
+
             } finally {
                 setLoadingProfile(false);
             }
@@ -60,7 +60,7 @@ export default function ProfilePage() {
             setHasMoreGames(list.length === GAMES_PER_PAGE);
             setGamesPage(page);
         } catch {
-            // failed to load games
+
         } finally {
             setLoadingGames(false);
         }
@@ -78,7 +78,7 @@ export default function ProfilePage() {
                 setHasMoreGames(list.length === GAMES_PER_PAGE);
                 setGamesPage(1);
             } catch {
-                // ignore
+
             } finally {
                 setLoadingGames(false);
             }
@@ -143,9 +143,9 @@ export default function ProfilePage() {
     return (
         <div className={styles.page}>
 
-            {/* header */}
+            {}
             <section className={styles.header}>
-                <img 
+                <img
                     src={avatarSrc}
                     alt={`${profile.username}'s avatar`}
                     className={styles.avatar}
@@ -169,12 +169,12 @@ export default function ProfilePage() {
                 </div>
             </section>
 
-            {/* Edit profile form */}
+            {}
             {editMode && isOwnProfile && (
                 <section className={styles.section}>
                     <h2 className={styles.sectionTitle}>Edit Profile</h2>
                     <form className={styles.form} onSubmit={handleEditSave} noValidate>
-                        
+
                         <div className={styles.field}>
                             <label className={styles.label}>Profile Picture</label>
                             <div className={styles.avatarUpload}>
@@ -272,7 +272,7 @@ export default function ProfilePage() {
                 </section>
             )}
 
-            {/* Stats */}
+            {}
             <section className={styles.section}>
                 <h2 className={styles.sectionTitle}>Stats</h2>
                 <div className={styles.statsGrid}>
@@ -321,7 +321,7 @@ export default function ProfilePage() {
                 </div>
             </section>
 
-            {/* Trophies */}
+            {}
             {profile.trophies?.length > 0 && (
                 <section className={styles.section}>
                     <h2 className={styles.sectionTitle}>Trophies & Achievements</h2>
@@ -341,7 +341,7 @@ export default function ProfilePage() {
                 </section>
             )}
 
-            {/* Recent games */}
+            {}
             <section className={styles.section}>
                 <h2 className={styles.sectionTitle}>Recent games</h2>
                 {games.length === 0 && !loadingGames && (

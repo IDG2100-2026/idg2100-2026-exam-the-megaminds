@@ -1,4 +1,3 @@
-//In-class code, reused for the purposes of this assignment: idg2100-backend.lt
 import crypto from "node:crypto";
 
 const { APP_SALT: salt } = process.env;

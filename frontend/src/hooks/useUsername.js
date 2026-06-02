@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { userService } from "@/services/api";
 
-// Module-level cache so the same user isn't re-fetched on every render/mount.
 const cache = new Map();
 
 export function useUserName(userId) {

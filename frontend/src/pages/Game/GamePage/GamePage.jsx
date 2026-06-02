@@ -25,7 +25,6 @@ export default function GamePage() {
     const canJoin = !!user && joinable && !isInGame;
     const isSpectator = !!user && !isInGame && game?.status === 'in-progress';
 
-    
     const handleJoin = async () => {
         setJoining(true);
         setJoinError('');
@@ -71,7 +70,6 @@ export default function GamePage() {
         }
     }, [lastMessage]);
 
-
     const handleAddComment = async (e) => {
         e.preventDefault();
         if (!commentText.trim() || !user) return;
@@ -81,9 +79,7 @@ export default function GamePage() {
             setCommentText('');
             loadComments();
             send({ type: 'comment-added' });
-        } catch {
-            // silent
-        } finally {
+        } catch { /* silent */ } finally {
             setCommentLoading(false);
         }
     };
@@ -94,7 +90,7 @@ export default function GamePage() {
             : 'Stop watching this game?';
         if (!window.confirm(msg)) return;
         if (isInGame) send({ type: 'leave-game' });
-        setTimeout(() => navigate('/lobby'), 200);   // let the WS frame flush before the socket closes
+        setTimeout(() => navigate('/lobby'), 200);
     };
 
     if (notFound) {
@@ -120,7 +116,7 @@ export default function GamePage() {
                 )}
                 {game && <span className={styles.gameId}>Game #{game.gameId?.slice(-6)}</span>}
             </div>
-            
+
             <div className={styles.content}>
                 <div className={styles.boardSection}>
                     {canJoin && (
@@ -198,7 +194,7 @@ export default function GamePage() {
 }
 function GameResult({ game }) {
     const buyIn = game.rules?.buyIn ?? 0;
-    // Rank the same way the winner is decided: most rounds won, then most chips.
+
     const players = [...(game.players ?? [])].sort(
         (a, b) => (b.score ?? 0) - (a.score ?? 0) || (b.stack ?? 0) - (a.stack ?? 0)
     );

@@ -1,4 +1,3 @@
-// Handles request/response for user routes — calls the service layer and sends back JSON
 import userService from "../services/users.service.js";
 import { generateWsToken } from "../middleware/jwt.js";
 import checkPwd from "../utils/hash.js";
@@ -6,7 +5,6 @@ import User from "../models/users.js";
 import { signAccessToken, setAccessCookie, setRefreshCookie, clearAuthCookies } from "../middleware/jwt.js";
 import { issueRefreshSession, rotateRefreshSession, revokeRefreshSession } from "../services/auth.service.js";
 
-// Verifies credentials, signs a JWT and sets it as an httpOnly cookie
 export async function login(req, res) {
     const { username, pwd } = req.body;
 
@@ -30,7 +28,7 @@ export async function login(req, res) {
 export async function refresh(req, res){
     const rotated = await rotateRefreshSession(req.cookies?.refreshToken, req.get("user-agent"));
     if (!rotated){
-        // Don't clear cookies on a lost rotation race - it would wipe the session a parallel tab just set.
+
         return res.status(401).json({ success: false, message: "Session expired, please login again"});
     }
 
@@ -47,7 +45,7 @@ export async function refresh(req, res){
 
     res.json({ success: true, user: { userId: user.userId, username: user.username, elo: user.elo, role}});
 }
-// Clears the JWT cookie
+
 export async function logout(req, res) {
     await revokeRefreshSession(req.cookies?.refreshToken);
     clearAuthCookies(res);
@@ -60,7 +58,6 @@ export async function getWsToken(req, res) {
     res.json({ wsToken });
 }
 
-// Returns the currently logged-in user based on the JWT cookie
 export async function getMe(req, res) {
     if (!req.userId) {
         return res.status(401).json({ success: false, message: "Not logged in" });
@@ -85,7 +82,6 @@ export async function getUserById(req, res) {
     res.status(200).json({ success: true, data: user });
 }
 
-// Password is hashed automatically in the user model pre-validate hook
 export async function createUser(req, res) {
     const newUser = await userService.createUser(req.validData);
     res.status(201).json({ success: true, data: newUser });
@@ -97,7 +93,6 @@ export async function updateUser(req, res) {
     res.status(200).json({ success: true, data: updUser });
 }
 
-// Admin only — hard delete
 export async function deleteUser(req, res) {
     const delUser = await userService.deleteUser(req.params.userId);
     if (!delUser) return res.status(404).json({ message: "User not found" });
@@ -128,7 +123,7 @@ export async function resendVerification(req, res) {
     if (result === false) {
         return res.status(503).json({ success: false, message: 'Failed to send email. Please try again shortly.' });
     }
-    // null (no account) and true (sent) both return the same message to avoid leaking whether the email exists
+
     res.json({ success: true, message: 'If an unverified account exists for that email, a new link has been sent' });
 
 }
@@ -138,7 +133,7 @@ export async function forgotPassword(req, res) {
     if (!email) return res.status(400).json({ success: false, message: 'Email is required' });
 
     await userService.requestPasswordReset(email);
-    // Always same response — don't reveal whether the account exists
+
     res.json({ success: true, message: 'If a verified account exists for that email, a reset link has been sent' });
 }
 

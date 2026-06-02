@@ -13,7 +13,7 @@ export function validateGameId(){
     return [
         param("gameId")
             .trim()
-            // DB check — confirm a game with this ID exists
+
             .custom(async (gameId) => {
                 const game = await Game.findOne({ gameId: gameId });
                 if (!game) {
@@ -31,7 +31,7 @@ export function validateGameCreate(){
             .notEmpty()
             .withMessage("Game ID is required")
             .bail()
-            // DB check — make sure this gameId is not already taken
+
             .custom(async (gameId) => {
                 const existing = await Game.findOne({ gameId });
                 if (existing) {
@@ -44,11 +44,10 @@ export function validateGameCreate(){
             .isIn(GAME_BESTOF_OPTIONS)
             .withMessage(`Game variant 'bestof' must be one of: ${GAME_BESTOF_OPTIONS.join(", ")}`),
 
-        
         body("rules.straightallowed")
             .isBoolean()
             .withMessage("'straightallowed' must be a boolean (true or false)"),
-        
+
         body("rules.roundTime")
             .isInt()
             .isIn(GAME_ROUND_TIME_OPTIONS)

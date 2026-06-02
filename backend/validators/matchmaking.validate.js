@@ -14,7 +14,6 @@ export function validateQueueJoin() {
                 if (!user) throw new Error("User does not exist");
             }),
 
-        // rules are optional — if omitted, the matched opponent's rules (or defaults) are used
         body("rules.bestof")
             .optional()
             .isInt()
@@ -34,7 +33,6 @@ export function validateQueueJoin() {
     ];
 }
 
-// anonymous queue — only optional rules, no userId
 export function validateAnonQueueJoin() {
     return [
         body("rules.bestof")

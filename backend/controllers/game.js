@@ -1,4 +1,3 @@
-// Handles request/response for game routes — calls the service layer and sends back JSON
 import gameService from "../services/games.service.js";
 
 export async function getAllGames(req, res) {
@@ -60,7 +59,6 @@ export async function createGameComment(req, res) {
     );
     res.status(201).json({ success: true, data: newComment });
 }
-
 
 export default {
     getAllGames,

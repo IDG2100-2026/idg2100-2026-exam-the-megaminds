@@ -18,13 +18,13 @@ class DicePokerPlayer extends HTMLElement {
   }
 
   connectedCallback() {
-    // Re-read name here because React sets attributes after the constructor runs
+
     this.playerName = this.getAttribute('playername') || 'Unknown';
     this._renderHeader(this._score, null);
     this._wireButtons();
     this._wireHolds();
     this.disableControls();
-    // Opponents start with hidden dice — local player's dice are always visible
+
     if (!this.hasAttribute('local')) this.hideDice();
   }
 
@@ -58,7 +58,6 @@ class DicePokerPlayer extends HTMLElement {
       this.dispatchEvent(new CustomEvent('request-hold', { bubbles: true, composed: true }));
     });
 
-
   }
   _wireHolds(){
     this.dice.forEach(die => {
@@ -70,9 +69,8 @@ class DicePokerPlayer extends HTMLElement {
     })
   }
 
-
   getHeld() {
-    return this.dice 
+    return this.dice
       .map((die, i) => (die.hasAttribute('onhold') ? i : -1))
       .filter(i => i >= 0);
   }
@@ -97,7 +95,6 @@ class DicePokerPlayer extends HTMLElement {
             die.setFace(face);
         }
     });
-
 
     if (yourTurn) {
       const hasRolled = (faces ?? []).some(f => f !== null);

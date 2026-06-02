@@ -25,7 +25,7 @@ const gameSchema = new mongoose.Schema({
     },
     players: [
         {
-            // ref links to the User model
+
             userId: {
                 type: Number,
                 ref: "User",
@@ -37,14 +37,14 @@ const gameSchema = new mongoose.Schema({
             },
             stack: {
                 type: Number,
-                default: 0    // final chip stack when the game is recorded
+                default: 0
             }
         }
     ],
     winnerId:{
         type: Number,
         ref: "User",
-        default: null    // null until the game is finished
+        default: null
     },
     status:{
         type: String,
@@ -56,9 +56,9 @@ const gameSchema = new mongoose.Schema({
     tournamentId:{
         type: String,
         ref:"Tournament",
-        default: null    // null for standalone games
+        default: null
     }
-}, { timestamps: true }); // timestamps: true auto-adds createdAt and updatedAt fields
+}, { timestamps: true });
 
 const Game = mongoose.model("Game", gameSchema);
 export { Game };

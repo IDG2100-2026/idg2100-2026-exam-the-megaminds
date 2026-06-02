@@ -23,7 +23,6 @@ export default function TournamentBracket({ tournament }) {
     if (error) return <p className={styles.bracket__status}>Error: {error}</p>;
     if (rounds.length === 0) return <p className={styles.bracket__status}>The bracket appears once the tournament starts.</p>;
 
-    // Look games up by id so each round can resolve its gameIds to game objects
     const gameById = new Map(games.map(g => [g.gameId, g]));
 
     return(

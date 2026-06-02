@@ -21,7 +21,6 @@ export default function GameBoard({ game, send, lastMessage, isSpectator = false
     const lastStateRef = useRef(null);
     const betTimerRef = useRef(null);
 
-    // Intents up: player action => WebSocket (spectators have no controls)
     useEffect(() => {
         if (isSpectator) return;
         const board = boardRef.current;
@@ -45,7 +44,6 @@ export default function GameBoard({ game, send, lastMessage, isSpectator = false
         };
     }, [send, play, isSpectator]);
 
-    // state down: WebSocker => board renderer
     useEffect(() => {
         if (lastMessage?.type === 'state') {
             lastStateRef.current = { state: lastMessage.state, viewerId: user?.userId };
@@ -55,7 +53,7 @@ export default function GameBoard({ game, send, lastMessage, isSpectator = false
         if (lastMessage?.type === 'error') {
             console.error('WS server error:', lastMessage.message);
         }
-        // round-result and game-over sounds come in step 4 when the server sends those messages
+
         if (lastMessage?.type === 'round-result') {
             play(lastMessage.winnerIds?.includes(user?.userId) ? 'win' : 'lose');
             boardRef.current?.showRoundResult(lastMessage.winnerIds, lastMessage.handNames);
@@ -105,7 +103,6 @@ export default function GameBoard({ game, send, lastMessage, isSpectator = false
         setBetError('')
         send({ type: 'fold' });
     };
-    
 
     if (!game) return <p>Loading game board...</p>;
 

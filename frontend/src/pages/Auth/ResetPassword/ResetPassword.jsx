@@ -10,9 +10,9 @@ export default function ResetPassword() {
     const [pwd, setPwd] = useState('');
     const [confirmPwd, setConfirmPwd] = useState('');
     const [showPwd, setShowPwd] = useState(false);
-    const [status, setStatus] = useState('idle'); // 'idle' | 'success'
+    const [status, setStatus] = useState('idle');
     const [errorMsg, setErrorMsg] = useState('');
-    
+
     if (!code) {
         return (
             <div className={styles.page}>
@@ -55,7 +55,7 @@ export default function ResetPassword() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setErrorMsg('');
-    
+
         if (pwd !== confirmPwd) {
             setErrorMsg('Passwords do not match');
             return;
@@ -132,5 +132,5 @@ export default function ResetPassword() {
             </div>
         </div>
     );
-    
+
 }

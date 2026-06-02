@@ -10,11 +10,11 @@ export function useWebSocket(gameId) {
     const [connected, setConnected] = useState(false);
 
     const connect = useCallback(async () => {
-        // Get a short lived token from the backend
+
         const res = await fetch(`${import.meta.env.VITE_API_URL}/api/ws-token`, {
             credentials: "include",
         });
-        // Not logged in — skip WS entirely (no reconnect loop)
+
         if (!res.ok) return;
         const { wsToken } = await res.json();
 
@@ -22,7 +22,7 @@ export function useWebSocket(gameId) {
         wsRef.current = ws;
 
         ws.onopen = () => {
-            // Authenticate immediately on connect
+
             ws.send(JSON.stringify({ type: "auth", wsToken}));
         };
 
@@ -33,7 +33,7 @@ export function useWebSocket(gameId) {
                 return;
             }
             if (msg.type === "auth-success" && gameId) {
-                // Join the game room right after auth succeeds
+
                 ws.send(JSON.stringify({ type: "join-game", gameId }));
                 setConnected(true);
             }
@@ -43,7 +43,7 @@ export function useWebSocket(gameId) {
 
         ws.onclose = () => {
             setConnected(false);
-            // Auto-reconnect after 3 seconds
+
             setTimeout(() => connectRef.current?.(), 3000);
         };
 

@@ -1,11 +1,9 @@
-//Code fetched from in-class code: idg-2100-backend.lt
 import mongoose from "mongoose";
 
 const { DB_HOSTNAME, DB_PORT, DB_NAME } = process.env;
 
 const URI_CONNECTION = `mongodb://${DB_HOSTNAME}:${DB_PORT}/${DB_NAME}`;
 
-// Connect to DB
 export async function connectDB(){
     if(DB_HOSTNAME && DB_PORT && DB_NAME){
         mongoose.connection.on("error", err=>{
@@ -23,7 +21,6 @@ export async function connectDB(){
     throw new Error(`Missing env variables needed to connect to mongoDB: ${DB_HOSTNAME}, ${DB_PORT}, ${DB_NAME}`);
 }
 
-//Disconnect from DB
 export async function disconnectDB(){
     return mongoose.disconnect();
 }

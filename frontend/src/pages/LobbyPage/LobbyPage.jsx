@@ -35,7 +35,6 @@ export default function LobbyPage() {
     const [hasMore, setHasMore] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
 
-    // Fetch games on mount and when user changes
     useEffect(() => {
         const fetchGames = async () => {
             try {
@@ -52,16 +51,12 @@ export default function LobbyPage() {
                 const enriched = await enrichGames(pending);
                 setGames(enriched);
 
-                // In-progress games available to spectate
                 const liveData = await gameService.getAllGames(1, 10, 'in-progress');
                 const live = (liveData || []).filter(g =>
                     !user || !g.players.some(p => p.userId === user?.userId)
                 );
                 setLiveGames(await enrichGames(live));
 
-                // The user's current games (pending + in-progress). Fetch from the
-                // per-user endpoint so in-progress games are included — the available
-                // list above is pending-only.
                 if (user) {
                     const mine = await userService.getUserGames(user.userId, 1, 50);
                     const active = (mine || []).filter(game => game.status !== 'finished');
@@ -80,34 +75,28 @@ export default function LobbyPage() {
         fetchGames();
     }, [user]);
 
-    // Apply filters and sorting
     const filteredGames = useMemo(() => {
         let result = [...games];
 
-        // Filter by Elo
         result = result.filter(game => {
             if (!game.players.length) return true;
             const avgElo = game.players.reduce((sum, p) => sum + (p.elo ?? 1000), 0) / game.players.length;
             return avgElo >= filters.minElo && avgElo <= filters.maxElo;
         });
 
-        // Filter by Best Of
         if (filters.bestOf !== "all") {
             result = result.filter(game => game.rules.bestof === parseInt(filters.bestOf));
         }
 
-        // Filter by Straights
         if (filters.straights !== "all") {
             const allowStraights = filters.straights === "yes";
             result = result.filter(game => game.rules.straightallowed === allowStraights);
         }
 
-        // Filter by Round Time
         if (filters.roundTime !== "all") {
             result = result.filter(game => game.rules.roundTime === parseInt(filters.roundTime));
         }
 
-        // Sort
         switch (sortBy) {
             case "newest":
                 result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -170,7 +159,7 @@ export default function LobbyPage() {
             const endriched = await enrichGames(pending);
             setGames(prev => [...prev, ...endriched]);
         } catch {
-            // ignore
+
         } finally {
             setLoadingMore(false);
         }
@@ -182,7 +171,7 @@ export default function LobbyPage() {
 
     return (
         <div className={styles.container}>
-            {/* Header */}
+            {}
             <div className={styles.header}>
                 <div className={styles.headerContent}>
                     <h1>Game Lobby</h1>
@@ -193,7 +182,7 @@ export default function LobbyPage() {
                 </button>
             </div>
 
-            {/* User's active games */}
+            {}
             {user && userGames.length > 0 && (
                 <div className={styles.yourGamesSection}>
                     <h2>Your Current Games</h2>
@@ -237,7 +226,7 @@ export default function LobbyPage() {
                 </div>
             )}
 
-            {/* Live games to spectate */}
+            {}
             {liveGames.length > 0 && (
                 <div className={styles.liveSection}>
                     <h2 className={styles.liveSectionTitle}>
@@ -270,7 +259,7 @@ export default function LobbyPage() {
                 </div>
             )}
 
-            {/* Filter Panel */}
+            {}
             <div className={styles.filterPanel}>
                 <div className={styles.filterGroup}>
                     <label>Elo Range</label>
@@ -326,7 +315,7 @@ export default function LobbyPage() {
                 </div>
             </div>
 
-            {/* Messages */}
+            {}
             {error && <div className={styles.errorBox}>{error}</div>}
             {joinMessage && (
                 <div className={`${styles.messageBox} ${joinMessage.includes("Joined") ? styles.success : styles.error}`}>
@@ -334,7 +323,7 @@ export default function LobbyPage() {
                 </div>
             )}
 
-            {/* Results */}
+            {}
             <div className={styles.resultsHeader}>
                 <h2>Available Games ({filteredGames.length})</h2>
             </div>

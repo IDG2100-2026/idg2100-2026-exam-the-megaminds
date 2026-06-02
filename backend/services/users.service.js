@@ -6,14 +6,13 @@ import { sendVerificationEmail, sendPasswordResetEmail } from './email.service.j
 
 const ALLOWED_USER_SORT_FIELDS = ["elo", "username", "totalGames", "wins", "losses", "age"];
 
-//Pagination
 export async function getAllUsers({ sort = "elo", limit = 10, page = 1, search, username }) {
     const skip = (page - 1) * limit;
     const sortField = ALLOWED_USER_SORT_FIELDS.includes(sort) ? sort : "elo";
-    // Build filter query — supports free-text search across username/email, or exact username match
+
     const query = {};
     if (search) {
-        // Escape regex special characters to prevent Regular expression denial of service
+
         const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         query.$or = [
             { username: { $regex: escaped, $options: "i" } },
@@ -31,7 +30,6 @@ export async function getAllUsers({ sort = "elo", limit = 10, page = 1, search, 
         .select("-pwd");
 }
 
-// the select("-pwd") makes sure the password is not displayed even though it is hashed
 export async function getUserById(userId) {
     const user = await User.findOne({ userId: userId }).select("-pwd");
     if (!user) return null;
@@ -86,7 +84,6 @@ export async function deleteUser(userId) {
     return User.findOneAndDelete({ userId: userId }).select("-pwd");
 }
 
-//Pagination
 export async function getUserGames(userId, { limit = 10, page = 1 }) {
     const skip = (page - 1) * limit;
     return Game.find({ "players.userId": userId })
@@ -95,7 +92,6 @@ export async function getUserGames(userId, { limit = 10, page = 1 }) {
         .sort({ createdAt: -1 });
 }
 
-// Set banned flag to true — banned users are excluded from matchmaking
 export async function banUser(userId) {
     return User.findOneAndUpdate(
         { userId: userId },
@@ -104,7 +100,6 @@ export async function banUser(userId) {
     ).select("-pwd");
 }
 
-// Remove ban from a user
 export async function unbanUser(userId) {
     return User.findOneAndUpdate(
         { userId: userId },

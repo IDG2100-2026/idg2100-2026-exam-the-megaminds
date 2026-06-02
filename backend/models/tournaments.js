@@ -31,7 +31,7 @@ const tournamentSchema = new mongoose.Schema({
         minLength: [MIN_TOURNAMENT_DESC_LENGTH, `Description can't be shorter than ${MIN_TOURNAMENT_DESC_LENGTH} characters`],
         maxLength: [MAX_TOURNAMENT_DESC_LENGTH, `Description can't be longer than ${MAX_TOURNAMENT_DESC_LENGTH} characters`]
     },
-    // Format configuration for the tournament
+
     format: {
         bestof: {
             type: Number,
@@ -45,10 +45,10 @@ const tournamentSchema = new mongoose.Schema({
         roundTime: {
             type: Number,
             required: true,
-            enum: GAME_ROUND_TIME_OPTIONS // seconds
+            enum: GAME_ROUND_TIME_OPTIONS
         }
     },
-    // Player constraints
+
     minPlayers: {
         type: Number,
         required: true,
@@ -70,38 +70,38 @@ const tournamentSchema = new mongoose.Schema({
         default: 0,
         min: 0
     },
-    // Elo gating — null on a side means "open" in that direction
+
     eloRange: {
         min: { type: Number, default: null, min: 0 },
         max: { type: Number, default: null, min: 0 }
     },
-    // Schedule
+
     startDate: {
         type: Date,
         required: true
     },
-    // Status tracking
+
     status: {
         type: String,
         required: true,
         enum: TOURNAMENT_STATUSES,
         default: "pending"
     },
-    // Participants array (stores user IDs)
+
     participants: [
         {
-            type: Number, // userId
+            type: Number,
             ref: "User"
         }
     ],
-    // Games played in this tournament (all rounds combined)
+
     games: [
         {
             type: String,
             ref: "Game"
         }
     ],
-    // Tracks which round is currently being played (0 = not started)
+
     currentRound: {
         type: Number,
         default: 0
@@ -110,16 +110,16 @@ const tournamentSchema = new mongoose.Schema({
         type: Date,
         defualt: null
     },
-    // Each entry stores the game IDs for one round and any player who received a bye
+
     rounds: [
         {
             roundNumber: { type: Number, required: true },
             games: [{ type: String, ref: "Game" }],
-            // extra player gets a free pass to the next round when participants are odd
+
             byeUserId: { type: Number, default: null }
         }
     ],
-    // Trophy awarded to winner
+
     trophy: {
         title: {
             type: String,
@@ -130,7 +130,7 @@ const tournamentSchema = new mongoose.Schema({
             default: null
         }
     },
-    // Admin info
+
     createdBy: {
         type: Number,
         ref: "User",
@@ -143,17 +143,15 @@ const tournamentSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-// Auto-generate a readable, unique-ish tournamentId from the title on creation,
-// so admins/clients never have to supply one (mirrors how userId is generated).
 tournamentSchema.pre("validate", function () {
     if (this.isNew && !this.tournamentId) {
         const slug = (this.title || "tournament")
             .toLowerCase()
             .trim()
-            .replace(/[^a-z0-9]+/g, "-")   // non-alphanumerics → hyphens
-            .replace(/^-+|-+$/g, "")       // trim leading/trailing hyphens
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, "")
             .slice(0, 40);
-        const suffix = Math.random().toString(36).slice(2, 8);  // 6 random chars
+        const suffix = Math.random().toString(36).slice(2, 8);
         this.tournamentId = `${slug}-${suffix}`;
     }
 });

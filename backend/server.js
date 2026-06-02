@@ -1,4 +1,3 @@
-//some code fetced from in-class code: idg2100-backen.lt
 import cors from "cors";
 import { initGameSocket } from "./websocket/gameSocket.js";
 import cookieParser from "cookie-parser";
@@ -10,38 +9,31 @@ import { errorHandler } from "./middleware/error.js";
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// getting mongoose to connect to mongoDB
 await connectDB();
 
 import { scheduleWeeklyPoints } from './jobs/weeklyPoints.js';
 scheduleWeeklyPoints();
 
-// create an express app
 const diceApp = express();
 
-// registers middelware or router on every request
 diceApp.use(cors({
     origin: process.env.FRONTEND_URL,
-    credentials: true // credentials: true lets cookies be sent cross-origin
+    credentials: true
 }));
-diceApp.use(cookieParser()); // handles non-API routes
+diceApp.use(cookieParser());
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 diceApp.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// mounting routers
 diceApp.use("/", nonApiRouter);
 diceApp.use("/api", apiRouter);
 diceApp.use(errorHandler);
 
-// getting port
 const port = process.env.APP_PORT;
 
-// Launching app
 const server = diceApp.listen(port, ()=>{console.log("Spanish Poker Dice app is listening", port);});
 initGameSocket(server);
 
-// graceful shutdown
 let shuttingDown = false;
 async function shutDown(){
     if (shuttingDown) return;

@@ -8,7 +8,6 @@ export default function AwardWinner({ tournament, onChange }) {
     const [winnerId, setWinnerId] = useState("");
     const [error, setError] = useState(null);
 
-    // Eligible = winners of the final round's games (+ a bye if any), NOT every participant
     useEffect(() => {
         let cancelled = false;
         const lastRound = rounds[rounds.length - 1];

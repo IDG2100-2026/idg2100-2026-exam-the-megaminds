@@ -5,7 +5,7 @@ import styles from "../auth.module.css";
 
 export default function VerifyUser() {
     const [searchParams] = useSearchParams();
-    const [status, setStatus] = useState('loading'); // 'loading' | 'success' | 'error'
+    const [status, setStatus] = useState('loading');
     const [resendEmail, setResentEmail] = useState('');
     const [resendMsg, setResendMsg] = useState('');
     const hasVerified = useRef(false);
