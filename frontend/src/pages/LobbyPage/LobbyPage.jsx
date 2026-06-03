@@ -158,7 +158,7 @@ export default function LobbyPage() {
             );
             const endriched = await enrichGames(pending);
             setGames(prev => [...prev, ...endriched]);
-        } catch {
+        } catch { //
 
         } finally {
             setLoadingMore(false);
